@@ -52,4 +52,35 @@ public class Business
     public List<WebsiteAudit> Audits { get; set; } = [];
     public List<SalesTask> Tasks { get; set; } = [];
     public List<SalesNote> Notes { get; set; } = [];
+
+    // Tagging Helpers
+    public IReadOnlyList<string> GetTagList()
+    {
+        if (string.IsNullOrWhiteSpace(Tags)) return [];
+        return Tags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    }
+
+    public void AddTag(string tag)
+    {
+        if (string.IsNullOrWhiteSpace(tag)) return;
+        var list = GetTagList().ToList();
+        if (!list.Any(t => string.Equals(t, tag.Trim(), StringComparison.OrdinalIgnoreCase)))
+        {
+            list.Add(tag.Trim());
+            Tags = string.Join(", ", list);
+        }
+    }
+
+    public void RemoveTag(string tag)
+    {
+        if (string.IsNullOrWhiteSpace(tag) || string.IsNullOrWhiteSpace(Tags)) return;
+        var list = GetTagList().Where(t => !string.Equals(t, tag.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
+        Tags = list.Count > 0 ? string.Join(", ", list) : null;
+    }
+
+    public bool HasTag(string tag)
+    {
+        if (string.IsNullOrWhiteSpace(tag) || string.IsNullOrWhiteSpace(Tags)) return false;
+        return GetTagList().Any(t => string.Equals(t, tag.Trim(), StringComparison.OrdinalIgnoreCase));
+    }
 }

@@ -1,11 +1,14 @@
+using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using TKS.LeadPilot.Core.Interfaces;
 
 namespace TKS.LeadPilot.UI.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
 {
+    private readonly IServiceProvider _serviceProvider;
     private readonly IBusinessRepository _businessRepository;
     private readonly ISecretVault _secretVault;
 
@@ -27,11 +30,12 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private string _syncStatusText = "Local-Only (SQLite)";
 
-    public MainViewModel(IBusinessRepository businessRepository, ISecretVault secretVault)
+    public MainViewModel(IServiceProvider serviceProvider, IBusinessRepository businessRepository, ISecretVault secretVault)
     {
+        _serviceProvider = serviceProvider;
         _businessRepository = businessRepository;
         _secretVault = secretVault;
-        _currentView = new DashboardViewModel(_businessRepository);
+        _currentView = _serviceProvider.GetRequiredService<DashboardViewModel>();
     }
 
     [RelayCommand]
@@ -41,10 +45,10 @@ public partial class MainViewModel : ViewModelBase
 
         CurrentView = destination switch
         {
-            "Dashboard" => new DashboardViewModel(_businessRepository),
-            "Businesses" => new BusinessesViewModel(_businessRepository),
-            "Settings" => new SettingsViewModel(_secretVault),
-            _ => new DashboardViewModel(_businessRepository)
+            "Dashboard" => _serviceProvider.GetRequiredService<DashboardViewModel>(),
+            "Businesses" => _serviceProvider.GetRequiredService<BusinessesViewModel>(),
+            "Settings" => _serviceProvider.GetRequiredService<SettingsViewModel>(),
+            _ => _serviceProvider.GetRequiredService<DashboardViewModel>()
         };
     }
 

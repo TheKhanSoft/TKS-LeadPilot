@@ -7,6 +7,7 @@ using Avalonia.Markup.Xaml;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TKS.LeadPilot.Core.Interfaces;
+using TKS.LeadPilot.Core.Services;
 using TKS.LeadPilot.Data;
 using TKS.LeadPilot.Data.Repositories;
 using TKS.LeadPilot.UI.Services;
@@ -70,6 +71,10 @@ public partial class App : Application
         services.AddScoped<IBusinessRepository, BusinessRepository>();
         services.AddScoped<IPipelineStageRepository, PipelineStageRepository>();
         services.AddScoped<IDatabaseInitializer, DatabaseInitializer>();
+
+        // Core Business Services (Stage 4)
+        services.AddScoped<IDeduplicationService, DeduplicationService>();
+        services.AddScoped<ICsvImporterService, CsvImporterService>();
 
         // Secret Vault
         services.AddSingleton<ISecretVault, DpapiSecretVault>();

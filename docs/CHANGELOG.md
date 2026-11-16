@@ -6,6 +6,29 @@ All notable changes to the TKS LeadPilot project will be documented in this file
 
 ## [Unreleased]
 
+### [0.4.0] — Stage 4: Core Business Database, Search & Deduplication — 2026-11-16
+#### Added
+- Custom project brand icon and logo assets: `leadpilot-icon.ico` (multi-res 16px to 256px) and `leadpilot-logo.png` featuring supersonic navigation delta, radar sweep discovery rings, and growth beacon.
+- Multi-field search and query engine with `BusinessFilterCriteria` supporting free text, city, category, pipeline stage, website presence, score range, starred flag, and custom tags.
+- High-precision Deduplication Engine (`IDeduplicationService`, `DeduplicationService`):
+  - Normalized website domain extraction (stripping protocol, www, paths, queries, ports).
+  - Pakistan and international phone normalization (handling `+92`, `0092`, `03xx`, landlines).
+  - Normalized name tokenization and noise-word removal.
+  - Multi-tier duplicate matching (`ExactWebsite` 100%, `ExactPhone` 95%, `ExactNameAndCity` 90%, `FuzzyNameAndCity`).
+  - Intelligent field-level business merging without data loss.
+- High-performance RFC 4180 CSV / Excel Importer and Exporter (`ICsvImporterService`, `CsvImporterService`):
+  - Smart column header auto-detection and synonym mapping.
+  - Dry-run validation, duplicate detection, and preview table.
+  - Configurable deduplication resolution (`Skip`, `Merge`, `Overwrite`).
+  - Native Windows file picker integration via Avalonia `StorageProvider`.
+  - UTF-8 BOM CSV export for Microsoft Excel compatibility.
+- Desktop UI enhancements in `BusinessesView`:
+  - Advanced Filter Ribbon with live count pill, city/category/website/stage dropdowns.
+  - Split Inspector with contact person subresource management (Add/Delete contacts).
+  - Tag management helpers on `Business` entity.
+  - Add Business, Add Contact, and CSV Import modal dialogs.
+- 21 new unit tests across `TKS.LeadPilot.Core.Tests` and `TKS.LeadPilot.Data.Tests` (total 27 passing tests, 0 failures).
+
 ### [0.3.0] — Stage 3: Local Desktop Foundation — 2026-11-16
 #### Added
 - Visual Studio / .NET 10 Solution `desktop/TKS.LeadPilot.Desktop.sln`.
