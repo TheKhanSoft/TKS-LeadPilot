@@ -1,0 +1,84 @@
+# Windows / Visual Studio / .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+*.nupkg
+*.userprefs
+TestResults/
+
+# Flutter / Dart
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+
+# Android
+*.apk
+*.aab
+.gradle/
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Python / Audit Engine
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+*.egg-info/
+
+# Laravel / PHP
+server/vendor/
+server/node_modules/
+server/.env
+server/public/storage
+server/public/hot
+server/storage/*.key
+server/storage/framework/cache/*
+server/storage/framework/sessions/*
+server/storage/framework/views/*
+server/storage/logs/*
+
+# Secrets & Environment variables
+.env
+*.env.local
+secrets.json
+appsettings.Development.json
+credentials.json
+*.keystore
+*.jks
+
+# Logs and DB files
+*.log
+*.sqlite
+*.sqlite3
+*.db
+*.bak
+*.tmp
+
+# IDEs & Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+Thumbs.db
+Desktop.ini
