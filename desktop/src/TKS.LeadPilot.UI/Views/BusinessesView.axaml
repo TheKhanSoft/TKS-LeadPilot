@@ -1,0 +1,97 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TKS.LeadPilot.UI.ViewModels"
+             xmlns:m="using:TKS.LeadPilot.Core.Models"
+             x:Class="TKS.LeadPilot.UI.Views.BusinessesView"
+             x:DataType="vm:BusinessesViewModel">
+
+    <Grid RowDefinitions="Auto,*" Margin="24">
+        <!-- Top Toolbar -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,16">
+            <StackPanel Grid.Column="0" Spacing="4">
+                <TextBlock Text="Business Database" FontSize="24" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                <TextBlock Text="Manage prospects, website statuses, contacts, and opportunity scores." FontSize="13" Foreground="#94A3B8"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10">
+                <TextBox Width="260" Text="{Binding SearchQuery}" PlaceholderText="Search name, city, website..." Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6" VerticalContentAlignment="Center"/>
+                <Button Content="Search" Command="{Binding SearchCommand}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="14,8"/>
+                <Button Content="🔄 Refresh" Command="{Binding RefreshCommand}" Background="#1E293B" Foreground="#38BDF8" CornerRadius="6" Padding="14,8"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Main Master-Detail Split Grid -->
+        <Grid Grid.Row="1" ColumnDefinitions="2*,1*">
+            <!-- Left DataGrid Pane -->
+            <Border Grid.Column="0" Margin="0,0,8,0" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8">
+                <DataGrid ItemsSource="{Binding Businesses}"
+                          SelectedItem="{Binding SelectedBusiness}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          GridLinesVisibility="Horizontal"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto"
+                          RowBackground="#151E2E"
+                          BorderThickness="0"
+                          CornerRadius="8">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Business Name" Binding="{Binding Name}" Width="2*" />
+                        <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="1.5*" />
+                        <DataGridTextColumn Header="City" Binding="{Binding City}" Width="1*" />
+                        <DataGridTextColumn Header="Website URL" Binding="{Binding WebsiteUrl}" Width="1.5*" />
+                        <DataGridTextColumn Header="Score" Binding="{Binding LeadScore}" Width="0.8*" />
+                        <DataGridTextColumn Header="Status" Binding="{Binding LeadStatus}" Width="1*" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+
+            <!-- Right Detail Inspector Pane -->
+            <Border Grid.Column="1" Margin="8,0,0,0" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="20">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="16" DataContext="{Binding SelectedBusiness}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC" TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding Category}" FontSize="12" Foreground="#38BDF8"/>
+                            </StackPanel>
+                            <Border Grid.Column="1" Background="#10B981" CornerRadius="4" Padding="8,4" VerticalAlignment="Top">
+                                <TextBlock Text="{Binding LeadScore, StringFormat='Score: {0}'}" FontSize="12" FontWeight="Bold" Foreground="#0F172A"/>
+                            </Border>
+                        </Grid>
+
+                        <Separator Background="#26334A"/>
+
+                        <!-- Address & Location -->
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="LOCATION &amp; CONTACT" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
+                            <TextBlock Text="{Binding City, StringFormat='City: {0}'}" FontSize="13" Foreground="#F8FAFC"/>
+                            <TextBlock Text="{Binding AddressLine1, StringFormat='Address: {0}'}" FontSize="13" Foreground="#94A3B8"/>
+                            <TextBlock Text="{Binding PhonePrimary, StringFormat='Phone: {0}'}" FontSize="13" Foreground="#94A3B8"/>
+                            <TextBlock Text="{Binding EmailPrimary, StringFormat='Email: {0}'}" FontSize="13" Foreground="#94A3B8"/>
+                            <TextBlock Text="{Binding WebsiteUrl, StringFormat='Website: {0}'}" FontSize="13" Foreground="#38BDF8"/>
+                        </StackPanel>
+
+                        <Separator Background="#26334A"/>
+
+                        <!-- Tags & Signals -->
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="TAGS &amp; SIGNALS" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
+                            <Border Background="#1E293B" CornerRadius="4" Padding="8">
+                                <TextBlock Text="{Binding Tags}" FontSize="12" Foreground="#F59E0B" TextWrapping="Wrap"/>
+                            </Border>
+                        </StackPanel>
+
+                        <Separator Background="#26334A"/>
+
+                        <!-- One-Click Actions -->
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="ACTIONS" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
+                            <Button Content="🔬 Launch Website Audit" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="10"/>
+                            <Button Content="✉️ Draft Outreach Message" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#1E293B" Foreground="#38BDF8" CornerRadius="6" Padding="10"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

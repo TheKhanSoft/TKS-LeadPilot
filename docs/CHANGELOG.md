@@ -6,6 +6,21 @@ All notable changes to the TKS LeadPilot project will be documented in this file
 
 ## [Unreleased]
 
+### [0.3.0] — Stage 3: Local Desktop Foundation — 2026-11-16
+#### Added
+- Visual Studio / .NET 10 Solution `desktop/TKS.LeadPilot.Desktop.sln`.
+- Domain models and enums in `TKS.LeadPilot.Core` (`Business`, `BusinessContact`, `PipelineStage`, `WebsiteAudit`, `WebsiteAuditFinding`, `LeadScore`, `TksService`, `SalesTask`, `SalesNote`, `AppSetting`).
+- Repository and service abstractions in `TKS.LeadPilot.Core.Interfaces` (`IBusinessRepository`, `IPipelineStageRepository`, `ISecretVault`, `IDatabaseInitializer`).
+- SQLite EF Core data layer in `TKS.LeadPilot.Data` (`AppDbContext`, `BusinessRepository`, `PipelineStageRepository`, `DatabaseInitializer`).
+- Automatic database migration and seeding for 14 standard pipeline stages, 4 TKS service offerings, and sample enterprise businesses.
+- Avalonia UI 12.1.2 desktop application shell in `TKS.LeadPilot.UI` featuring:
+  - Collapsible navigation sidebar (Dashboard, Businesses, Audits, Pipeline, Outreach, Settings).
+  - Top status bar with offline-first status indicator and Gemini Free Tier quota meter.
+  - Interactive Views and ViewModels: `MainViewModel`, `DashboardViewModel`, `BusinessesViewModel` with DataGrid + Split Inspector, `SettingsViewModel`.
+  - Windows DPAPI credential vault (`DpapiSecretVault`) for local encrypted storage of API keys.
+  - Dependency Injection container via `Microsoft.Extensions.DependencyInjection`.
+- Comprehensive Unit Test Suites in `TKS.LeadPilot.Core.Tests` and `TKS.LeadPilot.Data.Tests` (6 tests passing, 0 failures).
+
 ### [0.2.0] — Stage 2: UX and Design System — 2026-11-16
 #### Added
 - Detailed UX Architecture & Design System specification (`docs/UX_AND_DESIGN_SYSTEM.md`).

@@ -1,0 +1,71 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TKS.LeadPilot.UI.ViewModels"
+             x:Class="TKS.LeadPilot.UI.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24" Spacing="24" MaxWidth="800" HorizontalAlignment="Left">
+            <!-- Header -->
+            <StackPanel Spacing="4">
+                <TextBlock Text="System Settings &amp; Vault" FontSize="24" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                <TextBlock Text="Manage local security, Gemini Free Tier API keys, and application preferences." FontSize="13" Foreground="#94A3B8"/>
+            </StackPanel>
+
+            <!-- Gemini API Key Card -->
+            <Border Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="20">
+                <StackPanel Spacing="16">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Google Gemini Developer API (Free Tier)" FontSize="16" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                        <TextBlock Text="Saved securely in Windows DPAPI vault (CurrentUser scope). Never stored in plain text or exported." FontSize="12" Foreground="#94A3B8"/>
+                    </StackPanel>
+
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Gemini API Key (from Google AI Studio)" FontSize="12" FontWeight="SemiBold" Foreground="#64748B"/>
+                        <TextBox Text="{Binding GeminiApiKey}" PlaceholderText="AIzaSy..." Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6" Padding="10"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <Button Content="💾 Save to DPAPI Vault" Command="{Binding SaveApiKeyCommand}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="16,8"/>
+                        <Button Content="🔍 Test Vault Key" Command="{Binding TestAiConnectionCommand}" Background="#1E293B" Foreground="#38BDF8" CornerRadius="6" Padding="16,8"/>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding StatusMessage}" Foreground="#10B981" FontWeight="SemiBold" FontSize="12" IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- AI Rate Limiter & Zero Billing -->
+            <Border Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="20">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Zero-Unexpected-Billing Policy Enforcement" FontSize="16" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                    <TextBlock Text="The hard spending limit is locked to $0.00. Automatic fallback to paid models or paid tiers is architecturally forbidden." FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                    
+                    <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
+                        <StackPanel Grid.Column="0" Spacing="2">
+                            <TextBlock Text="Daily Free Quota Ceiling" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                            <TextBlock Text="Once reached, AI operations pause until 00:00 UTC." FontSize="12" Foreground="#64748B"/>
+                        </StackPanel>
+                        <TextBlock Grid.Column="1" Text="1,200 requests/day" FontWeight="Bold" Foreground="#10B981" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2">
+                            <TextBlock Text="Per-Minute Safety Rate Limit" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                            <TextBlock Text="Prevents triggering provider HTTP 429 rate limit exceptions." FontSize="12" Foreground="#64748B"/>
+                        </StackPanel>
+                        <TextBlock Grid.Column="1" Text="12 RPM (Max 15)" FontWeight="Bold" Foreground="#38BDF8" VerticalAlignment="Center"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Local Database Maintenance -->
+            <Border Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="20">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Local Storage (SQLite)" FontSize="16" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                    <TextBlock Text="Database location: %LOCALAPPDATA%\TKS.LeadPilot\tks_leadpilot.db" FontSize="12" Foreground="#94A3B8"/>
+                    <TextBlock Text="Engine: SQLite 3 with Entity Framework Core 9.0" FontSize="12" Foreground="#64748B"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
