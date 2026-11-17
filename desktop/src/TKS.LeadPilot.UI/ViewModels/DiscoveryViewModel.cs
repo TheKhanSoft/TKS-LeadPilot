@@ -125,6 +125,21 @@ public partial class DiscoveryViewModel : ViewModelBase
     private int _selectedForImportCount = 0;
 
     [ObservableProperty]
+    private bool _isImportSuccessAlertOpen = false;
+
+    [ObservableProperty]
+    private string _importAlertTitle = string.Empty;
+
+    [ObservableProperty]
+    private string _importAlertMessage = string.Empty;
+
+    [ObservableProperty]
+    private int _lastImportedCount = 0;
+
+    [ObservableProperty]
+    private int _lastSkippedCount = 0;
+
+    [ObservableProperty]
     private ObservableCollection<DiscoveredLead> _discoveredLeads = [];
 
     [ObservableProperty]
@@ -237,9 +252,9 @@ public partial class DiscoveryViewModel : ViewModelBase
 
     private void UpdateCategories()
     {
-        var presets = _discoveryService.GetPresetCategories().Keys.ToList();
-        Categories = new ObservableCollection<string>(["⭐ All Commercial Businesses & Enterprises", .. presets]);
-        SelectedCategory = "⭐ All Commercial Businesses & Enterprises";
+        var presets = _discoveryService.GetPresetCategories().Keys.Distinct().ToList();
+        Categories = new ObservableCollection<string>(presets);
+        SelectedCategory = presets.FirstOrDefault() ?? "⭐ All Commercial Businesses & Enterprises";
     }
 
     private void UpdateSuggestedNiches()
@@ -512,6 +527,23 @@ public partial class DiscoveryViewModel : ViewModelBase
             NewLeadsCount = DiscoveredLeads.Count(l => !l.IsDuplicate);
             DuplicateLeadsCount = DiscoveredLeads.Count(l => l.IsDuplicate);
             UpdateSelectionCount();
+
+            LastImportedCount = res.CreatedCount;
+            LastSkippedCount = res.SkippedCount;
+
+            ImportAlertTitle = res.CreatedCount > 0
+                ? $"🎉 Import Complete: {res.CreatedCount} Leads Stored"
+                : "Import Complete: No New Leads Added";
+
+            ImportAlertMessage = res.CreatedCount > 0
+                ? $"Successfully added {res.CreatedCount} new enterprise lead(s) into your local SQLite Business Database.\n\n" +
+                  (res.SkippedCount > 0
+                      ? $"⚠️ {res.SkippedCount} duplicate record(s) were automatically skipped to maintain clean records.\n\n"
+                      : string.Empty) +
+                  $"Total selected records processed: {selected.Count}."
+                : $"All {selected.Count} selected lead(s) already exist in your local SQLite Business Database.\n\nNo duplicate records were added.";
+
+            IsImportSuccessAlertOpen = true;
         }
         catch (Exception ex)
         {
@@ -521,6 +553,30 @@ public partial class DiscoveryViewModel : ViewModelBase
         {
             IsImporting = false;
         }
+    }
+
+    [RelayCommand]
+    public void ClearImportedFromDiscovery()
+    {
+        // Remove leads that are now in the database
+        var remaining = DiscoveredLeads.Where(l => !l.IsDuplicate && l.DuplicateMatch == null).ToList();
+        var removedCount = DiscoveredLeads.Count - remaining.Count;
+
+        DiscoveredLeads = new ObservableCollection<DiscoveredLead>(remaining);
+        TotalFoundCount = DiscoveredLeads.Count;
+        NewLeadsCount = DiscoveredLeads.Count(l => !l.IsDuplicate);
+        DuplicateLeadsCount = 0;
+        UpdateSelectionCount();
+
+        IsImportSuccessAlertOpen = false;
+        StatusMessage = $"🧹 Workspace cleared. Removed {removedCount} imported/existing lead(s). {remaining.Count} unimported lead(s) remain in discovery view.";
+    }
+
+    [RelayCommand]
+    public void KeepAllInDiscovery()
+    {
+        IsImportSuccessAlertOpen = false;
+        StatusMessage = $"All {DiscoveredLeads.Count} lead(s) retained in discovery table with 'IN DATABASE' status badges.";
     }
 
     [RelayCommand]

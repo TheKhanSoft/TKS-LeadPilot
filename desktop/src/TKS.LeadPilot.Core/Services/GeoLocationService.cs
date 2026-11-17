@@ -363,7 +363,29 @@ public class GeoLocationService : IGeoLocationService
                             new() { Name = "Rahim Yar Khan", Latitude = 28.4195, Longitude = 70.3025, BoundingBox = new(28.36, 70.24, 28.48, 70.37), SuggestedNiches = ["Sugar Mills & Byproducts", "Cotton Seed & Oil Mills", "Fertilizer Trading", "Commercial Transport"] },
                             new() { Name = "Kasur", Latitude = 31.1179, Longitude = 74.4507, BoundingBox = new(31.06, 74.39, 31.18, 74.52), SuggestedNiches = ["Leather Tanneries & Export", "Embroidery & Textiles", "Traditional Sweets & Food"] },
                             new() { Name = "Okara", Latitude = 30.8081, Longitude = 73.4458, BoundingBox = new(30.75, 73.38, 30.87, 73.51), SuggestedNiches = ["Dairy Farms & Milk Processing", "Seed Corporation Trading", "Agricultural Storage"] },
-                            new() { Name = "Dera Ghazi Khan", Latitude = 30.0561, Longitude = 70.6403, BoundingBox = new(30.00, 70.57, 30.12, 70.71), SuggestedNiches = ["Cement Manufacturing", "Cotton Processing", "Mineral & Stone Crushing"] }
+                            new() { Name = "Dera Ghazi Khan", Latitude = 30.0561, Longitude = 70.6403, BoundingBox = new(30.00, 70.57, 30.12, 70.71), SuggestedNiches = ["Cement Manufacturing", "Cotton Processing", "Mineral & Stone Crushing"] },
+                            new() { Name = "Attock", Latitude = 33.7667, Longitude = 72.3598, BoundingBox = new(33.72, 72.30, 33.82, 72.42), SuggestedNiches = ["Oil Refining & Petroleum", "Textile Weaving", "Heavy Transport"] },
+                            new() { Name = "Chakwal", Latitude = 32.9328, Longitude = 72.8631, BoundingBox = new(32.88, 72.80, 32.98, 72.92), SuggestedNiches = ["Cement Manufacturing", "Poultry Farming", "Mineral Mining"] },
+                            new() { Name = "Jhelum", Latitude = 32.9405, Longitude = 73.7276, BoundingBox = new(32.89, 73.68, 32.99, 73.78), SuggestedNiches = ["Tobacco Processing", "Flour Mills", "Overseas Expatriate Real Estate"] },
+                            new() { Name = "Taxila", Latitude = 33.7463, Longitude = 72.8397, BoundingBox = new(33.70, 72.78, 33.80, 72.90), SuggestedNiches = ["Heavy Mechanical Complexes", "Heritage Tourism", "Engineering Colleges"] },
+                            new() { Name = "Wah Cantt", Latitude = 33.7744, Longitude = 72.7523, BoundingBox = new(33.72, 72.70, 33.82, 72.80), SuggestedNiches = ["Defense Engineering", "Industrial Tools", "Educational Institutes"] },
+                            new() { Name = "Mandi Bahauddin", Latitude = 32.5870, Longitude = 73.4912, BoundingBox = new(32.53, 73.44, 32.64, 73.54), SuggestedNiches = ["Agri Farming & Rice Mills", "Flour Mills", "Private Healthcare"] },
+                            new() { Name = "Hafizabad", Latitude = 32.0719, Longitude = 73.6874, BoundingBox = new(32.02, 73.63, 32.12, 73.74), SuggestedNiches = ["Rice Husking & Processing", "Agricultural Trading", "Power Looms"] },
+                            new() { Name = "Chiniot", Latitude = 31.7200, Longitude = 72.9789, BoundingBox = new(31.67, 72.92, 31.77, 73.03), SuggestedNiches = ["Handcrafted Wooden Furniture", "Brass Inlay Work", "Private Clinics"] },
+                            new() { Name = "Toba Tek Singh", Latitude = 30.9709, Longitude = 72.4828, BoundingBox = new(30.92, 72.43, 31.02, 72.53), SuggestedNiches = ["Citrus Orchards & Trading", "Poultry Feed", "Textile Ginning"] },
+                            new() { Name = "Vehari", Latitude = 30.0419, Longitude = 72.3489, BoundingBox = new(29.99, 72.29, 30.09, 72.40), SuggestedNiches = ["Cotton Ginning", "Seed Extraction", "Agro Pesticides"] },
+                            new() { Name = "Khanewal", Latitude = 30.3017, Longitude = 71.9321, BoundingBox = new(30.25, 71.88, 30.35, 71.98), SuggestedNiches = ["Railway Freight Hub", "Cotton Trading", "Agricultural Machinery"] },
+                            new() { Name = "Lodhran", Latitude = 29.5405, Longitude = 71.6336, BoundingBox = new(29.49, 71.58, 29.59, 71.69), SuggestedNiches = ["Cotton Seed Processing", "Agri Transport", "Fertilizer Wholesalers"] },
+                            new() { Name = "Pakpattan", Latitude = 30.3410, Longitude = 73.3866, BoundingBox = new(30.29, 73.33, 30.39, 73.44), SuggestedNiches = ["Heritage Pilgrimage Lodging", "Dairy & Milk Chilling", "Agri Produce"] },
+                            new() { Name = "Bahawalnagar", Latitude = 29.9987, Longitude = 73.2536, BoundingBox = new(29.94, 73.20, 30.05, 73.31), SuggestedNiches = ["Cotton Ginning Mills", "Flour Mills", "Grain Markets"] },
+                            new() { Name = "Muzaffargarh", Latitude = 30.0754, Longitude = 71.1921, BoundingBox = new(30.02, 71.14, 30.13, 71.25), SuggestedNiches = ["Thermal Power Generation", "Sugar Mills", "Jute Manufacturing"] },
+                            new() { Name = "Layyah", Latitude = 30.9613, Longitude = 70.9416, BoundingBox = new(30.91, 70.89, 31.01, 71.00), SuggestedNiches = ["Sugar Mills", "Cotton Processing", "Agri Trading"] },
+                            new() { Name = "Bhakkar", Latitude = 31.6253, Longitude = 71.0657, BoundingBox = new(31.57, 71.01, 31.68, 71.12), SuggestedNiches = ["Gram Pulse Processing", "Textile Garments", "Livestock Market"] },
+                            new() { Name = "Mianwali", Latitude = 32.5853, Longitude = 71.5436, BoundingBox = new(32.53, 71.49, 32.64, 71.60), SuggestedNiches = ["Hydropower & Energy", "Minerals & Silica Sand", "Transport"] },
+                            new() { Name = "Khushab", Latitude = 32.2967, Longitude = 72.3525, BoundingBox = new(32.24, 72.30, 32.35, 72.41), SuggestedNiches = ["Salt & Mineral Mining", "Traditional Confectionery", "Cement Plants"] },
+                            new() { Name = "Murree", Latitude = 33.9070, Longitude = 73.3903, BoundingBox = new(33.86, 73.34, 33.96, 73.44), SuggestedNiches = ["Resort Hotels & Lodging", "Tourism & Restaurants", "Handicrafts"] },
+                            new() { Name = "Kot Addu", Latitude = 30.4688, Longitude = 70.9644, BoundingBox = new(30.41, 70.91, 30.52, 71.02), SuggestedNiches = ["Thermal Power Generation", "Refinery Services", "Sugar Mills"] },
+                            new() { Name = "Taunsa", Latitude = 30.7042, Longitude = 70.6508, BoundingBox = new(30.65, 70.60, 30.76, 70.70), SuggestedNiches = ["Barrage Irrigation Works", "Agri Produce", "Transport Logistics"] }
                         ]
                     },
                     new()
@@ -378,7 +400,23 @@ public class GeoLocationService : IGeoLocationService
                             new() { Name = "Larkana", Latitude = 27.5589, Longitude = 68.2120, BoundingBox = new(27.50, 68.15, 27.62, 68.28), SuggestedNiches = ["Rice Mills & Grain Trading", "Guava & Fruit Orchards", "Medical Services"] },
                             new() { Name = "Nawabshah", Latitude = 26.2483, Longitude = 68.4096, BoundingBox = new(26.19, 68.35, 26.31, 68.48), SuggestedNiches = ["Sugar Mills & Distilleries", "Cotton Processing", "Heavy Engineering Colleges"] },
                             new() { Name = "Mirpur Khas", Latitude = 25.5276, Longitude = 69.0125, BoundingBox = new(25.47, 68.95, 25.59, 69.08), SuggestedNiches = ["Mango Farming & Export", "Sugar Mills", "Commercial Agriculture"] },
-                            new() { Name = "Jacobabad", Latitude = 28.2810, Longitude = 68.4376, BoundingBox = new(28.22, 68.37, 28.34, 68.50), SuggestedNiches = ["Grain Storage & Distribution", "Cross-Provincial Logistics", "Agricultural Equipment"] }
+                            new() { Name = "Jacobabad", Latitude = 28.2810, Longitude = 68.4376, BoundingBox = new(28.22, 68.37, 28.34, 68.50), SuggestedNiches = ["Grain Storage & Distribution", "Cross-Provincial Logistics", "Agricultural Equipment"] },
+                            new() { Name = "Thatta", Latitude = 24.7475, Longitude = 67.9236, BoundingBox = new(24.69, 67.87, 24.80, 67.98), SuggestedNiches = ["Cement Plants", "Wind Energy Farms", "Heritage Tourism"] },
+                            new() { Name = "Badin", Latitude = 24.6560, Longitude = 68.8378, BoundingBox = new(24.60, 68.78, 24.71, 68.89), SuggestedNiches = ["Oil & Gas Exploration", "Rice Mills", "Sugar Manufacturing"] },
+                            new() { Name = "Tando Allahyar", Latitude = 25.4605, Longitude = 68.7176, BoundingBox = new(25.41, 68.66, 25.51, 68.77), SuggestedNiches = ["Sugar Mills", "Mango Orchards", "Cotton Processing"] },
+                            new() { Name = "Tando Muhammad Khan", Latitude = 25.1239, Longitude = 68.5369, BoundingBox = new(25.07, 68.48, 25.18, 68.59), SuggestedNiches = ["Sugar Refining", "Agri Warehousing", "Livestock Trading"] },
+                            new() { Name = "Matiari", Latitude = 25.5971, Longitude = 68.4467, BoundingBox = new(25.54, 68.39, 25.65, 68.50), SuggestedNiches = ["Ajrak & Sindhi Cap Handicrafts", "Agri Produce", "Educational Colleges"] },
+                            new() { Name = "Jamshoro", Latitude = 25.4283, Longitude = 68.2811, BoundingBox = new(25.38, 68.23, 25.48, 68.34), SuggestedNiches = ["Higher Education Universities", "Thermal Power", "Healthcare"] },
+                            new() { Name = "Dadu", Latitude = 26.7329, Longitude = 67.7769, BoundingBox = new(26.68, 67.72, 26.78, 67.83), SuggestedNiches = ["Agri Produce Trading", "Oil & Gas Services", "Wholesale Markets"] },
+                            new() { Name = "Sanghar", Latitude = 26.0466, Longitude = 68.9482, BoundingBox = new(25.99, 68.89, 26.10, 69.00), SuggestedNiches = ["Oil & Natural Gas Fields", "Cotton Ginning", "Dairy Farming"] },
+                            new() { Name = "Naushahro Feroze", Latitude = 26.8401, Longitude = 68.1211, BoundingBox = new(26.79, 68.07, 26.89, 68.18), SuggestedNiches = ["Grain Trading", "Flour Mills", "Agri Transport"] },
+                            new() { Name = "Ghotki", Latitude = 28.0060, Longitude = 69.3161, BoundingBox = new(27.95, 69.26, 28.06, 69.37), SuggestedNiches = ["Fertilizer Plants", "Gas Exploration", "Sugar Processing"] },
+                            new() { Name = "Shikarpur", Latitude = 27.9556, Longitude = 68.6382, BoundingBox = new(27.90, 68.58, 28.01, 68.69), SuggestedNiches = ["Traditional Pickles & Sweets", "Brass Handicrafts", "Rice Mills"] },
+                            new() { Name = "Kandhkot", Latitude = 28.2439, Longitude = 69.1824, BoundingBox = new(28.19, 69.13, 28.30, 69.24), SuggestedNiches = ["Gas Field Services", "Grain Markets", "Cross-River Logistics"] },
+                            new() { Name = "Kashmore", Latitude = 28.4333, Longitude = 69.5833, BoundingBox = new(28.38, 69.53, 28.49, 69.64), SuggestedNiches = ["Power Stations", "Rice Processing", "Transport Hub"] },
+                            new() { Name = "Kambar Shahdadkot", Latitude = 27.5912, Longitude = 67.9984, BoundingBox = new(27.54, 67.94, 27.65, 68.05), SuggestedNiches = ["Rice Mills & Export", "Agricultural Supplies", "Wholesale Markets"] },
+                            new() { Name = "Umerkot", Latitude = 25.3616, Longitude = 69.7362, BoundingBox = new(25.31, 69.68, 25.42, 69.79), SuggestedNiches = ["Red Chilli Export", "Agri Commodities", "Historical Tourism"] },
+                            new() { Name = "Mithi", Latitude = 24.7438, Longitude = 69.8000, BoundingBox = new(24.69, 69.75, 24.80, 69.85), SuggestedNiches = ["Coal Energy Projects", "Handicrafts & Wool", "Solar Power Plants"] }
                         ]
                     },
                     new()
@@ -403,7 +441,24 @@ public class GeoLocationService : IGeoLocationService
                             new() { Name = "Kohat", Latitude = 33.5869, Longitude = 71.4414, BoundingBox = new(33.52, 71.37, 33.65, 71.51), SuggestedNiches = ["Cement Manufacturing", "Oil & Gas Field Services", "Logistics & Transport"] },
                             new() { Name = "Dera Ismail Khan", Latitude = 31.8314, Longitude = 70.9017, BoundingBox = new(31.77, 70.83, 31.89, 70.97), SuggestedNiches = ["Dhakki Date Export", "Transport Hub", "Agro Food Processing"] },
                             new() { Name = "Haripur", Latitude = 33.9999, Longitude = 72.9341, BoundingBox = new(33.93, 72.86, 34.06, 73.00), SuggestedNiches = ["Hattar Industrial Estate Manufacturers", "Heavy Engineering", "Pharmaceutical Labs"] },
-                            new() { Name = "Mansehra", Latitude = 34.3302, Longitude = 73.1968, BoundingBox = new(34.27, 73.13, 34.39, 73.26), SuggestedNiches = ["Northern Tourism Gateway", "Pine Timber & Wood Mills", "Stone Crushing & Mining"] }
+                            new() { Name = "Mansehra", Latitude = 34.3302, Longitude = 73.1968, BoundingBox = new(34.27, 73.13, 34.39, 73.26), SuggestedNiches = ["Northern Tourism Gateway", "Pine Timber & Wood Mills", "Stone Crushing & Mining"] },
+                            new() { Name = "Swabi", Latitude = 34.1202, Longitude = 72.4698, BoundingBox = new(34.07, 72.41, 34.18, 72.53), SuggestedNiches = ["Tobacco Growing & Curing", "Topi Engineering Colleges", "Agri Produce"] },
+                            new() { Name = "Nowshera", Latitude = 34.0153, Longitude = 71.9747, BoundingBox = new(33.96, 71.92, 34.07, 72.03), SuggestedNiches = ["Textile & Paper Mills", "Industrial Estates", "Army Logistics Hub"] },
+                            new() { Name = "Charsadda", Latitude = 34.1453, Longitude = 71.7308, BoundingBox = new(34.09, 71.67, 34.20, 71.79), SuggestedNiches = ["Handmade Chappals & Leather", "Sugar Mills", "Gur & Traditional Sweets"] },
+                            new() { Name = "Bannu", Latitude = 32.9861, Longitude = 70.6042, BoundingBox = new(32.93, 70.55, 33.04, 70.66), SuggestedNiches = ["Spices & Agri Trading", "Livestock Markets", "Transport Freight"] },
+                            new() { Name = "Karak", Latitude = 33.1114, Longitude = 71.0917, BoundingBox = new(33.06, 71.04, 33.17, 71.15), SuggestedNiches = ["Oil & Gas Exploration", "Uranium & Salt Mining", "Heavy Transport"] },
+                            new() { Name = "Hangu", Latitude = 33.5319, Longitude = 71.0594, BoundingBox = new(33.48, 71.00, 33.59, 71.11), SuggestedNiches = ["Agri Farming", "Cross-Border Logistics", "Mineral Extraction"] },
+                            new() { Name = "Malakand", Latitude = 34.5667, Longitude = 71.9167, BoundingBox = new(34.51, 71.86, 34.62, 71.97), SuggestedNiches = ["Hydropower Generation", "Tourism Transit Lodges", "Agri Produce"] },
+                            new() { Name = "Dir", Latitude = 35.2074, Longitude = 71.8757, BoundingBox = new(35.15, 71.82, 35.26, 71.93), SuggestedNiches = ["Timber & Woodwork", "Walnut & Pine Nuts", "Mountain Tourism"] },
+                            new() { Name = "Chitral", Latitude = 35.8510, Longitude = 71.7864, BoundingBox = new(35.80, 71.73, 35.91, 71.84), SuggestedNiches = ["Eco-Tourism & Resorts", "Handwoven Patti Fabric", "Gemstones & Mineral Trade"] },
+                            new() { Name = "Batagram", Latitude = 34.6772, Longitude = 73.0242, BoundingBox = new(34.62, 72.97, 34.73, 73.08), SuggestedNiches = ["Highway Logistics", "Pine Timber", "Mountain Hospitality"] },
+                            new() { Name = "Shangla", Latitude = 34.8872, Longitude = 72.7570, BoundingBox = new(34.83, 72.70, 34.94, 72.81), SuggestedNiches = ["Coal Mining Labor Trade", "Hydel Power", "Tourism"] },
+                            new() { Name = "Buner", Latitude = 34.3942, Longitude = 72.6150, BoundingBox = new(34.34, 72.56, 34.45, 72.67), SuggestedNiches = ["Marble & Granite Mining", "Tobacco Processing", "Agri Produce"] },
+                            new() { Name = "Bajaur", Latitude = 34.7867, Longitude = 71.5247, BoundingBox = new(34.73, 71.47, 34.84, 71.58), SuggestedNiches = ["Marble Extraction", "Cross-Border Commerce", "Agri Farming"] },
+                            new() { Name = "Mohmand", Latitude = 34.5367, Longitude = 71.4328, BoundingBox = new(34.48, 71.38, 34.59, 71.49), SuggestedNiches = ["Marble Industrial City", "Hydroelectric Dam Projects", "Mineral Extraction"] },
+                            new() { Name = "Khyber", Latitude = 34.0044, Longitude = 71.1578, BoundingBox = new(33.95, 71.10, 34.06, 71.21), SuggestedNiches = ["Torkham Cross-Border Trade", "Customs Clearing Agencies", "Transport Fleets"] },
+                            new() { Name = "Kurram", Latitude = 33.9000, Longitude = 70.1000, BoundingBox = new(33.85, 70.05, 33.95, 70.15), SuggestedNiches = ["Fresh Fruit Orchards", "Medicinal Herbs Trade", "Dry Fruit Trading"] },
+                            new() { Name = "Tank", Latitude = 32.2217, Longitude = 70.3794, BoundingBox = new(32.17, 70.32, 32.28, 70.43), SuggestedNiches = ["Grain Storage", "Agri Logistics", "Date Processing"] }
                         ]
                     },
                     new()
@@ -416,7 +471,26 @@ public class GeoLocationService : IGeoLocationService
                             new() { Name = "Gwadar", Latitude = 25.1264, Longitude = 62.3225, BoundingBox = new(25.08, 62.28, 25.18, 62.38), SuggestedNiches = ["Deep Sea Port Logistics", "Coastal Real Estate & Development", "Fisheries & Marine Export"] },
                             new() { Name = "Turbat", Latitude = 26.0031, Longitude = 63.0544, BoundingBox = new(25.95, 62.98, 26.07, 63.12), SuggestedNiches = ["Date Palm Processing", "Cross-Border Trade", "Agricultural Irrigation"] },
                             new() { Name = "Khuzdar", Latitude = 27.8000, Longitude = 66.6167, BoundingBox = new(27.74, 66.55, 27.86, 66.68), SuggestedNiches = ["Mining & Barytes Processing", "Highway Freight Logistics", "Livestock Trading"] },
-                            new() { Name = "Hub", Latitude = 24.9000, Longitude = 66.8833, BoundingBox = new(24.84, 66.82, 24.96, 66.95), SuggestedNiches = ["Automobile Assembly", "Chemical Manufacturing", "Power & Energy Plants"] }
+                            new() { Name = "Hub", Latitude = 24.9000, Longitude = 66.8833, BoundingBox = new(24.84, 66.82, 24.96, 66.95), SuggestedNiches = ["Automobile Assembly", "Chemical Manufacturing", "Power & Energy Plants"] },
+                            new() { Name = "Chaman", Latitude = 30.9236, Longitude = 66.4512, BoundingBox = new(30.87, 66.40, 30.98, 66.51), SuggestedNiches = ["Border Transit Commerce", "Customs Brokerage", "Dry Fruits Trade"] },
+                            new() { Name = "Zhob", Latitude = 31.3417, Longitude = 69.4486, BoundingBox = new(31.29, 69.39, 31.40, 69.50), SuggestedNiches = ["Chromite & Mineral Mining", "Apple & Almond Orchards", "Livestock"] },
+                            new() { Name = "Loralai", Latitude = 30.3705, Longitude = 68.5979, BoundingBox = new(30.32, 68.54, 30.43, 68.65), SuggestedNiches = ["Almond & Pomegranate Export", "Marble Quarries", "Education Colleges"] },
+                            new() { Name = "Pishin", Latitude = 30.5803, Longitude = 67.0028, BoundingBox = new(30.53, 66.95, 30.64, 67.06), SuggestedNiches = ["Apple Orchards", "Commercial Cold Storage", "Vegetable Trading"] },
+                            new() { Name = "Killa Abdullah", Latitude = 30.7289, Longitude = 66.6611, BoundingBox = new(30.67, 66.61, 30.78, 66.72), SuggestedNiches = ["Agri Farming", "Border Logistics", "Horticulture"] },
+                            new() { Name = "Sibi", Latitude = 29.5448, Longitude = 67.8764, BoundingBox = new(29.49, 67.82, 29.60, 67.93), SuggestedNiches = ["Historical Horse & Cattle Shows", "Railway Junction", "Agri Produce"] },
+                            new() { Name = "Dera Bugti", Latitude = 29.0304, Longitude = 69.1839, BoundingBox = new(28.98, 69.13, 29.09, 69.24), SuggestedNiches = ["Sui Natural Gas Production", "Petroleum Services", "Mineral Extraction"] },
+                            new() { Name = "Kohlu", Latitude = 29.8965, Longitude = 69.2532, BoundingBox = new(29.84, 69.20, 29.95, 69.31), SuggestedNiches = ["Coal Mining", "Gypsum Extraction", "Livestock Herding"] },
+                            new() { Name = "Jaffarabad", Latitude = 28.4312, Longitude = 68.2514, BoundingBox = new(28.38, 68.20, 28.49, 68.31), SuggestedNiches = ["Rice Cultivation & Husking", "Wheat Storage", "Canal Agri Trading"] },
+                            new() { Name = "Nasirabad", Latitude = 28.5833, Longitude = 68.1833, BoundingBox = new(28.53, 68.13, 28.64, 68.24), SuggestedNiches = ["Canal Agriculture", "Grain Warehousing", "Agri Equipment"] },
+                            new() { Name = "Kharan", Latitude = 28.5833, Longitude = 65.4167, BoundingBox = new(28.53, 65.36, 28.64, 65.47), SuggestedNiches = ["Date Processing", "Camel Livestock Trading", "Desert Agriculture"] },
+                            new() { Name = "Panjgur", Latitude = 26.9644, Longitude = 64.0903, BoundingBox = new(26.91, 64.04, 27.02, 64.15), SuggestedNiches = ["Premium Dates Export", "Solar Installations", "Cross-Border Trade"] },
+                            new() { Name = "Lasbela", Latitude = 25.7500, Longitude = 66.6000, BoundingBox = new(25.70, 66.55, 25.80, 66.65), SuggestedNiches = ["Zinc & Lead Mining", "Industrial Processing", "Coastal Fisheries"] },
+                            new() { Name = "Uthal", Latitude = 25.8072, Longitude = 66.6219, BoundingBox = new(25.75, 66.57, 25.86, 66.67), SuggestedNiches = ["University Education", "Highway Hospitality", "Minerals"] },
+                            new() { Name = "Kalat", Latitude = 29.0225, Longitude = 66.5916, BoundingBox = new(28.97, 66.54, 29.08, 66.65), SuggestedNiches = ["Apple Orchards", "Cold Weather Agriculture", "Heritage Tourism"] },
+                            new() { Name = "Mastung", Latitude = 29.7997, Longitude = 66.8455, BoundingBox = new(29.74, 66.79, 29.85, 66.90), SuggestedNiches = ["Almonds & Melons Farming", "Agri Warehousing", "Highway Transport"] },
+                            new() { Name = "Ziarat", Latitude = 30.3824, Longitude = 67.7256, BoundingBox = new(30.33, 67.67, 30.44, 67.78), SuggestedNiches = ["Juniper Heritage Tourism", "Resort Hotels", "Cherry Orchards"] },
+                            new() { Name = "Harnai", Latitude = 30.1008, Longitude = 67.9372, BoundingBox = new(30.05, 67.88, 30.16, 67.99), SuggestedNiches = ["Coal Mining & Freight", "Wool Production", "Agri Farming"] },
+                            new() { Name = "Nushki", Latitude = 29.5542, Longitude = 66.0215, BoundingBox = new(29.50, 65.97, 29.61, 66.08), SuggestedNiches = ["Desert Transit Freight", "Cross-Border Trade", "Agri Livestock"] }
                         ]
                     },
                     new()
@@ -427,7 +501,14 @@ public class GeoLocationService : IGeoLocationService
                         [
                             new() { Name = "Gilgit", Latitude = 35.9208, Longitude = 74.3144, BoundingBox = new(35.86, 74.25, 35.98, 74.38), SuggestedNiches = ["Karakoram Highway Logistics", "Trout Fish Farms", "Eco-Tourism & Expeditions", "Gemstones & Minerals"] },
                             new() { Name = "Skardu", Latitude = 35.2971, Longitude = 75.6333, BoundingBox = new(35.24, 75.56, 35.36, 75.70), SuggestedNiches = ["High-Altitude Mountaineering Tourism", "Cherry & Apricot Export", "Resort Hotels"] },
-                            new() { Name = "Hunza", Latitude = 36.3167, Longitude = 74.6500, BoundingBox = new(36.26, 74.58, 36.38, 74.72), SuggestedNiches = ["Luxury Boutique Hotels", "Organic Foods & Dry Fruits", "Cultural Heritage Tours"] }
+                            new() { Name = "Hunza", Latitude = 36.3167, Longitude = 74.6500, BoundingBox = new(36.26, 74.58, 36.38, 74.72), SuggestedNiches = ["Luxury Boutique Hotels", "Organic Foods & Dry Fruits", "Cultural Heritage Tours"] },
+                            new() { Name = "Chilas", Latitude = 35.4206, Longitude = 74.0967, BoundingBox = new(35.37, 74.04, 35.48, 74.15), SuggestedNiches = ["Diamer Bhasha Dam Services", "Highway Transit Hotels", "Agri Produce"] },
+                            new() { Name = "Gahkuch", Latitude = 36.1736, Longitude = 73.7667, BoundingBox = new(36.12, 73.71, 36.23, 73.82), SuggestedNiches = ["Trout Aquaculture", "Fruit Dehydration", "Eco-Lodging"] },
+                            new() { Name = "Astore", Latitude = 35.3667, Longitude = 74.8500, BoundingBox = new(35.31, 74.80, 35.42, 74.91), SuggestedNiches = ["Deosai Plains Tourism Gateway", "Pine Timber", "Medicinal Plants"] },
+                            new() { Name = "Khaplu", Latitude = 35.1558, Longitude = 76.3353, BoundingBox = new(35.10, 76.28, 35.21, 76.39), SuggestedNiches = ["Heritage Palace Tourism", "Apricot Oil Processing", "Wood Carving"] },
+                            new() { Name = "Shigar", Latitude = 35.4267, Longitude = 75.7289, BoundingBox = new(35.37, 75.67, 35.48, 75.78), SuggestedNiches = ["K2 Base Camp Gateway", "Historical Fort Lodging", "Gemstone Trade"] },
+                            new() { Name = "Nagar", Latitude = 36.2500, Longitude = 74.6667, BoundingBox = new(36.20, 74.61, 36.31, 74.72), SuggestedNiches = ["Ruby & Gemstone Mining", "Alpine Tourism", "Glacial Water Bottling"] },
+                            new() { Name = "Kharmang", Latitude = 34.9333, Longitude = 76.2167, BoundingBox = new(34.88, 76.16, 34.99, 76.27), SuggestedNiches = ["Manthokha Waterfall Tourism", "Organic Farming", "Dry Fruit Trade"] }
                         ]
                     },
                     new()
@@ -438,9 +519,17 @@ public class GeoLocationService : IGeoLocationService
                         [
                             new() { Name = "Muzaffarabad", Latitude = 34.3700, Longitude = 73.4708, BoundingBox = new(34.31, 73.41, 34.43, 73.54), SuggestedNiches = ["Corporate & Legal Advisory", "Tourism & Lodging", "Handicrafts & Kashmiri Shawls"] },
                             new() { Name = "Mirpur", Latitude = 33.1484, Longitude = 73.7519, BoundingBox = new(33.09, 73.68, 33.21, 73.82), SuggestedNiches = ["Overseas Expatriate Real Estate", "Modern Shopping Plazas", "Textile & Garment Mills", "Private Healthcare"] },
-                            new() { Name = "Rawalakot", Latitude = 33.8584, Longitude = 73.7604, BoundingBox = new(33.80, 73.70, 33.92, 73.83), SuggestedNiches = ["Hill Station Resorts", "Educational Institutions", "Agri Farming & Poultry"] }
+                            new() { Name = "Rawalakot", Latitude = 33.8584, Longitude = 73.7604, BoundingBox = new(33.80, 73.70, 33.92, 73.83), SuggestedNiches = ["Hill Station Resorts", "Educational Institutions", "Agri Farming & Poultry"] },
+                            new() { Name = "Kotli", Latitude = 33.5156, Longitude = 73.9019, BoundingBox = new(33.46, 73.85, 33.57, 73.96), SuggestedNiches = ["Overseas Remittance Investments", "Commercial Retail", "Private Hospitals"] },
+                            new() { Name = "Bhimber", Latitude = 32.9744, Longitude = 74.0786, BoundingBox = new(32.92, 74.02, 33.03, 74.13), SuggestedNiches = ["Industrial Estate Units", "Agri Produce", "Flour & Oil Mills"] },
+                            new() { Name = "Bagh", Latitude = 33.9803, Longitude = 73.7747, BoundingBox = new(33.93, 73.72, 34.03, 73.83), SuggestedNiches = ["Mountain Resorts", "Agro Forestry", "Handmade Kashmiri Embroidery"] },
+                            new() { Name = "Haveli", Latitude = 33.9000, Longitude = 74.1000, BoundingBox = new(33.85, 74.05, 33.95, 74.15), SuggestedNiches = ["Timber Mills", "Eco-Tourism", "High Altitude Farming"] },
+                            new() { Name = "Pallandri", Latitude = 33.7297, Longitude = 73.6894, BoundingBox = new(33.67, 73.63, 33.78, 73.74), SuggestedNiches = ["Educational Academies", "Pine Wood Craft", "Healthcare Clinics"] },
+                            new() { Name = "Athmuqam", Latitude = 34.5878, Longitude = 73.9075, BoundingBox = new(34.53, 73.85, 34.64, 73.96), SuggestedNiches = ["Neelum Valley Tourism", "River Lodges & Hotels", "Trout Fish Farms"] },
+                            new() { Name = "Hattian Bala", Latitude = 34.1694, Longitude = 73.7431, BoundingBox = new(34.12, 73.69, 34.22, 73.80), SuggestedNiches = ["Highway Hospitality", "Fruit Orchards", "Small Hydro Installations"] }
                         ]
                     }
+                
                 ]
             },
 

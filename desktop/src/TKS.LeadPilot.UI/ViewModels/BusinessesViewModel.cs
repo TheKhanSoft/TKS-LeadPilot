@@ -993,34 +993,67 @@ public partial class BusinessesViewModel : ViewModelBase
         catch { }
     }
 
-    [RelayCommand]
-    public async Task CopyPhone()
+    public static string CleanPhoneNumberForWhatsApp(string? phone, string? country)
     {
-        if (SelectedBusiness != null && !string.IsNullOrWhiteSpace(SelectedBusiness.PhonePrimary))
+        if (string.IsNullOrWhiteSpace(phone)) return string.Empty;
+        var digits = new string(phone.Where(char.IsDigit).ToArray());
+        if (string.IsNullOrWhiteSpace(digits)) return string.Empty;
+
+        if (digits.StartsWith("00")) digits = digits.Substring(2);
+
+        if (digits.StartsWith("0"))
         {
-            await CopyToClipboardAsync(SelectedBusiness.PhonePrimary);
-            StatusMessage = $"📞 Phone copied ({SelectedBusiness.PhonePrimary}) to clipboard!";
+            var c = country?.Trim().ToLowerInvariant() ?? "";
+            string countryCode = "92"; // Default Pakistan
+            if (c.Contains("united kingdom") || c == "uk") countryCode = "44";
+            else if (c.Contains("united states") || c == "us" || c == "usa" || c.Contains("canada")) countryCode = "1";
+            else if (c.Contains("australia")) countryCode = "61";
+            else if (c.Contains("germany")) countryCode = "49";
+            else if (c.Contains("france")) countryCode = "33";
+            else if (c.Contains("uae") || c.Contains("emirates")) countryCode = "971";
+            else if (c.Contains("saudi")) countryCode = "966";
+            else if (c.Contains("india")) countryCode = "91";
+            else if (c.Contains("turkey")) countryCode = "90";
+            else if (c.Contains("china")) countryCode = "86";
+            else if (c.Contains("japan")) countryCode = "81";
+
+            digits = countryCode + digits.Substring(1);
+        }
+
+        return digits;
+    }
+
+    [RelayCommand]
+    public async Task CopyPhone(Business? business = null)
+    {
+        var b = business ?? SelectedBusiness;
+        if (b != null && !string.IsNullOrWhiteSpace(b.PhonePrimary))
+        {
+            await CopyToClipboardAsync(b.PhonePrimary);
+            StatusMessage = $"📞 Phone copied ({b.PhonePrimary}) to clipboard!";
         }
     }
 
     [RelayCommand]
-    public async Task CopyEmail()
+    public async Task CopyEmail(Business? business = null)
     {
-        if (SelectedBusiness != null && !string.IsNullOrWhiteSpace(SelectedBusiness.EmailPrimary))
+        var b = business ?? SelectedBusiness;
+        if (b != null && !string.IsNullOrWhiteSpace(b.EmailPrimary))
         {
-            await CopyToClipboardAsync(SelectedBusiness.EmailPrimary);
-            StatusMessage = $"✉️ Email copied ({SelectedBusiness.EmailPrimary}) to clipboard!";
+            await CopyToClipboardAsync(b.EmailPrimary);
+            StatusMessage = $"✉️ Email copied ({b.EmailPrimary}) to clipboard!";
         }
     }
 
     [RelayCommand]
-    public void OpenWebsite()
+    public void OpenWebsite(Business? business = null)
     {
-        if (SelectedBusiness != null && !string.IsNullOrWhiteSpace(SelectedBusiness.WebsiteUrl))
+        var b = business ?? SelectedBusiness;
+        if (b != null && !string.IsNullOrWhiteSpace(b.WebsiteUrl))
         {
             try
             {
-                var url = SelectedBusiness.WebsiteUrl.Trim();
+                var url = b.WebsiteUrl.Trim();
                 var uri = url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
                     ? url
                     : $"https://{url}";
@@ -1030,7 +1063,7 @@ public partial class BusinessesViewModel : ViewModelBase
                     FileName = uri,
                     UseShellExecute = true
                 });
-                StatusMessage = $"🌐 Launching browser for {SelectedBusiness.Name}...";
+                StatusMessage = $"🌐 Launching browser for {b.Name}...";
             }
             catch (Exception ex)
             {
@@ -1040,38 +1073,237 @@ public partial class BusinessesViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    public async Task CopyQuickPitch()
+    public void AuditWebsite(Business? business = null)
     {
-        if (SelectedBusiness != null)
-        {
-            var pitch = $"Subject: Digital Growth & Optimization for {SelectedBusiness.Name}\n\n" +
-                        $"Dear {SelectedBusiness.Name} Team,\n\n" +
-                        $"We analyzed local {SelectedBusiness.Category} businesses in {SelectedBusiness.City} and identified high-impact opportunities for your digital client acquisition.\n\n" +
-                        (string.IsNullOrWhiteSpace(SelectedBusiness.WebsiteUrl)
-                            ? $"Currently, {SelectedBusiness.Name} lacks an official, verified website. Prospective customers searching online for {SelectedBusiness.Category} are discovering competitors instead. TheKhanSoft builds ultra-fast, mobile-responsive web platforms engineered to convert local traffic into paying clients.\n\n"
-                            : $"Our technical audit of {SelectedBusiness.WebsiteUrl} identified key optimization areas in load speeds, security hygiene, and search discoverability to drastically improve your conversion rates.\n\n") +
-                        $"Would you be available for a brief 5-minute discovery consultation this week?\n\n" +
-                        $"Sincerely,\nTheKhanSoft Enterprise Team\ninfo@thekhansoft.com";
+        var b = business ?? SelectedBusiness;
+        if (b == null) return;
 
-            await CopyToClipboardAsync(pitch);
-            StatusMessage = $"📋 Tailored outreach pitch for {SelectedBusiness.Name} copied to clipboard!";
+        if (string.IsNullOrWhiteSpace(b.WebsiteUrl))
+        {
+            StatusMessage = $"⚠️ '{b.Name}' has no website to audit. Opening AI Landing Page Studio instead...";
+            OpenLandingPageStudio(b);
+            return;
+        }
+
+        AuditsViewModel.TargetBusinessIdForAudit = b.Id;
+        GlobalNavigationRequested?.Invoke("Audits");
+        StatusMessage = $"🔬 Opening Website Audit suite for '{b.Name}' ({b.WebsiteUrl})...";
+    }
+
+    [RelayCommand]
+    public void OpenWhatsApp(Business? business = null)
+    {
+        var b = business ?? SelectedBusiness;
+        if (b == null) return;
+
+        if (string.IsNullOrWhiteSpace(b.PhonePrimary))
+        {
+            StatusMessage = $"⚠️ No phone number on record for '{b.Name}'.";
+            return;
+        }
+
+        var digits = CleanPhoneNumberForWhatsApp(b.PhonePrimary, b.Country);
+        if (string.IsNullOrWhiteSpace(digits))
+        {
+            StatusMessage = $"⚠️ Phone number '{b.PhonePrimary}' has no valid numeric digits for WhatsApp.";
+            return;
+        }
+
+        try
+        {
+            var greeting = Uri.EscapeDataString($"Hi {b.Name}, we noticed your business in {b.City} and would like to share high-impact digital growth recommendations from TheKhanSoft.");
+            var url = $"https://wa.me/{digits}?text={greeting}";
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true
+            });
+            StatusMessage = $"💬 WhatsApp chat initiated for '{b.Name}' (+{digits})";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"WhatsApp Error: {ex.Message}";
         }
     }
 
     [RelayCommand]
-    public void OpenLandingPageStudio()
+    public void OpenEmailClient(Business? business = null)
     {
-        if (SelectedBusiness == null) return;
+        var b = business ?? SelectedBusiness;
+        if (b == null) return;
+
+        if (string.IsNullOrWhiteSpace(b.EmailPrimary))
+        {
+            StatusMessage = $"⚠️ No email address on record for '{b.Name}'.";
+            return;
+        }
+
+        try
+        {
+            var subject = Uri.EscapeDataString($"Digital Growth Strategy for {b.Name}");
+            var body = Uri.EscapeDataString($"Dear {b.Name} Team,\n\nWe analyzed local {b.Category} enterprises in {b.City} and identified strategic digital optimization opportunities for your organization.\n\nBest regards,\nTheKhanSoft Enterprise Suite\ninfo@thekhansoft.com");
+            var url = $"mailto:{b.EmailPrimary}?subject={subject}&body={body}";
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true
+            });
+            StatusMessage = $"✉️ Email composer launched for '{b.Name}' ({b.EmailPrimary})";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Email Error: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public void CallPhone(Business? business = null)
+    {
+        var b = business ?? SelectedBusiness;
+        if (b == null) return;
+
+        if (string.IsNullOrWhiteSpace(b.PhonePrimary))
+        {
+            StatusMessage = $"⚠️ No phone number on record for '{b.Name}'.";
+            return;
+        }
+
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = $"tel:{b.PhonePrimary.Trim()}",
+                UseShellExecute = true
+            });
+            StatusMessage = $"📞 Dialing '{b.Name}' ({b.PhonePrimary})...";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Dialer Error: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public void ViewOnGoogleMaps(Business? business = null)
+    {
+        var b = business ?? SelectedBusiness;
+        if (b == null) return;
+
+        try
+        {
+            var query = Uri.EscapeDataString($"{b.Name} {b.City} {b.Country}".Trim());
+            var url = $"https://www.google.com/maps/search/?api=1&query={query}";
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true
+            });
+            StatusMessage = $"📍 Viewing '{b.Name}' on Google Maps...";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Maps Error: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public async Task CopyAllContactInfo(Business? business = null)
+    {
+        var b = business ?? SelectedBusiness;
+        if (b == null) return;
+
+        var digits = CleanPhoneNumberForWhatsApp(b.PhonePrimary, b.Country);
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"🏢 Business: {b.Name}");
+        sb.AppendLine($"📂 Category: {b.Category}");
+        sb.AppendLine($"📍 Location: {b.City}, {b.StateProvince}, {b.Country}");
+        if (!string.IsNullOrWhiteSpace(b.AddressLine1)) sb.AppendLine($"🏠 Address: {b.AddressLine1}");
+        if (!string.IsNullOrWhiteSpace(b.PhonePrimary)) sb.AppendLine($"📞 Phone: {b.PhonePrimary}");
+        if (!string.IsNullOrWhiteSpace(digits)) sb.AppendLine($"💬 WhatsApp: https://wa.me/{digits}");
+        if (!string.IsNullOrWhiteSpace(b.EmailPrimary)) sb.AppendLine($"✉️ Email: {b.EmailPrimary}");
+        if (!string.IsNullOrWhiteSpace(b.WebsiteUrl)) sb.AppendLine($"🌐 Website: {b.WebsiteUrl}");
+        sb.AppendLine($"⭐ Opportunity Score: {b.LeadScore}/100 ({(b.LeadScore >= 70 ? "High Opportunity" : "Standard")})");
+        if (b.PipelineStage != null) sb.AppendLine($"📊 Pipeline Stage: {b.PipelineStage.Name}");
+        if (!string.IsNullOrWhiteSpace(b.Tags)) sb.AppendLine($"🏷️ Tags: {b.Tags}");
+
+        await CopyToClipboardAsync(sb.ToString());
+        StatusMessage = $"📋 Full contact summary for \"{b.Name}\" copied to clipboard!";
+    }
+
+    [RelayCommand]
+    public async Task CopyWhatsAppLink(Business? business = null)
+    {
+        var b = business ?? SelectedBusiness;
+        if (b == null || string.IsNullOrWhiteSpace(b.PhonePrimary)) return;
+
+        var digits = CleanPhoneNumberForWhatsApp(b.PhonePrimary, b.Country);
+        if (string.IsNullOrWhiteSpace(digits)) return;
+
+        var link = $"https://wa.me/{digits}";
+        await CopyToClipboardAsync(link);
+        StatusMessage = $"💬 WhatsApp link ({link}) copied to clipboard!";
+    }
+
+    [RelayCommand]
+    public async Task CopyWebsite(Business? business = null)
+    {
+        var b = business ?? SelectedBusiness;
+        if (b == null || string.IsNullOrWhiteSpace(b.WebsiteUrl)) return;
+
+        await CopyToClipboardAsync(b.WebsiteUrl);
+        StatusMessage = $"🌐 Website URL ({b.WebsiteUrl}) copied to clipboard!";
+    }
+
+    [RelayCommand]
+    public async Task UpdateLeadStage(string stageName)
+    {
+        if (SelectedBusiness == null || string.IsNullOrWhiteSpace(stageName)) return;
+
+        var targetStage = PipelineStages.FirstOrDefault(s => s.Name.Equals(stageName, StringComparison.OrdinalIgnoreCase) || s.Code.Equals(stageName, StringComparison.OrdinalIgnoreCase));
+        if (targetStage != null)
+        {
+            SelectedBusiness.PipelineStageId = targetStage.Id;
+            SelectedBusiness.PipelineStage = targetStage;
+            await _businessRepository.UpdateAsync(SelectedBusiness);
+            StatusMessage = $"📊 Moved '{SelectedBusiness.Name}' to pipeline stage: {targetStage.Name}";
+        }
+    }
+
+    [RelayCommand]
+    public async Task CopyQuickPitch(Business? business = null)
+    {
+        var b = business ?? SelectedBusiness;
+        if (b == null) return;
+
+        var pitch = $"Subject: Digital Growth & Optimization for {b.Name}\n\n" +
+                    $"Dear {b.Name} Team,\n\n" +
+                    $"We analyzed local {b.Category} businesses in {b.City} and identified high-impact opportunities for your digital client acquisition.\n\n" +
+                    (string.IsNullOrWhiteSpace(b.WebsiteUrl)
+                        ? $"Currently, {b.Name} lacks an official, verified website. Prospective customers searching online for {b.Category} are discovering competitors instead. TheKhanSoft builds ultra-fast, mobile-responsive web platforms engineered to convert local traffic into paying clients.\n\n"
+                        : $"Our technical audit of {b.WebsiteUrl} identified key optimization areas in load speeds, security hygiene, and search discoverability to drastically improve your conversion rates.\n\n") +
+                    $"Would you be available for a brief 5-minute discovery consultation this week?\n\n" +
+                    $"Sincerely,\nTheKhanSoft Enterprise Team\ninfo@thekhansoft.com";
+
+        await CopyToClipboardAsync(pitch);
+        StatusMessage = $"📋 Tailored outreach pitch for {b.Name} copied to clipboard!";
+    }
+
+    [RelayCommand]
+    public void OpenLandingPageStudio(Business? business = null)
+    {
+        var b = business ?? SelectedBusiness;
+        if (b == null) return;
+
         try
         {
             var studioVm = _serviceProvider.GetRequiredService<LandingPageStudioViewModel>();
-            studioVm.PopulateFromBusiness(SelectedBusiness);
+            studioVm.PopulateFromBusiness(b);
             var window = new LandingPageStudioWindow
             {
                 DataContext = studioVm
             };
             window.Show();
-            StatusMessage = $"🎨 Launched AI Landing Page Studio window for '{SelectedBusiness.Name}'.";
+            StatusMessage = $"🎨 Launched AI Landing Page Studio window for '{b.Name}'.";
         }
         catch (Exception ex)
         {

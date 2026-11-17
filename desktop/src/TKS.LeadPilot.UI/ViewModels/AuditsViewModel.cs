@@ -81,6 +81,8 @@ public partial class AuditsViewModel : ViewModelBase
     [ObservableProperty]
     private string _comparisonMarkdown = string.Empty;
 
+    public static string? TargetBusinessIdForAudit { get; set; }
+
     public AuditsViewModel(
         IBusinessRepository businessRepository,
         IWebsiteAuditEngine auditEngine,
@@ -105,7 +107,17 @@ public partial class AuditsViewModel : ViewModelBase
             var withWeb = all.Where(b => !string.IsNullOrWhiteSpace(b.WebsiteUrl)).ToList();
             BusinessesWithWebsites = new ObservableCollection<Business>(withWeb);
 
-            SelectedBusiness = BusinessesWithWebsites.FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(TargetBusinessIdForAudit))
+            {
+                var match = BusinessesWithWebsites.FirstOrDefault(b => b.Id == TargetBusinessIdForAudit);
+                SelectedBusiness = match ?? BusinessesWithWebsites.FirstOrDefault();
+                TargetBusinessIdForAudit = null;
+            }
+            else
+            {
+                SelectedBusiness = BusinessesWithWebsites.FirstOrDefault();
+            }
+
             if (SelectedBusiness != null)
             {
                 TargetUrl = SelectedBusiness.WebsiteUrl ?? string.Empty;

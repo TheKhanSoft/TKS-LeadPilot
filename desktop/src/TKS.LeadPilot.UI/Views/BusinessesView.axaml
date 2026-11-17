@@ -217,6 +217,95 @@
                               RowBackground="#111A2C"
                               BorderThickness="0"
                               CornerRadius="8">
+                        <!-- Right-Click Row Context Menu -->
+                        <DataGrid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="⚡ Quick Lead Actions" IsEnabled="False" FontWeight="Bold"/>
+                                <Separator/>
+
+                                <!-- Website & Digital Presence -->
+                                <MenuItem Header="🔬 Audit Website (Live Diagnostics)"
+                                          Command="{Binding AuditWebsiteCommand}"
+                                          CommandParameter="{Binding SelectedBusiness}"
+                                          IsEnabled="{Binding SelectedBusiness.WebsiteUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                <MenuItem Header="🌐 Open Website in Browser"
+                                          Command="{Binding OpenWebsiteCommand}"
+                                          CommandParameter="{Binding SelectedBusiness}"
+                                          IsEnabled="{Binding SelectedBusiness.WebsiteUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                <MenuItem Header="🎨 AI Landing Page Studio"
+                                          Command="{Binding OpenLandingPageStudioCommand}"
+                                          CommandParameter="{Binding SelectedBusiness}"/>
+
+                                <Separator/>
+
+                                <!-- Contact Directly -->
+                                <MenuItem Header="📱 Contact Lead">
+                                    <MenuItem Header="💬 Message via WhatsApp"
+                                              Command="{Binding OpenWhatsAppCommand}"
+                                              CommandParameter="{Binding SelectedBusiness}"
+                                              IsEnabled="{Binding SelectedBusiness.PhonePrimary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                    <MenuItem Header="✉️ Send Email (Mail Composer)"
+                                              Command="{Binding OpenEmailClientCommand}"
+                                              CommandParameter="{Binding SelectedBusiness}"
+                                              IsEnabled="{Binding SelectedBusiness.EmailPrimary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                    <MenuItem Header="📞 Call / Dial Phone"
+                                              Command="{Binding CallPhoneCommand}"
+                                              CommandParameter="{Binding SelectedBusiness}"
+                                              IsEnabled="{Binding SelectedBusiness.PhonePrimary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                    <MenuItem Header="📍 View on Google Maps"
+                                              Command="{Binding ViewOnGoogleMapsCommand}"
+                                              CommandParameter="{Binding SelectedBusiness}"/>
+                                </MenuItem>
+
+                                <!-- Copy Contact Options -->
+                                <MenuItem Header="📋 Copy Contact Details">
+                                    <MenuItem Header="📋 Copy All Details (Profile Summary)"
+                                              Command="{Binding CopyAllContactInfoCommand}"
+                                              CommandParameter="{Binding SelectedBusiness}"/>
+                                    <MenuItem Header="📞 Copy Phone Number"
+                                              Command="{Binding CopyPhoneCommand}"
+                                              CommandParameter="{Binding SelectedBusiness}"
+                                              IsEnabled="{Binding SelectedBusiness.PhonePrimary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                    <MenuItem Header="💬 Copy WhatsApp Link"
+                                              Command="{Binding CopyWhatsAppLinkCommand}"
+                                              CommandParameter="{Binding SelectedBusiness}"
+                                              IsEnabled="{Binding SelectedBusiness.PhonePrimary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                    <MenuItem Header="✉️ Copy Email Address"
+                                              Command="{Binding CopyEmailCommand}"
+                                              CommandParameter="{Binding SelectedBusiness}"
+                                              IsEnabled="{Binding SelectedBusiness.EmailPrimary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                    <MenuItem Header="🌐 Copy Website URL"
+                                              Command="{Binding CopyWebsiteCommand}"
+                                              CommandParameter="{Binding SelectedBusiness}"
+                                              IsEnabled="{Binding SelectedBusiness.WebsiteUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                    <MenuItem Header="💼 Copy Tailored Cold Pitch"
+                                              Command="{Binding CopyQuickPitchCommand}"
+                                              CommandParameter="{Binding SelectedBusiness}"/>
+                                </MenuItem>
+
+                                <!-- Pipeline Stage Assignment -->
+                                <MenuItem Header="📊 Move Pipeline Stage">
+                                    <MenuItem Header="🆕 New Lead" Command="{Binding UpdateLeadStageCommand}" CommandParameter="New Lead"/>
+                                    <MenuItem Header="📞 Contacted" Command="{Binding UpdateLeadStageCommand}" CommandParameter="Contacted"/>
+                                    <MenuItem Header="🔬 Audit Delivered" Command="{Binding UpdateLeadStageCommand}" CommandParameter="Audit Delivered"/>
+                                    <MenuItem Header="📑 Proposal Sent" Command="{Binding UpdateLeadStageCommand}" CommandParameter="Proposal Sent"/>
+                                    <MenuItem Header="💬 Negotiation" Command="{Binding UpdateLeadStageCommand}" CommandParameter="Negotiation"/>
+                                    <MenuItem Header="🏆 Closed - Won" Command="{Binding UpdateLeadStageCommand}" CommandParameter="Closed - Won"/>
+                                    <MenuItem Header="❌ Closed - Lost" Command="{Binding UpdateLeadStageCommand}" CommandParameter="Closed - Lost"/>
+                                </MenuItem>
+
+                                <Separator/>
+
+                                <MenuItem Header="⭐ Toggle Starred"
+                                          Command="{Binding ToggleStarCommand}"
+                                          CommandParameter="{Binding SelectedBusiness}"/>
+                                <MenuItem Header="🗑️ Delete Business"
+                                          Command="{Binding DeleteBusinessCommand}"
+                                          CommandParameter="{Binding SelectedBusiness}"
+                                          Foreground="#FB7185"/>
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
+
                         <DataGrid.Columns>
                             <!-- Star Toggle -->
                             <DataGridTemplateColumn Header="★" Width="36">
@@ -229,13 +318,112 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <DataGridTextColumn Header="Business Name" Binding="{Binding Name}" Width="200" />
-                            <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="140" />
-                            <DataGridTextColumn Header="City" Binding="{Binding City}" Width="100" />
-                            <DataGridTextColumn Header="Country" Binding="{Binding Country}" Width="95" />
-                            <DataGridTextColumn Header="Website" Binding="{Binding WebsiteUrl}" Width="160" />
+                            <!-- Actions Menu Column (Left-click dropdown) -->
+                            <DataGridTemplateColumn Header="Action" Width="78">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate x:DataType="m:Business">
+                                        <Button Content="⚡ Menu ▾"
+                                                Classes="pill-filter"
+                                                Padding="6,2"
+                                                FontSize="10"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center">
+                                            <Button.Flyout>
+                                                <MenuFlyout Placement="Bottom">
+                                                    <!-- Website & Digital Presence -->
+                                                    <MenuItem Header="🔬 Audit Website"
+                                                              Command="{Binding ((vm:BusinessesViewModel)DataContext).AuditWebsiteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                              CommandParameter="{Binding}"
+                                                              IsEnabled="{Binding WebsiteUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                                    <MenuItem Header="🌐 Open Website"
+                                                              Command="{Binding ((vm:BusinessesViewModel)DataContext).OpenWebsiteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                              CommandParameter="{Binding}"
+                                                              IsEnabled="{Binding WebsiteUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                                    <MenuItem Header="🎨 AI Landing Page"
+                                                              Command="{Binding ((vm:BusinessesViewModel)DataContext).OpenLandingPageStudioCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                              CommandParameter="{Binding}"/>
+
+                                                    <Separator/>
+
+                                                    <!-- Contact Submenu -->
+                                                    <MenuItem Header="📱 Contact >">
+                                                        <MenuItem Header="💬 WhatsApp Chat"
+                                                                  Command="{Binding ((vm:BusinessesViewModel)DataContext).OpenWhatsAppCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                  CommandParameter="{Binding}"
+                                                                  IsEnabled="{Binding PhonePrimary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                                        <MenuItem Header="✉️ Send Email"
+                                                                  Command="{Binding ((vm:BusinessesViewModel)DataContext).OpenEmailClientCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                  CommandParameter="{Binding}"
+                                                                  IsEnabled="{Binding EmailPrimary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                                        <MenuItem Header="📞 Call Phone"
+                                                                  Command="{Binding ((vm:BusinessesViewModel)DataContext).CallPhoneCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                  CommandParameter="{Binding}"
+                                                                  IsEnabled="{Binding PhonePrimary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                                        <MenuItem Header="📍 View on Maps"
+                                                                  Command="{Binding ((vm:BusinessesViewModel)DataContext).ViewOnGoogleMapsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                  CommandParameter="{Binding}"/>
+                                                    </MenuItem>
+
+                                                    <!-- Copy Submenu -->
+                                                    <MenuItem Header="📋 Copy Contact >">
+                                                        <MenuItem Header="📋 Copy All Details"
+                                                                  Command="{Binding ((vm:BusinessesViewModel)DataContext).CopyAllContactInfoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                  CommandParameter="{Binding}"/>
+                                                        <MenuItem Header="📞 Copy Phone"
+                                                                  Command="{Binding ((vm:BusinessesViewModel)DataContext).CopyPhoneCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                  CommandParameter="{Binding}"
+                                                                  IsEnabled="{Binding PhonePrimary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                                        <MenuItem Header="💬 Copy WhatsApp Link"
+                                                                  Command="{Binding ((vm:BusinessesViewModel)DataContext).CopyWhatsAppLinkCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                  CommandParameter="{Binding}"
+                                                                  IsEnabled="{Binding PhonePrimary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                                        <MenuItem Header="✉️ Copy Email"
+                                                                  Command="{Binding ((vm:BusinessesViewModel)DataContext).CopyEmailCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                  CommandParameter="{Binding}"
+                                                                  IsEnabled="{Binding EmailPrimary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                                        <MenuItem Header="🌐 Copy Website"
+                                                                  Command="{Binding ((vm:BusinessesViewModel)DataContext).CopyWebsiteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                  CommandParameter="{Binding}"
+                                                                  IsEnabled="{Binding WebsiteUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                                        <MenuItem Header="💼 Copy Pitch"
+                                                                  Command="{Binding ((vm:BusinessesViewModel)DataContext).CopyQuickPitchCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                  CommandParameter="{Binding}"/>
+                                                    </MenuItem>
+
+                                                    <!-- Pipeline Stage Submenu -->
+                                                    <MenuItem Header="📊 Pipeline Stage >">
+                                                        <MenuItem Header="🆕 New Lead" Command="{Binding ((vm:BusinessesViewModel)DataContext).UpdateLeadStageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="New Lead"/>
+                                                        <MenuItem Header="📞 Contacted" Command="{Binding ((vm:BusinessesViewModel)DataContext).UpdateLeadStageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="Contacted"/>
+                                                        <MenuItem Header="🔬 Audit Delivered" Command="{Binding ((vm:BusinessesViewModel)DataContext).UpdateLeadStageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="Audit Delivered"/>
+                                                        <MenuItem Header="📑 Proposal Sent" Command="{Binding ((vm:BusinessesViewModel)DataContext).UpdateLeadStageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="Proposal Sent"/>
+                                                        <MenuItem Header="💬 Negotiation" Command="{Binding ((vm:BusinessesViewModel)DataContext).UpdateLeadStageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="Negotiation"/>
+                                                        <MenuItem Header="🏆 Closed - Won" Command="{Binding ((vm:BusinessesViewModel)DataContext).UpdateLeadStageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="Closed - Won"/>
+                                                        <MenuItem Header="❌ Closed - Lost" Command="{Binding ((vm:BusinessesViewModel)DataContext).UpdateLeadStageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="Closed - Lost"/>
+                                                    </MenuItem>
+
+                                                    <Separator/>
+
+                                                    <MenuItem Header="⭐ Star / Bookmark"
+                                                              Command="{Binding ((vm:BusinessesViewModel)DataContext).ToggleStarCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                              CommandParameter="{Binding}"/>
+                                                    <MenuItem Header="🗑️ Delete Lead"
+                                                              Command="{Binding ((vm:BusinessesViewModel)DataContext).DeleteBusinessCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                              CommandParameter="{Binding}"
+                                                              Foreground="#FB7185"/>
+                                                </MenuFlyout>
+                                            </Button.Flyout>
+                                        </Button>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTextColumn Header="Business Name" Binding="{Binding Name}" Width="190" />
+                            <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="135" />
+                            <DataGridTextColumn Header="City" Binding="{Binding City}" Width="95" />
+                            <DataGridTextColumn Header="Country" Binding="{Binding Country}" Width="90" />
+                            <DataGridTextColumn Header="Website" Binding="{Binding WebsiteUrl}" Width="150" />
                             <DataGridTextColumn Header="Score" Binding="{Binding LeadScore}" Width="65" />
-                            <DataGridTextColumn Header="Stage" Binding="{Binding PipelineStage.Name}" Width="110" />
+                            <DataGridTextColumn Header="Stage" Binding="{Binding PipelineStage.Name}" Width="105" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </Border>
@@ -358,27 +546,93 @@
 
                             <!-- Quick Outreach & Lead Utilities -->
                             <StackPanel Spacing="6">
-                                <TextBlock Text="QUICK OUTREACH &amp; ACTIONS" FontSize="11" FontWeight="Bold" Foreground="#64748B"/>
-                                <Button Content="📋 Copy Tailored Pitch" 
-                                        Command="{Binding ((vm:BusinessesViewModel)DataContext).CopyQuickPitchCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                        Classes="btn-accent" HorizontalAlignment="Stretch"/>
+                                <TextBlock Text="DIRECT CONTACT &amp; OUTREACH" FontSize="11" FontWeight="Bold" Foreground="#64748B"/>
+                                
+                                <!-- WhatsApp & Email Direct Buttons -->
+                                <Grid ColumnDefinitions="*,*">
+                                    <Button Grid.Column="0" Content="💬 WhatsApp" 
+                                            Command="{Binding ((vm:BusinessesViewModel)DataContext).OpenWhatsAppCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                            Classes="btn-accent" HorizontalAlignment="Stretch" Margin="0,0,4,0"
+                                            ToolTip.Tip="Launch WhatsApp conversation with this lead"
+                                            IsEnabled="{Binding PhonePrimary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                    <Button Grid.Column="1" Content="✉️ Send Email" 
+                                            Command="{Binding ((vm:BusinessesViewModel)DataContext).OpenEmailClientCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                            Classes="btn-primary" HorizontalAlignment="Stretch" Margin="4,0,0,0"
+                                            ToolTip.Tip="Open mail client with pre-filled outreach draft"
+                                            IsEnabled="{Binding EmailPrimary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                </Grid>
+
+                                <!-- Call & Google Maps -->
+                                <Grid ColumnDefinitions="*,*">
+                                    <Button Grid.Column="0" Content="📞 Dial Phone" 
+                                            Command="{Binding ((vm:BusinessesViewModel)DataContext).CallPhoneCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                            Classes="btn-secondary" HorizontalAlignment="Stretch" Margin="0,0,4,0"
+                                            IsEnabled="{Binding PhonePrimary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                    <Button Grid.Column="1" Content="📍 Google Maps" 
+                                            Command="{Binding ((vm:BusinessesViewModel)DataContext).ViewOnGoogleMapsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                            Classes="btn-secondary" HorizontalAlignment="Stretch" Margin="4,0,0,0"/>
+                                </Grid>
+
+                                <!-- Website & AI Actions -->
+                                <Button Content="🔬 Audit Website (Live Diagnostics)" 
+                                        Command="{Binding ((vm:BusinessesViewModel)DataContext).AuditWebsiteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                        Classes="btn-teal" HorizontalAlignment="Stretch"
+                                        ToolTip.Tip="Diagnose speed, security &amp; SEO in Website Audit suite"
+                                        IsEnabled="{Binding WebsiteUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
                                 <Button Content="🎨 AI Landing Page Studio" 
                                         Command="{Binding ((vm:BusinessesViewModel)DataContext).OpenLandingPageStudioCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                                         Classes="btn-accent" HorizontalAlignment="Stretch" ToolTip.Tip="Open AI Landing Page Studio window pre-filled with this business"/>
                                 <Button Content="🌐 Launch Website in Browser" 
                                         Command="{Binding ((vm:BusinessesViewModel)DataContext).OpenWebsiteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                        Classes="btn-primary" HorizontalAlignment="Stretch"
+                                        Classes="btn-secondary" HorizontalAlignment="Stretch"
                                         IsVisible="{Binding WebsiteUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
-                                <Grid ColumnDefinitions="*,*">
-                                    <Button Grid.Column="0" Content="📞 Copy Phone" 
-                                            Command="{Binding ((vm:BusinessesViewModel)DataContext).CopyPhoneCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                            Classes="btn-secondary" HorizontalAlignment="Stretch" Margin="0,0,4,0"
-                                            IsVisible="{Binding PhonePrimary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
-                                    <Button Grid.Column="1" Content="✉️ Copy Email" 
-                                            Command="{Binding ((vm:BusinessesViewModel)DataContext).CopyEmailCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                            Classes="btn-secondary" HorizontalAlignment="Stretch" Margin="4,0,0,0"
-                                            IsVisible="{Binding EmailPrimary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
-                                </Grid>
+
+                                <!-- Copy Options Menu Button -->
+                                <Button Content="📋 Copy Contact Details ▾" 
+                                        Classes="btn-secondary" HorizontalAlignment="Stretch">
+                                    <Button.Flyout>
+                                        <MenuFlyout Placement="Bottom">
+                                            <MenuItem Header="📋 Copy All Details (Profile Summary)"
+                                                      Command="{Binding ((vm:BusinessesViewModel)DataContext).CopyAllContactInfoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                      CommandParameter="{Binding}"/>
+                                            <MenuItem Header="📞 Copy Phone Number"
+                                                      Command="{Binding ((vm:BusinessesViewModel)DataContext).CopyPhoneCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                      CommandParameter="{Binding}"
+                                                      IsEnabled="{Binding PhonePrimary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                            <MenuItem Header="💬 Copy WhatsApp Link (wa.me)"
+                                                      Command="{Binding ((vm:BusinessesViewModel)DataContext).CopyWhatsAppLinkCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                      CommandParameter="{Binding}"
+                                                      IsEnabled="{Binding PhonePrimary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                            <MenuItem Header="✉️ Copy Email Address"
+                                                      Command="{Binding ((vm:BusinessesViewModel)DataContext).CopyEmailCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                      CommandParameter="{Binding}"
+                                                      IsEnabled="{Binding EmailPrimary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                            <MenuItem Header="🌐 Copy Website URL"
+                                                      Command="{Binding ((vm:BusinessesViewModel)DataContext).CopyWebsiteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                      CommandParameter="{Binding}"
+                                                      IsEnabled="{Binding WebsiteUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                            <MenuItem Header="💼 Copy Tailored Outreach Pitch"
+                                                      Command="{Binding ((vm:BusinessesViewModel)DataContext).CopyQuickPitchCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                      CommandParameter="{Binding}"/>
+                                        </MenuFlyout>
+                                    </Button.Flyout>
+                                </Button>
+
+                                <!-- Move Stage Dropdown -->
+                                <Button Content="📊 Move Pipeline Stage ▾" 
+                                        Classes="btn-secondary" HorizontalAlignment="Stretch">
+                                    <Button.Flyout>
+                                        <MenuFlyout Placement="Bottom">
+                                            <MenuItem Header="🆕 New Lead" Command="{Binding ((vm:BusinessesViewModel)DataContext).UpdateLeadStageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="New Lead"/>
+                                            <MenuItem Header="📞 Contacted" Command="{Binding ((vm:BusinessesViewModel)DataContext).UpdateLeadStageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="Contacted"/>
+                                            <MenuItem Header="🔬 Audit Delivered" Command="{Binding ((vm:BusinessesViewModel)DataContext).UpdateLeadStageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="Audit Delivered"/>
+                                            <MenuItem Header="📑 Proposal Sent" Command="{Binding ((vm:BusinessesViewModel)DataContext).UpdateLeadStageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="Proposal Sent"/>
+                                            <MenuItem Header="💬 Negotiation" Command="{Binding ((vm:BusinessesViewModel)DataContext).UpdateLeadStageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="Negotiation"/>
+                                            <MenuItem Header="🏆 Closed - Won" Command="{Binding ((vm:BusinessesViewModel)DataContext).UpdateLeadStageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="Closed - Won"/>
+                                            <MenuItem Header="❌ Closed - Lost" Command="{Binding ((vm:BusinessesViewModel)DataContext).UpdateLeadStageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="Closed - Lost"/>
+                                        </MenuFlyout>
+                                    </Button.Flyout>
+                                </Button>
                             </StackPanel>
 
                             <Separator Background="#223147"/>
