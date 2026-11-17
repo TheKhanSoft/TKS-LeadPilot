@@ -101,7 +101,10 @@ public interface IGooglePlacesEnrichmentService
     Task SaveConfigAsync(GooglePlacesConfig config, string? apiKey = null, CancellationToken ct = default);
     Task<GooglePlacesEnrichmentResult> EnrichBusinessAsync(Business business, bool forceRefresh = false, CancellationToken ct = default);
     Task<int> GetRemainingRequestsTodayAsync(CancellationToken ct = default);
+    Task<int> GetRemainingRequestsThisMonthAsync(CancellationToken ct = default);
     Task<List<Business>> DiscoverPlacesAsync(string query, string city, string country, int limit = 20, CancellationToken ct = default);
+    Task<(bool IsSuccess, string Message)> TestApiConnectionAsync(CancellationToken ct = default);
+    Task ResetUsageCountersAsync(CancellationToken ct = default);
 }
 
 public interface IAiProposalSynthesizer

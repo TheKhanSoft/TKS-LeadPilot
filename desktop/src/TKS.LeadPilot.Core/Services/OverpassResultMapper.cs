@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using TKS.LeadPilot.Core.Enums;
 using TKS.LeadPilot.Core.Models;
 
@@ -293,5 +295,310 @@ public static class OverpassResultMapper
         catch { }
 
         return results;
+    }
+
+    public static List<Business> MapPhotonToBusinesses(string jsonContent, string defaultCity = "Karachi", string defaultCountry = "Pakistan", string? defaultState = null)
+    {
+        var results = new List<Business>();
+        if (string.IsNullOrWhiteSpace(jsonContent)) return results;
+
+        try
+        {
+            using var doc = JsonDocument.Parse(jsonContent);
+            if (!doc.RootElement.TryGetProperty("features", out var features) || features.ValueKind != JsonValueKind.Array)
+            {
+                return results;
+            }
+
+            foreach (var feat in features.EnumerateArray())
+            {
+                if (!feat.TryGetProperty("properties", out var props) || props.ValueKind != JsonValueKind.Object)
+                    continue;
+
+                var name = GetJsonPropertyString(props, "name");
+                if (string.IsNullOrWhiteSpace(name)) continue;
+
+                double? lon = null;
+                double? lat = null;
+                if (feat.TryGetProperty("geometry", out var geom) && geom.ValueKind == JsonValueKind.Object &&
+                    geom.TryGetProperty("coordinates", out var coords) && coords.ValueKind == JsonValueKind.Array &&
+                    coords.GetArrayLength() >= 2)
+                {
+                    if (coords[0].TryGetDouble(out var lonVal)) lon = lonVal;
+                    if (coords[1].TryGetDouble(out var latVal)) lat = latVal;
+                }
+
+                var osmValue = GetJsonPropertyString(props, "osm_value");
+                var osmKey = GetJsonPropertyString(props, "osm_key");
+                var category = FormatCategory(!string.IsNullOrWhiteSpace(osmValue) ? osmValue : osmKey);
+
+                var city = GetJsonPropertyString(props, "city");
+                if (string.IsNullOrWhiteSpace(city)) city = defaultCity;
+
+                var state = GetJsonPropertyString(props, "state");
+                if (string.IsNullOrWhiteSpace(state)) state = defaultState;
+
+                var country = GetJsonPropertyString(props, "country");
+                if (string.IsNullOrWhiteSpace(country)) country = defaultCountry;
+
+                var street = GetJsonPropertyString(props, "street");
+                var house = GetJsonPropertyString(props, "housenumber");
+                var district = GetJsonPropertyString(props, "district");
+                var postcode = GetJsonPropertyString(props, "postcode");
+
+                var address = CombineAddress(house, street);
+                if (!string.IsNullOrWhiteSpace(district))
+                {
+                    address = string.IsNullOrWhiteSpace(address) ? district : $"{address}, {district}";
+                }
+
+                var osmId = GetJsonPropertyString(props, "osm_id") ?? Guid.NewGuid().ToString("N");
+                var osmType = GetJsonPropertyString(props, "osm_type") ?? "N";
+
+                results.Add(new Business
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = name.Trim(),
+                    Category = category,
+                    City = city.Trim(),
+                    StateProvince = state,
+                    Country = country.Trim(),
+                    AddressLine1 = string.IsNullOrWhiteSpace(address) ? null : address.Trim(),
+                    PostalCode = postcode,
+                    Latitude = lat,
+                    Longitude = lon,
+                    WebsiteStatus = WebsiteStatus.NoWebsite,
+                    PipelineStageId = "stage-discovered",
+                    LeadStatus = LeadStatus.Discovered,
+                    SourceProvider = "Photon (Komoot OpenPOI)",
+                    SourceReferenceId = $"photon:{osmType}:{osmId}",
+                    Tags = $"Photon, {category}",
+                    CreatedAtUtc = DateTime.UtcNow,
+                    UpdatedAtUtc = DateTime.UtcNow
+                });
+            }
+        }
+        catch { }
+
+        return results;
+    }
+
+    public static List<Business> MapDuckDuckGoToBusinesses(string htmlContent, string defaultCategory, string defaultCity = "Karachi", string defaultCountry = "Pakistan", string? defaultState = null)
+    {
+        var results = new List<Business>();
+        if (string.IsNullOrWhiteSpace(htmlContent)) return results;
+
+        try
+        {
+            // DuckDuckGo HTML result pattern: links with class="result__snippet" and class="result__url"
+            var snippetMatches = Regex.Matches(htmlContent, @"class=""result__snippet""[^>]*>(?<snippet>.*?)</a>", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+            var titleMatches = Regex.Matches(htmlContent, @"<a class=""result__url"" href=""(?<url>[^""]+)""[^>]*>(?<displayUrl>.*?)</a>", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+
+            var count = Math.Min(titleMatches.Count, snippetMatches.Count);
+            for (int i = 0; i < count && i < 25; i++)
+            {
+                var rawUrl = titleMatches[i].Groups["url"].Value;
+                var snippet = WebUtility.HtmlDecode(Regex.Replace(snippetMatches[i].Groups["snippet"].Value, @"<[^>]+>", " ")).Trim();
+                var displayUrl = WebUtility.HtmlDecode(titleMatches[i].Groups["displayUrl"].Value).Trim();
+
+                // Unescape DDG redirect if present (uddg=...)
+                var targetUrl = rawUrl;
+                var uddgMatch = Regex.Match(rawUrl, @"uddg=([^&]+)");
+                if (uddgMatch.Success)
+                {
+                    targetUrl = Uri.UnescapeDataString(uddgMatch.Groups[1].Value);
+                }
+
+                if (string.IsNullOrWhiteSpace(targetUrl) || targetUrl.Contains("duckduckgo.com"))
+                    continue;
+
+                // Extract Clean Name from domain or snippet
+                string name;
+                try
+                {
+                    var uri = new Uri(targetUrl);
+                    var host = uri.Host.Replace("www.", "");
+                    var parts = host.Split('.');
+                    name = parts.Length > 0 ? char.ToUpper(parts[0][0]) + parts[0][1..] : displayUrl;
+                }
+                catch
+                {
+                    name = displayUrl;
+                }
+
+                // Check for phone number pattern inside snippet
+                string? phone = null;
+                var phoneMatch = Regex.Match(snippet, @"(\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,4}");
+                if (phoneMatch.Success && phoneMatch.Length >= 8)
+                {
+                    phone = phoneMatch.Value.Trim();
+                }
+
+                results.Add(new Business
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = name,
+                    Category = defaultCategory,
+                    City = defaultCity,
+                    StateProvince = defaultState,
+                    Country = defaultCountry,
+                    AddressLine1 = snippet.Length > 120 ? snippet[..120] + "..." : snippet,
+                    PhonePrimary = phone,
+                    WebsiteUrl = targetUrl,
+                    WebsiteStatus = WebsiteStatus.ActiveWebsite,
+                    PipelineStageId = "stage-discovered",
+                    LeadStatus = LeadStatus.Discovered,
+                    SourceProvider = "DuckDuckGo Web Directory",
+                    SourceReferenceId = $"ddg:{Guid.NewGuid():N}",
+                    Tags = $"DuckDuckGo, {defaultCategory}",
+                    CreatedAtUtc = DateTime.UtcNow,
+                    UpdatedAtUtc = DateTime.UtcNow
+                });
+            }
+        }
+        catch { }
+
+        return results;
+    }
+
+    public static List<Business> MapGroqAiToBusinesses(string jsonContent, string defaultCity = "Karachi", string defaultCountry = "Pakistan", string? defaultState = null)
+    {
+        var results = new List<Business>();
+        if (string.IsNullOrWhiteSpace(jsonContent)) return results;
+
+        try
+        {
+            using var doc = JsonDocument.Parse(jsonContent);
+            if (!doc.RootElement.TryGetProperty("choices", out var choices) || choices.GetArrayLength() == 0)
+                return results;
+
+            var msg = choices[0].GetProperty("message");
+            var content = msg.GetProperty("content").GetString();
+            if (string.IsNullOrWhiteSpace(content)) return results;
+
+            // Strip possible markdown fences
+            content = content.Trim();
+            if (content.StartsWith("```json")) content = content[7..];
+            if (content.StartsWith("```")) content = content[3..];
+            if (content.EndsWith("```")) content = content[..^3];
+            content = content.Trim();
+
+            using var innerDoc = JsonDocument.Parse(content);
+            if (innerDoc.RootElement.ValueKind != JsonValueKind.Array) return results;
+
+            foreach (var item in innerDoc.RootElement.EnumerateArray())
+            {
+                var name = GetJsonPropertyString(item, "name");
+                if (string.IsNullOrWhiteSpace(name)) continue;
+
+                var cat = GetJsonPropertyString(item, "category") ?? "Commercial Business";
+                var addr = GetJsonPropertyString(item, "address");
+                var phone = GetJsonPropertyString(item, "phone");
+                var web = GetJsonPropertyString(item, "website");
+                var tags = GetJsonPropertyString(item, "tags") ?? "Groq AI";
+
+                results.Add(new Business
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = name.Trim(),
+                    Category = cat.Trim(),
+                    City = defaultCity,
+                    StateProvince = defaultState,
+                    Country = defaultCountry,
+                    AddressLine1 = addr?.Trim(),
+                    PhonePrimary = phone?.Trim(),
+                    WebsiteUrl = !string.IsNullOrWhiteSpace(web) && web != "null" ? web.Trim() : null,
+                    WebsiteStatus = !string.IsNullOrWhiteSpace(web) && web != "null" ? WebsiteStatus.ActiveWebsite : WebsiteStatus.NoWebsite,
+                    PipelineStageId = "stage-discovered",
+                    LeadStatus = LeadStatus.Discovered,
+                    SourceProvider = "Groq Cloud AI (Llama-3)",
+                    SourceReferenceId = $"groq:{Guid.NewGuid():N}",
+                    Tags = $"Groq AI, {tags}",
+                    CreatedAtUtc = DateTime.UtcNow,
+                    UpdatedAtUtc = DateTime.UtcNow
+                });
+            }
+        }
+        catch { }
+
+        return results;
+    }
+
+    public static List<Business> MapSerperPlacesToBusinesses(string jsonContent, string defaultCity = "Karachi", string defaultCountry = "Pakistan", string? defaultState = null)
+    {
+        var results = new List<Business>();
+        if (string.IsNullOrWhiteSpace(jsonContent)) return results;
+
+        try
+        {
+            using var doc = JsonDocument.Parse(jsonContent);
+            if (!doc.RootElement.TryGetProperty("places", out var places) || places.ValueKind != JsonValueKind.Array)
+                return results;
+
+            foreach (var p in places.EnumerateArray())
+            {
+                var title = GetJsonPropertyString(p, "title");
+                if (string.IsNullOrWhiteSpace(title)) continue;
+
+                var category = GetJsonPropertyString(p, "category") ?? "Commercial Business";
+                var address = GetJsonPropertyString(p, "address");
+                var phone = GetJsonPropertyString(p, "phoneNumber");
+                var website = GetJsonPropertyString(p, "website");
+                var cid = GetJsonPropertyString(p, "cid");
+
+                double? rating = null;
+                if (p.TryGetProperty("rating", out var rProp) && rProp.TryGetDouble(out var rVal)) rating = rVal;
+
+                int? ratingCount = null;
+                if (p.TryGetProperty("ratingCount", out var rcProp) && rcProp.TryGetInt32(out var rcVal)) ratingCount = rcVal;
+
+                double? lat = null;
+                double? lon = null;
+                if (p.TryGetProperty("latitude", out var latP) && latP.TryGetDouble(out var latVal)) lat = latVal;
+                if (p.TryGetProperty("longitude", out var lonP) && lonP.TryGetDouble(out var lonVal)) lon = lonVal;
+
+                results.Add(new Business
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = title.Trim(),
+                    Category = category.Trim(),
+                    City = defaultCity,
+                    StateProvince = defaultState,
+                    Country = defaultCountry,
+                    AddressLine1 = address?.Trim(),
+                    PhonePrimary = phone?.Trim(),
+                    WebsiteUrl = website?.Trim(),
+                    WebsiteStatus = !string.IsNullOrWhiteSpace(website) ? WebsiteStatus.ActiveWebsite : WebsiteStatus.NoWebsite,
+                    GoogleRating = rating,
+                    GoogleReviewCount = ratingCount,
+                    GooglePlaceId = cid,
+                    IsGoogleVerified = true,
+                    Latitude = lat,
+                    Longitude = lon,
+                    PipelineStageId = "stage-discovered",
+                    LeadStatus = LeadStatus.Discovered,
+                    SourceProvider = "Google Places (via Serper)",
+                    SourceReferenceId = $"serper:{cid ?? Guid.NewGuid().ToString("N")}",
+                    Tags = $"Google Places, Serper, {category}",
+                    CreatedAtUtc = DateTime.UtcNow,
+                    UpdatedAtUtc = DateTime.UtcNow
+                });
+            }
+        }
+        catch { }
+
+        return results;
+    }
+
+    private static string? GetJsonPropertyString(JsonElement element, string propertyName)
+    {
+        if (element.TryGetProperty(propertyName, out var prop))
+        {
+            if (prop.ValueKind == JsonValueKind.String)
+                return prop.GetString();
+            if (prop.ValueKind == JsonValueKind.Number)
+                return prop.ToString();
+        }
+        return null;
     }
 }

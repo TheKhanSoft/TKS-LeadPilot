@@ -81,6 +81,108 @@
                 </StackPanel>
             </Border>
 
+            <!-- Groq Cloud High-Speed AI Engine (100% Free Tier - No Credit Card Needed) -->
+            <Border Background="#0E1626" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="10" Padding="20">
+                <StackPanel Spacing="16">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="⚡ Groq Cloud High-Speed AI Engine" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC"/>
+                                <Border Background="#064E3B" BorderBrush="#059669" BorderThickness="1" CornerRadius="10" Padding="8,2" VerticalAlignment="Center">
+                                    <TextBlock Text="100% FREE TIER" FontSize="10" FontWeight="Bold" Foreground="#34D399"/>
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Text="Ultra-fast Llama-3.3 inference (500 tokens/sec) for autonomous lead discovery and synthesis. Free API key from console.groq.com." FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Groq API Key (from console.groq.com)" FontSize="12" FontWeight="SemiBold" Foreground="#64748B"/>
+                        <TextBox Text="{Binding GroqApiKey}" PlaceholderText="gsk_..." PasswordChar="●" Background="#0B1322" Foreground="#F8FAFC" BorderBrush="#22324A" CornerRadius="7" Padding="12,8"/>
+                    </StackPanel>
+
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Groq AI Model" FontSize="12" FontWeight="SemiBold" Foreground="#64748B"/>
+                        <TextBox Text="{Binding SelectedGroqModel}" Width="260" HorizontalAlignment="Left" Background="#0B1322" Foreground="#F8FAFC" BorderBrush="#22324A" CornerRadius="7" Padding="10,6"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <Button Content="💾 Save Groq Settings" Command="{Binding SaveGroqSettingsCommand}" Classes="btn-primary" Padding="16,8"/>
+                        <Button Content="🔍 Test Groq Connection" Command="{Binding TestGroqConnectionCommand}" Classes="btn-secondary" Padding="16,8"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Serper.dev Google Places & Web Search (Free Tier - 2,500 Queries) -->
+            <Border Background="#0E1626" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="10" Padding="20">
+                <StackPanel Spacing="16">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="🔎 Serper.dev Google Places &amp; Search API" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC"/>
+                                <Border Background="#0C233C" BorderBrush="#0284C7" BorderThickness="1" CornerRadius="10" Padding="8,2" VerticalAlignment="Center">
+                                    <TextBlock Text="2,500 FREE QUERIES" FontSize="10" FontWeight="Bold" Foreground="#38BDF8"/>
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Text="Live Google Places and Google Maps search results with 2,500 free queries upon registration at serper.dev (No credit card required)." FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Serper API Key (from serper.dev)" FontSize="12" FontWeight="SemiBold" Foreground="#64748B"/>
+                        <TextBox Text="{Binding SerperApiKey}" PlaceholderText="api_key..." PasswordChar="●" Background="#0B1322" Foreground="#F8FAFC" BorderBrush="#22324A" CornerRadius="7" Padding="12,8"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <Button Content="💾 Save Serper Settings" Command="{Binding SaveSerperSettingsCommand}" Classes="btn-primary" Padding="16,8"/>
+                        <Button Content="🔍 Test Serper Key" Command="{Binding TestSerperConnectionCommand}" Classes="btn-secondary" Padding="16,8"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Zero-Configuration Free Discovery Engines Status Card -->
+            <Border Background="#0B1322" BorderBrush="#162235" BorderThickness="1" CornerRadius="10" Padding="18">
+                <StackPanel Spacing="10">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="🌐 Built-In Zero-Configuration Free Engines" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC"/>
+                        <Border Background="#064E3B" BorderBrush="#059669" BorderThickness="1" CornerRadius="10" Padding="8,2" VerticalAlignment="Center">
+                            <TextBlock Text="ALWAYS ACTIVE" FontSize="10" FontWeight="Bold" Foreground="#34D399"/>
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="The following engines run autonomously with 100% free open APIs and require ZERO api keys or tokens:" FontSize="12" Foreground="#94A3B8"/>
+
+                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto">
+                        <Border Grid.Row="0" Grid.Column="0" Background="#111A2C" CornerRadius="6" Padding="10,8" Margin="3">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="⚡ Photon Geosearch (Komoot)" FontWeight="Bold" Foreground="#38BDF8" FontSize="11.5"/>
+                                <TextBlock Text="OpenStreetMap-powered Elasticsearch fuzzy POI search." FontSize="10.5" Foreground="#64748B"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="0" Grid.Column="1" Background="#111A2C" CornerRadius="6" Padding="10,8" Margin="3">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="🦆 DuckDuckGo Commercial Web" FontWeight="Bold" Foreground="#F59E0B" FontSize="11.5"/>
+                                <TextBlock Text="Web crawler extracting live business directories &amp; websites." FontSize="10.5" Foreground="#64748B"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="1" Grid.Column="0" Background="#111A2C" CornerRadius="6" Padding="10,8" Margin="3">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="🛰️ OpenStreetMap Overpass QL" FontWeight="Bold" Foreground="#34D399" FontSize="11.5"/>
+                                <TextBlock Text="Global real-time amenity, shop, healthcare &amp; office nodes." FontSize="10.5" Foreground="#64748B"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="1" Grid.Column="1" Background="#111A2C" CornerRadius="6" Padding="10,8" Margin="3">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="🗺️ OSM Nominatim Geocoder" FontWeight="Bold" Foreground="#A78BFA" FontSize="11.5"/>
+                                <TextBlock Text="Natural language geographic and commercial point queries." FontSize="10.5" Foreground="#64748B"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
             <!-- Central Laravel Headless API Synchronization (Stage 11) -->
             <Border Background="#0E1626" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="10" Padding="20">
                 <StackPanel Spacing="16">

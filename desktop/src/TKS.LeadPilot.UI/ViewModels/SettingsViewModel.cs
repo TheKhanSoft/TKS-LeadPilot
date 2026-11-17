@@ -44,6 +44,23 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private int _googlePlacesUsedToday = 0;
 
+    // Groq Cloud Free AI Engine Settings (100% Free - Fast Llama 3)
+    [ObservableProperty]
+    private string _groqApiKey = string.Empty;
+
+    [ObservableProperty]
+    private string _selectedGroqModel = "llama-3.3-70b-versatile";
+
+    [ObservableProperty]
+    private bool _isGroqEnabled = true;
+
+    // Serper.dev Google Places (Free Tier - 2,500 Queries)
+    [ObservableProperty]
+    private string _serperApiKey = string.Empty;
+
+    [ObservableProperty]
+    private bool _isSerperEnabled = false;
+
     // Central Laravel Sync Settings (Stage 11)
     [ObservableProperty]
     private string _syncApiBaseUrl = "http://127.0.0.1:8000/api/v1";
@@ -106,6 +123,26 @@ public partial class SettingsViewModel : ViewModelBase
         IsGooglePlacesEnabled = placesConfig.IsEnabled;
         GooglePlacesDailyCeiling = placesConfig.DailyRequestCeiling;
         GooglePlacesUsedToday = placesConfig.DailyRequestsUsed;
+
+        // Groq Cloud AI Settings
+        var groqKey = _secretVault.GetSecret("GROQ_API_KEY");
+        if (!string.IsNullOrEmpty(groqKey))
+        {
+            GroqApiKey = groqKey.Length > 10 ? $"{groqKey[..6]}...{groqKey[^4..]}" : "********";
+        }
+        var groqModel = _secretVault.GetSecret("GROQ_MODEL");
+        if (!string.IsNullOrEmpty(groqModel))
+        {
+            SelectedGroqModel = groqModel;
+        }
+
+        // Serper.dev Settings
+        var serperKey = _secretVault.GetSecret("SERPER_API_KEY");
+        if (!string.IsNullOrEmpty(serperKey))
+        {
+            SerperApiKey = serperKey.Length > 10 ? $"{serperKey[..6]}...{serperKey[^4..]}" : "********";
+            IsSerperEnabled = true;
+        }
 
         // Load Sync Settings (Stage 11)
         var syncConfig = await _syncService.GetConfigAsync();
@@ -187,6 +224,116 @@ public partial class SettingsViewModel : ViewModelBase
         catch (Exception ex)
         {
             StatusMessage = $"Error saving Google Places settings: {ex.Message}";
+        }
+    }
+
+    // Groq Cloud Free AI Commands
+    [RelayCommand]
+    public async Task SaveGroqSettings()
+    {
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(GroqApiKey) && !GroqApiKey.Contains("..."))
+            {
+                _secretVault.SaveSecret("GROQ_API_KEY", GroqApiKey.Trim());
+            }
+            if (!string.IsNullOrWhiteSpace(SelectedGroqModel))
+            {
+                _secretVault.SaveSecret("GROQ_MODEL", SelectedGroqModel.Trim());
+            }
+
+            StatusMessage = "✅ Groq Cloud Free AI settings saved to vault successfully.";
+            await LoadSettingsAsync();
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error saving Groq settings: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public async Task TestGroqConnection()
+    {
+        var key = _secretVault.GetSecret("GROQ_API_KEY");
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            StatusMessage = "❌ No Groq API key in vault. Please save a free key from console.groq.com first.";
+            return;
+        }
+
+        StatusMessage = "Testing Groq Cloud connection...";
+        try
+        {
+            using var client = new System.Net.Http.HttpClient();
+            using var req = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Get, "https://api.groq.com/openai/v1/models");
+            req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", key);
+            var resp = await client.SendAsync(req);
+            if (resp.IsSuccessStatusCode)
+            {
+                StatusMessage = "✅ Groq Cloud AI connection verified! 100% Free ultra-fast Llama-3 ready.";
+            }
+            else
+            {
+                StatusMessage = $"⚠️ Groq API responded with status: {resp.StatusCode}. Please verify your key.";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Groq test failed: {ex.Message}";
+        }
+    }
+
+    // Serper.dev Google Search Commands
+    [RelayCommand]
+    public async Task SaveSerperSettings()
+    {
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(SerperApiKey) && !SerperApiKey.Contains("..."))
+            {
+                _secretVault.SaveSecret("SERPER_API_KEY", SerperApiKey.Trim());
+            }
+            StatusMessage = "✅ Serper.dev Google Places settings saved to vault successfully.";
+            await LoadSettingsAsync();
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error saving Serper settings: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public async Task TestSerperConnection()
+    {
+        var key = _secretVault.GetSecret("SERPER_API_KEY");
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            StatusMessage = "❌ No Serper API key in vault. Please save a free key from serper.dev first.";
+            return;
+        }
+
+        StatusMessage = "Testing Serper.dev connection...";
+        try
+        {
+            using var client = new System.Net.Http.HttpClient();
+            using var req = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Post, "https://google.serper.dev/places")
+            {
+                Content = new System.Net.Http.StringContent("{\"q\":\"test\"}", System.Text.Encoding.UTF8, "application/json")
+            };
+            req.Headers.Add("X-API-KEY", key);
+            var resp = await client.SendAsync(req);
+            if (resp.IsSuccessStatusCode)
+            {
+                StatusMessage = "✅ Serper.dev Google Places connection verified! Free queries active.";
+            }
+            else
+            {
+                StatusMessage = $"⚠️ Serper API responded with status: {resp.StatusCode}.";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Serper test failed: {ex.Message}";
         }
     }
 

@@ -70,15 +70,20 @@ public partial class DiscoveryViewModel : ViewModelBase
 
     public ObservableCollection<string> AvailableEngines { get; } =
     [
-        "🌐 Unified Aggregator (All Sources)",
-        "🛰️ OpenStreetMap & Nominatim",
-        "📍 Google Places / GMB",
-        "✨ Gemini AI Discovery",
-        "⚡ High-Availability Offline Vault"
+        "🌐 Unified Multi-Engine Aggregator (All Active)",
+        "⚡ Photon Geosearch (Komoot OpenPOI - 100% Free)",
+        "🦆 DuckDuckGo Commercial Web Directory (100% Free)",
+        "🛰️ OpenStreetMap Live Overpass (Geospatial QL)",
+        "🗺️ OSM Nominatim (Natural POI Search)",
+        "✨ Google Gemini AI Discovery (Free 1,500 RPD)",
+        "⚡ Groq Cloud AI Engine (Free Fast Llama-3)",
+        "📍 Google Places API (Direct Commercial)",
+        "🔎 Serper.dev Google Places (Free 2,500 Queries)",
+        "💾 High-Density Offline Enterprise Vault"
     ];
 
     [ObservableProperty]
-    private string _selectedEngine = "🌐 Unified Aggregator (All Sources)";
+    private string _selectedEngine = "🌐 Unified Multi-Engine Aggregator (All Active)";
 
     [ObservableProperty]
     private ObservableCollection<string> _categories = [];

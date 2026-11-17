@@ -107,12 +107,24 @@ public class OverpassDiscoveryService : IDiscoveryService
         var combinedBusinesses = new List<Business>();
         var activeSources = new List<string>();
 
-        var engine = query.SearchEngine ?? "All Sources (Unified Aggregator)";
+        var engine = query.SearchEngine ?? "Unified Multi-Engine Aggregator (All Active)";
         var isAggregator = engine.Contains("Aggregator", StringComparison.OrdinalIgnoreCase) ||
+                           engine.Contains("All Active", StringComparison.OrdinalIgnoreCase) ||
                            engine.Contains("All Sources", StringComparison.OrdinalIgnoreCase);
 
-        // 1. OpenStreetMap Nominatim Live Search
-        if (isAggregator || engine.Contains("Nominatim", StringComparison.OrdinalIgnoreCase) || engine.Contains("OpenStreetMap", StringComparison.OrdinalIgnoreCase))
+        // 1. Photon Geosearch (100% Free, Komoot OpenStreetMap)
+        if (isAggregator || engine.Contains("Photon", StringComparison.OrdinalIgnoreCase))
+        {
+            var photonLeads = await QueryPhotonAsync(query, ct);
+            if (photonLeads.Count > 0)
+            {
+                combinedBusinesses.AddRange(photonLeads);
+                activeSources.Add($"Photon OpenPOI ({photonLeads.Count})");
+            }
+        }
+
+        // 2. OpenStreetMap Nominatim Live Search (100% Free)
+        if (isAggregator || engine.Contains("Nominatim", StringComparison.OrdinalIgnoreCase))
         {
             var nomLeads = await QueryNominatimAsync(query, ct);
             if (nomLeads.Count > 0)
@@ -122,8 +134,8 @@ public class OverpassDiscoveryService : IDiscoveryService
             }
         }
 
-        // 2. OpenStreetMap Overpass Live Query (if mirrors available)
-        if (isAggregator || engine.Contains("Overpass", StringComparison.OrdinalIgnoreCase) || engine.Contains("OpenStreetMap", StringComparison.OrdinalIgnoreCase))
+        // 3. OpenStreetMap Overpass Live Query (100% Free)
+        if (isAggregator || engine.Contains("Overpass", StringComparison.OrdinalIgnoreCase) || engine.Contains("Geospatial", StringComparison.OrdinalIgnoreCase))
         {
             var ql = OverpassQueryBuilder.BuildQuery(query);
             result.QueryExecuted = ql;
@@ -135,19 +147,52 @@ public class OverpassDiscoveryService : IDiscoveryService
             }
         }
 
-        // 3. Google Places / Google My Business Discovery
-        if (isAggregator || engine.Contains("Google", StringComparison.OrdinalIgnoreCase))
+        // 4. DuckDuckGo Commercial Web Directory (100% Free)
+        if (isAggregator || engine.Contains("DuckDuckGo", StringComparison.OrdinalIgnoreCase))
+        {
+            var ddgLeads = await QueryDuckDuckGoAsync(query, ct);
+            if (ddgLeads.Count > 0)
+            {
+                combinedBusinesses.AddRange(ddgLeads);
+                activeSources.Add($"DuckDuckGo Web ({ddgLeads.Count})");
+            }
+        }
+
+        // 5. Groq Cloud AI Engine (100% Free Fast Llama-3 via console.groq.com)
+        if (isAggregator || engine.Contains("Groq", StringComparison.OrdinalIgnoreCase))
+        {
+            var groqLeads = await QueryGroqAiAsync(query, ct);
+            if (groqLeads.Count > 0)
+            {
+                combinedBusinesses.AddRange(groqLeads);
+                activeSources.Add($"Groq AI ({groqLeads.Count})");
+            }
+        }
+
+        // 6. Serper.dev Google Places (2,500 Free Queries via serper.dev)
+        if (isAggregator || engine.Contains("Serper", StringComparison.OrdinalIgnoreCase))
+        {
+            var serperLeads = await QuerySerperPlacesAsync(query, ct);
+            if (serperLeads.Count > 0)
+            {
+                combinedBusinesses.AddRange(serperLeads);
+                activeSources.Add($"Serper Google ({serperLeads.Count})");
+            }
+        }
+
+        // 7. Google Places / Google My Business Discovery ($200 Monthly Free Credit)
+        if (isAggregator || engine.Contains("Google Places", StringComparison.OrdinalIgnoreCase))
         {
             var gmbLeads = await QueryGooglePlacesAsync(query, ct);
             if (gmbLeads.Count > 0)
             {
                 combinedBusinesses.AddRange(gmbLeads);
-                activeSources.Add($"Google My Business ({gmbLeads.Count})");
+                activeSources.Add($"Google Places ({gmbLeads.Count})");
             }
         }
 
-        // 4. Google Gemini Free Tier AI Discovery
-        if (isAggregator || engine.Contains("Gemini", StringComparison.OrdinalIgnoreCase) || engine.Contains("AI", StringComparison.OrdinalIgnoreCase))
+        // 8. Google Gemini Free Tier AI Discovery (1,500 req/day free)
+        if (isAggregator || engine.Contains("Gemini", StringComparison.OrdinalIgnoreCase))
         {
             var aiLeads = await QueryGeminiAiAsync(query, ct);
             if (aiLeads.Count > 0)
@@ -157,15 +202,14 @@ public class OverpassDiscoveryService : IDiscoveryService
             }
         }
 
-        // 5. High-Density Verified Local Catalog Fallback
-        // Seamlessly activates verified local cache when live network queries return no results
-        if (combinedBusinesses.Count == 0)
+        // 9. High-Density Verified Local Catalog Fallback (or explicit offline choice)
+        if (combinedBusinesses.Count == 0 || engine.Contains("Offline", StringComparison.OrdinalIgnoreCase) || engine.Contains("Vault", StringComparison.OrdinalIgnoreCase))
         {
             var catalogLeads = OsmOfflineCache.GetCachedLeads(query.City, query.Country, query.TargetAmenities, Math.Max(query.Limit, 35));
             if (catalogLeads.Count > 0)
             {
                 combinedBusinesses.AddRange(catalogLeads);
-                activeSources.Add($"OpenStreetMap (Verified Local Cache) ({catalogLeads.Count})");
+                activeSources.Add($"OpenStreetMap (Verified Local Cache / Offline Vault) ({catalogLeads.Count})");
             }
         }
 
@@ -367,6 +411,184 @@ public class OverpassDiscoveryService : IDiscoveryService
         catch { }
 
         return [];
+    }
+
+    private async Task<List<Business>> QueryPhotonAsync(DiscoveryQuery query, CancellationToken ct)
+    {
+        var list = new List<Business>();
+        var searchTerm = !string.IsNullOrWhiteSpace(query.CustomSearchTerm)
+            ? query.CustomSearchTerm.Trim()
+            : (query.CategoryPreset?.Replace("&", "and") ?? "commercial");
+
+        try
+        {
+            var queryString = $"{searchTerm} {query.City}";
+            if (!string.IsNullOrWhiteSpace(query.Country)) queryString += $", {query.Country}";
+
+            var url = $"https://photon.komoot.io/api/?q={Uri.EscapeDataString(queryString)}&limit=30";
+            if (query.BBox != null)
+            {
+                var centerLat = (query.BBox.North + query.BBox.South) / 2.0;
+                var centerLon = (query.BBox.East + query.BBox.West) / 2.0;
+                url += $"&lat={centerLat:F4}&lon={centerLon:F4}";
+            }
+
+            using var req = new HttpRequestMessage(HttpMethod.Get, url);
+            req.Headers.Add("User-Agent", "TKS-LeadPilot/1.0 (contact: info@thekhansoft.com)");
+
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            cts.CancelAfter(TimeSpan.FromSeconds(8));
+
+            var resp = await _httpClient.SendAsync(req, cts.Token);
+            if (resp.IsSuccessStatusCode)
+            {
+                var json = await resp.Content.ReadAsStringAsync(ct);
+                var mapped = OverpassResultMapper.MapPhotonToBusinesses(json, query.City, query.Country, query.StateProvince);
+                list.AddRange(mapped);
+            }
+        }
+        catch { }
+
+        return list;
+    }
+
+    private async Task<List<Business>> QueryDuckDuckGoAsync(DiscoveryQuery query, CancellationToken ct)
+    {
+        var list = new List<Business>();
+        var searchTerm = !string.IsNullOrWhiteSpace(query.CustomSearchTerm)
+            ? query.CustomSearchTerm.Trim()
+            : (query.CategoryPreset?.Replace("&", "and") ?? "businesses");
+
+        try
+        {
+            var queryStr = $"{searchTerm} in {query.City} {query.Country} directory";
+            var url = $"https://html.duckduckgo.com/html/?q={Uri.EscapeDataString(queryStr)}";
+
+            using var req = new HttpRequestMessage(HttpMethod.Get, url);
+            req.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            cts.CancelAfter(TimeSpan.FromSeconds(8));
+
+            var resp = await _httpClient.SendAsync(req, cts.Token);
+            if (resp.IsSuccessStatusCode)
+            {
+                var html = await resp.Content.ReadAsStringAsync(ct);
+                var mapped = OverpassResultMapper.MapDuckDuckGoToBusinesses(html, searchTerm, query.City, query.Country, query.StateProvince);
+                list.AddRange(mapped);
+            }
+        }
+        catch { }
+
+        return list;
+    }
+
+    private async Task<List<Business>> QueryGroqAiAsync(DiscoveryQuery query, CancellationToken ct)
+    {
+        var apiKey = _secretVault?.GetSecret("GROQ_API_KEY");
+        if (string.IsNullOrWhiteSpace(apiKey)) return [];
+
+        var list = new List<Business>();
+        var searchTerm = !string.IsNullOrWhiteSpace(query.CustomSearchTerm)
+            ? query.CustomSearchTerm.Trim()
+            : (query.CategoryPreset?.Replace("&", "and") ?? "Commercial Businesses");
+
+        try
+        {
+            var prompt = $$"""
+            You are an enterprise business intelligence investigator for TKS LeadPilot.
+            List 25 real, operating commercial businesses, clinics, companies, stores, law firms, restaurants, or service providers located in {{query.City}}, {{query.Country}} under the category '{{searchTerm}}'.
+            
+            Return ONLY a valid JSON array of objects with the following keys:
+            [
+              {
+                "name": "Commercial Name",
+                "category": "Standard Business Category",
+                "address": "Street / Area, City",
+                "phone": "Phone with country code",
+                "website": "https://... or null if unknown",
+                "tags": "Commercial Niche, Keywords"
+              }
+            ]
+            """;
+
+            var model = _secretVault?.GetSecret("GROQ_MODEL") ?? "llama-3.3-70b-versatile";
+
+            var requestBody = new
+            {
+                model = model,
+                messages = new[]
+                {
+                    new { role = "system", content = "You are a professional business directory indexing engine. Output valid JSON arrays only." },
+                    new { role = "user", content = prompt }
+                },
+                temperature = 0.2,
+                max_tokens = 2048
+            };
+
+            var jsonPayload = System.Text.Json.JsonSerializer.Serialize(requestBody);
+            using var reqMsg = new HttpRequestMessage(HttpMethod.Post, "https://api.groq.com/openai/v1/chat/completions")
+            {
+                Content = new StringContent(jsonPayload, System.Text.Encoding.UTF8, "application/json")
+            };
+            reqMsg.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
+
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            cts.CancelAfter(TimeSpan.FromSeconds(10));
+
+            var resp = await _httpClient.SendAsync(reqMsg, cts.Token);
+            if (resp.IsSuccessStatusCode)
+            {
+                var respJson = await resp.Content.ReadAsStringAsync(ct);
+                var mapped = OverpassResultMapper.MapGroqAiToBusinesses(respJson, query.City, query.Country, query.StateProvince);
+                list.AddRange(mapped);
+            }
+        }
+        catch { }
+
+        return list;
+    }
+
+    private async Task<List<Business>> QuerySerperPlacesAsync(DiscoveryQuery query, CancellationToken ct)
+    {
+        var apiKey = _secretVault?.GetSecret("SERPER_API_KEY");
+        if (string.IsNullOrWhiteSpace(apiKey)) return [];
+
+        var list = new List<Business>();
+        var searchTerm = !string.IsNullOrWhiteSpace(query.CustomSearchTerm)
+            ? query.CustomSearchTerm.Trim()
+            : (query.CategoryPreset?.Replace("&", "and") ?? "businesses");
+
+        try
+        {
+            var reqObj = new
+            {
+                q = $"{searchTerm} in {query.City} {query.Country}",
+                gl = "us",
+                hl = "en"
+            };
+
+            var jsonPayload = System.Text.Json.JsonSerializer.Serialize(reqObj);
+            using var reqMsg = new HttpRequestMessage(HttpMethod.Post, "https://google.serper.dev/places")
+            {
+                Content = new StringContent(jsonPayload, System.Text.Encoding.UTF8, "application/json")
+            };
+            reqMsg.Headers.Add("X-API-KEY", apiKey);
+
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            cts.CancelAfter(TimeSpan.FromSeconds(10));
+
+            var resp = await _httpClient.SendAsync(reqMsg, cts.Token);
+            if (resp.IsSuccessStatusCode)
+            {
+                var respJson = await resp.Content.ReadAsStringAsync(ct);
+                var mapped = OverpassResultMapper.MapSerperPlacesToBusinesses(respJson, query.City, query.Country, query.StateProvince);
+                list.AddRange(mapped);
+            }
+        }
+        catch { }
+
+        return list;
     }
 
     public async Task<ImportExecutionResult> ImportDiscoveredLeadsAsync(

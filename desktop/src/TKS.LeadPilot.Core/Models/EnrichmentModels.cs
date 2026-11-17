@@ -3,12 +3,26 @@ using System.Collections.Generic;
 
 namespace TKS.LeadPilot.Core.Models;
 
+public enum PlacesSkuTier
+{
+    Essentials = 0,               // 10,000 Free Calls / Month (Basic Place Data, Name, Address, Phone, Website, Location)
+    EnterpriseWithAtmosphere = 1  // 1,000 Free Calls / Month (Includes Ratings, Reviews, Business Hours, Atmosphere)
+}
+
 public class GooglePlacesConfig
 {
     public bool IsEnabled { get; set; } = false;
+    public PlacesSkuTier SkuTier { get; set; } = PlacesSkuTier.EnterpriseWithAtmosphere;
     public int DailyRequestCeiling { get; set; } = 50;
     public int DailyRequestsUsed { get; set; } = 0;
+    public int MonthlyRequestsUsed { get; set; } = 0;
     public DateTime LastResetDateUtc { get; set; } = DateTime.UtcNow.Date;
+    public DateTime LastMonthlyResetDateUtc { get; set; } = DateTime.UtcNow.Date;
+
+    // Per-SKU Free Monthly Usage Caps (Google Places API New)
+    public int MonthlyFreeAllowance => SkuTier == PlacesSkuTier.Essentials ? 10000 : 1000;
+    public int DailyRequestsRemaining => Math.Max(0, DailyRequestCeiling - DailyRequestsUsed);
+    public int MonthlyRequestsRemaining => Math.Max(0, MonthlyFreeAllowance - MonthlyRequestsUsed);
 }
 
 public class GooglePlacesEnrichmentResult
@@ -29,4 +43,7 @@ public class GooglePlacesEnrichmentResult
     public string? ErrorMessage { get; set; }
     public int RequestsUsedToday { get; set; }
     public int DailyLimit { get; set; }
+    public int MonthlyRequestsUsed { get; set; }
+    public int MonthlyLimit { get; set; }
+    public PlacesSkuTier SkuTier { get; set; }
 }
