@@ -170,6 +170,21 @@ public partial class BusinessesViewModel : ViewModelBase
     private string _selectedDiscoveryCity = "Lahore";
 
     [ObservableProperty]
+    private ObservableCollection<string> _discoveryEngines =
+    [
+        "🌐 All Sources (Multi-Engine Aggregator)",
+        "🛰️ OpenStreetMap & Nominatim",
+        "✨ Gemini AI Commercial Discovery (Free Tier)",
+        "📍 Google My Business (Google Places)"
+    ];
+
+    [ObservableProperty]
+    private string _selectedDiscoveryEngine = "🌐 All Sources (Multi-Engine Aggregator)";
+
+    [ObservableProperty]
+    private string _discoveryCustomKeyword = string.Empty;
+
+    [ObservableProperty]
     private ObservableCollection<string> _discoveryCategoryPresets = [];
 
     [ObservableProperty]
@@ -466,8 +481,34 @@ public partial class BusinessesViewModel : ViewModelBase
     public async Task SelectSuggestedNiche(string niche)
     {
         if (string.IsNullOrWhiteSpace(niche)) return;
-        SearchQuery = niche;
-        await ApplyFiltersAsync();
+        var preset = MapNicheToCategoryPreset(niche);
+
+        var firstWord = preset.Split(' ')[0].TrimEnd(',');
+        var nicheWord = niche.Split(' ')[0].TrimEnd(',');
+
+        var matchedCat = Categories.FirstOrDefault(c => 
+            c.Contains(firstWord, StringComparison.OrdinalIgnoreCase) || 
+            c.Contains(nicheWord, StringComparison.OrdinalIgnoreCase));
+
+        if (matchedCat != null && matchedCat != "All Categories")
+        {
+            SelectedCategory = matchedCat;
+            SearchQuery = string.Empty;
+            await ApplyFiltersAsync();
+
+            if (FilteredCount > 0)
+            {
+                StatusMessage = $"Filtered by niche '{niche}' ({FilteredCount} leads in database)";
+                return;
+            }
+        }
+
+        // If no records in database for this niche yet, open the Discovery modal pre-set to this niche and scan!
+        OpenDiscoveryModal();
+        SelectedDiscoveryCategoryPreset = preset;
+        DiscoveryCustomKeyword = niche;
+        DiscoveryStatus = $"Searching OpenStreetMap & Google Places for '{niche}' in {SelectedDiscoveryCity}...";
+        await StartDiscoveryScan();
     }
 
     // --- Nearby Me Proximity Detection ---
@@ -1007,15 +1048,81 @@ public partial class BusinessesViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    public void SelectDiscoveryNiche(string niche)
+    public async Task SelectDiscoveryNiche(string niche)
     {
         if (string.IsNullOrWhiteSpace(niche)) return;
-        var preset = DiscoveryCategoryPresets.FirstOrDefault(p =>
-            niche.Contains(p.Split(' ')[0], StringComparison.OrdinalIgnoreCase));
-        if (preset != null)
+        var preset = MapNicheToCategoryPreset(niche);
+        SelectedDiscoveryCategoryPreset = preset;
+        DiscoveryCustomKeyword = niche;
+        DiscoveryStatus = $"Selected niche '{niche}' ({preset}). Scanning...";
+        await StartDiscoveryScan();
+    }
+
+    [RelayCommand]
+    public void SelectAllDiscoveredLeads()
+    {
+        foreach (var lead in DiscoveredLeads)
         {
-            SelectedDiscoveryCategoryPreset = preset;
+            lead.IsSelectedForImport = !lead.IsDuplicate;
         }
+    }
+
+    [RelayCommand]
+    public void DeselectAllDiscoveredLeads()
+    {
+        foreach (var lead in DiscoveredLeads)
+        {
+            lead.IsSelectedForImport = false;
+        }
+    }
+
+    public string MapNicheToCategoryPreset(string niche)
+    {
+        if (string.IsNullOrWhiteSpace(niche)) return "⭐ All Commercial Businesses";
+        var n = niche.ToLowerInvariant();
+
+        if (n.Contains("clinic") || n.Contains("health") || n.Contains("dent") || n.Contains("medic") || n.Contains("aesthetic") || n.Contains("hospital") || n.Contains("surgical"))
+            return "Healthcare & Dental";
+        if (n.Contains("it") || n.Contains("saas") || n.Contains("soft") || n.Contains("tech") || n.Contains("digital") || n.Contains("cloud") || n.Contains("cyber"))
+            return "Software & IT Services";
+        if (n.Contains("law") || n.Contains("legal") || n.Contains("attorney") || n.Contains("barrister") || n.Contains("consultant") || n.Contains("visa") || n.Contains("diplomatic"))
+            return "Lawyers & Legal";
+        if (n.Contains("real estate") || n.Contains("housing") || n.Contains("propert") || n.Contains("estate") || n.Contains("realt") || n.Contains("develop"))
+            return "Real Estate & Property";
+        if (n.Contains("hotel") || n.Contains("resort") || n.Contains("tourism") || n.Contains("hospitality") || n.Contains("lodg") || n.Contains("travel"))
+            return "Hotels & Lodging";
+        if (n.Contains("rest") || n.Contains("food") || n.Contains("cafe") || n.Contains("dining") || n.Contains("gourmet") || n.Contains("spices") || n.Contains("bakery"))
+            return "Restaurants & Food";
+        if (n.Contains("textile") || n.Contains("apparel") || n.Contains("garment") || n.Contains("boutique") || n.Contains("fashion") || n.Contains("fabric"))
+            return "Textile, Apparel & Fashion";
+        if (n.Contains("solar") || n.Contains("energy") || n.Contains("power") || n.Contains("renew"))
+            return "Solar & Renewable Energy";
+        if (n.Contains("car") || n.Contains("auto") || n.Contains("vehicle") || n.Contains("mechanic") || n.Contains("dealership") || n.Contains("spare"))
+            return "Automotive & Mechanics";
+        if (n.Contains("school") || n.Contains("college") || n.Contains("educat") || n.Contains("academ") || n.Contains("board"))
+            return "Education & Schools";
+        if (n.Contains("construct") || n.Contains("builder") || n.Contains("engineer") || n.Contains("contractor") || n.Contains("marble") || n.Contains("mining"))
+            return "Construction & Contractors";
+        if (n.Contains("agro") || n.Contains("farm") || n.Contains("agricultur") || n.Contains("seed") || n.Contains("crop") || n.Contains("fertilizer"))
+            return "Agricultural & Agro-Chemical";
+        if (n.Contains("bank") || n.Contains("financ") || n.Contains("invest") || n.Contains("insur") || n.Contains("islamic"))
+            return "Financial & Insurance";
+        if (n.Contains("account") || n.Contains("tax") || n.Contains("audit"))
+            return "Accountants & Tax";
+        if (n.Contains("salon") || n.Contains("spa") || n.Contains("beauty"))
+            return "Beauty & Salons";
+        if (n.Contains("event") || n.Contains("wedding") || n.Contains("marriage") || n.Contains("banquet"))
+            return "Event Planners & Marriage Halls";
+        if (n.Contains("print") || n.Contains("packag") || n.Contains("sign"))
+            return "Printing, Packaging & Signage";
+        if (n.Contains("pet") || n.Contains("vet"))
+            return "Pet Care & Veterinary Clinics";
+        if (n.Contains("sports") || n.Contains("fitness") || n.Contains("gym"))
+            return "Fitness & Gyms";
+        if (n.Contains("retail") || n.Contains("store") || n.Contains("shop") || n.Contains("trade") || n.Contains("market") || n.Contains("logistics") || n.Contains("cargo") || n.Contains("port"))
+            return "Commercial & Retail";
+
+        return DiscoveryCategoryPresets.FirstOrDefault(p => p.Contains(niche, StringComparison.OrdinalIgnoreCase)) ?? "⭐ All Commercial Businesses";
     }
 
     [RelayCommand]
@@ -1029,7 +1136,7 @@ public partial class BusinessesViewModel : ViewModelBase
         UpdateDiscoveryStates(SelectedDiscoveryCountry);
         UpdateDiscoveryCities(SelectedDiscoveryCountry, SelectedDiscoveryState);
         UpdateDiscoveryNiches();
-        DiscoveryStatus = $"Ready to scan for {SelectedDiscoveryCategoryPreset} in {SelectedDiscoveryCity}, {SelectedDiscoveryCountry}.";
+        DiscoveryStatus = $"Ready to scan multi-source channels for '{SelectedDiscoveryCategoryPreset}' in {SelectedDiscoveryCity}, {SelectedDiscoveryCountry}.";
         IsDiscoveryModalOpen = true;
     }
 
@@ -1078,13 +1185,19 @@ public partial class BusinessesViewModel : ViewModelBase
         try
         {
             IsDiscovering = true;
-            DiscoveryStatus = $"Querying OpenStreetMap Overpass servers for {SelectedDiscoveryCategoryPreset} in {SelectedDiscoveryCity}, {SelectedDiscoveryCountry}...";
+            DiscoveryStatus = $"Scanning multi-source channels ({SelectedDiscoveryEngine}) for '{SelectedDiscoveryCategoryPreset}' in {SelectedDiscoveryCity}, {SelectedDiscoveryCountry}...";
 
             var presets = _discoveryService.GetPresetCategories();
             List<string> targetAmenities = ["clinic", "dentist", "pharmacy"];
             if (presets.TryGetValue(SelectedDiscoveryCategoryPreset, out var list))
             {
                 targetAmenities = list;
+            }
+
+            // If All Commercial preset selected, pass all_commercial flag
+            if (SelectedDiscoveryCategoryPreset.Contains("All Commercial", StringComparison.OrdinalIgnoreCase))
+            {
+                targetAmenities = ["all_commercial"];
             }
 
             BoundingBox? bbox = null;
@@ -1105,7 +1218,10 @@ public partial class BusinessesViewModel : ViewModelBase
                 TargetAmenities = targetAmenities,
                 BBox = bbox,
                 Limit = 150,
-                TimeoutSeconds = 30
+                TimeoutSeconds = 30,
+                SearchEngine = SelectedDiscoveryEngine,
+                CategoryPreset = SelectedDiscoveryCategoryPreset,
+                CustomSearchTerm = DiscoveryCustomKeyword
             };
 
             var result = await _discoveryService.DiscoverLeadsAsync(query);
@@ -1127,7 +1243,7 @@ public partial class BusinessesViewModel : ViewModelBase
             }
             else
             {
-                DiscoveryStatus = $"Scan complete in {result.ExecutionDuration.TotalSeconds:F1}s: No matching businesses found in {SelectedDiscoveryCity}.";
+                DiscoveryStatus = $"Scan complete in {result.ExecutionDuration.TotalSeconds:F1}s: No matching businesses found in {SelectedDiscoveryCity}. Try selecting '⭐ All Commercial Businesses' or clearing the custom keyword.";
             }
         }
         catch (Exception ex)
@@ -1143,19 +1259,32 @@ public partial class BusinessesViewModel : ViewModelBase
     [RelayCommand]
     public async Task ExecuteDiscoveryImport()
     {
-        if (DiscoveredLeads.Count == 0) return;
+        var toImport = DiscoveredLeads.Where(l => l.IsSelectedForImport && !l.IsDuplicate).ToList();
+        if (toImport.Count == 0)
+        {
+            DiscoveryStatus = "⚠️ No new leads selected for import. (Duplicates are skipped automatically).";
+            return;
+        }
 
         try
         {
             IsDiscovering = true;
-            DiscoveryStatus = "Importing selected leads into local SQLite database...";
+            DiscoveryStatus = $"Importing {toImport.Count} leads into local SQLite database...";
 
             var result = await _discoveryService.ImportDiscoveredLeadsAsync(
                 DiscoveredLeads,
-                DiscoveryDedupStrategy);
+                DeduplicationStrategy.Skip);
 
-            StatusMessage = $"Discovery Import: {result.CreatedCount} created, {result.UpdatedCount} merged, {result.SkippedCount} skipped";
+            StatusMessage = $"Discovery Import: {result.CreatedCount} new leads added to database ({result.SkippedCount} duplicates skipped)";
             CloseDiscoveryModal();
+
+            // Reset filters to "All" so the newly imported leads are immediately visible to the operator
+            SelectedCountry = "All Countries";
+            SelectedState = "All States/Provinces";
+            SelectedCity = "All Cities";
+            SelectedCategory = "All Categories";
+            SearchQuery = string.Empty;
+
             await RefreshStatesForCountryAsync(SelectedCountry);
             await RefreshCitiesForStateAsync(SelectedCountry, SelectedState);
             await ApplyFiltersAsync();

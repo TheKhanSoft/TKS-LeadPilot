@@ -304,6 +304,100 @@ public class GooglePlacesEnrichmentService : IGooglePlacesEnrichmentService
         }
     }
 
+    public async Task<List<Business>> DiscoverPlacesAsync(string query, string city, string country, int limit = 20, CancellationToken ct = default)
+    {
+        var results = new List<Business>();
+        var config = await GetConfigAsync(ct);
+
+        if (!config.IsEnabled) return results;
+
+        var apiKey = _secretVault.GetSecret(ApiKeyVaultKey);
+        if (string.IsNullOrWhiteSpace(apiKey)) return results;
+
+        if (config.DailyRequestsUsed >= config.DailyRequestCeiling) return results;
+
+        try
+        {
+            var searchQuery = $"{query} in {city} {country}";
+            var url = $"https://maps.googleapis.com/maps/api/place/textsearch/json?query={Uri.EscapeDataString(searchQuery)}&key={apiKey}";
+
+            var response = await _httpClient.GetAsync(url, ct);
+            if (!response.IsSuccessStatusCode) return results;
+
+            var json = await response.Content.ReadAsStringAsync(ct);
+
+            await ConfigLock.WaitAsync(ct);
+            try
+            {
+                _config.DailyRequestsUsed++;
+                config.DailyRequestsUsed = _config.DailyRequestsUsed;
+            }
+            finally
+            {
+                ConfigLock.Release();
+            }
+
+            using var doc = JsonDocument.Parse(json);
+            if (!doc.RootElement.TryGetProperty("results", out var places) || places.ValueKind != JsonValueKind.Array)
+            {
+                return results;
+            }
+
+            foreach (var place in places.EnumerateArray())
+            {
+                var name = place.TryGetProperty("name", out var n) ? n.GetString() : null;
+                if (string.IsNullOrWhiteSpace(name)) continue;
+
+                var address = place.TryGetProperty("formatted_address", out var addr) ? addr.GetString() : $"{city}, {country}";
+                var placeId = place.TryGetProperty("place_id", out var pid) ? pid.GetString() : null;
+
+                double? rating = null;
+                if (place.TryGetProperty("rating", out var r) && r.TryGetDouble(out var rVal)) rating = rVal;
+
+                int? userRatingsTotal = null;
+                if (place.TryGetProperty("user_ratings_total", out var urt) && urt.TryGetInt32(out var urtVal)) userRatingsTotal = urtVal;
+
+                double? lat = null;
+                double? lng = null;
+                if (place.TryGetProperty("geometry", out var geom) && geom.TryGetProperty("location", out var loc))
+                {
+                    if (loc.TryGetProperty("lat", out var latProp) && latProp.TryGetDouble(out var latVal)) lat = latVal;
+                    if (loc.TryGetProperty("lng", out var lngProp) && lngProp.TryGetDouble(out var lngVal)) lng = lngVal;
+                }
+
+                results.Add(new Business
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = name.Trim(),
+                    Category = query,
+                    City = city,
+                    Country = country,
+                    AddressLine1 = address,
+                    Latitude = lat,
+                    Longitude = lng,
+                    GooglePlaceId = placeId,
+                    GoogleRating = rating,
+                    GoogleReviewCount = userRatingsTotal,
+                    IsGoogleVerified = true,
+                    LastEnrichedAtUtc = DateTime.UtcNow,
+                    WebsiteStatus = WebsiteStatus.NoWebsite,
+                    PipelineStageId = "stage-discovered",
+                    LeadStatus = LeadStatus.Discovered,
+                    SourceProvider = "Google My Business (Google Places API)",
+                    SourceReferenceId = placeId,
+                    Tags = $"Google Verified, GMB, Rating {rating:F1}",
+                    CreatedAtUtc = DateTime.UtcNow,
+                    UpdatedAtUtc = DateTime.UtcNow
+                });
+
+                if (results.Count >= limit) break;
+            }
+        }
+        catch { }
+
+        return results;
+    }
+
     private static void ResetIfNewDay()
     {
         var today = DateTime.UtcNow.Date;

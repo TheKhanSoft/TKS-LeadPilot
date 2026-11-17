@@ -20,6 +20,7 @@ public class DuplicateMatchResult
 {
     public Business IncomingBusiness { get; set; } = null!;
     public Business? ExistingBusiness { get; set; }
+    public string? MatchedExistingId => ExistingBusiness?.Id;
     public DuplicateMatchType MatchType { get; set; } = DuplicateMatchType.None;
     public int ConfidenceScore { get; set; } = 0;
     public string MatchReason { get; set; } = string.Empty;

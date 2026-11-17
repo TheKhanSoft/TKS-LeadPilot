@@ -32,14 +32,62 @@ public class DiscoveryQuery
     public BoundingBox? BBox { get; set; }
     public int Limit { get; set; } = 150;
     public int TimeoutSeconds { get; set; } = 30;
+    public string SearchEngine { get; set; } = "All Sources (Unified Aggregator)";
+    public string? CategoryPreset { get; set; }
+    public string? CustomSearchTerm { get; set; }
 }
 
-public class DiscoveredLead
+public class DiscoveredLead : System.ComponentModel.INotifyPropertyChanged
 {
-    public Business Business { get; set; } = null!;
-    public DuplicateMatchResult? DuplicateMatch { get; set; }
+    private bool _isSelectedForImport = true;
+    private Business _business = null!;
+    private DuplicateMatchResult? _duplicateMatch;
+
+    public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
+    public Business Business
+    {
+        get => _business;
+        set
+        {
+            _business = value;
+            OnPropertyChanged(nameof(Business));
+        }
+    }
+
+    public DuplicateMatchResult? DuplicateMatch
+    {
+        get => _duplicateMatch;
+        set
+        {
+            _duplicateMatch = value;
+            OnPropertyChanged(nameof(DuplicateMatch));
+            OnPropertyChanged(nameof(IsDuplicate));
+            OnPropertyChanged(nameof(DuplicateStatusText));
+        }
+    }
+
     public bool IsDuplicate => DuplicateMatch?.IsDuplicate ?? false;
-    public bool IsSelectedForImport { get; set; } = true;
+
+    public string DuplicateStatusText => IsDuplicate
+        ? $"⚠️ Duplicate ({DuplicateMatch?.MatchReason ?? "Already in database"})"
+        : "✅ New Lead";
+
+    public bool IsSelectedForImport
+    {
+        get => _isSelectedForImport;
+        set
+        {
+            if (_isSelectedForImport != value)
+            {
+                _isSelectedForImport = value;
+                OnPropertyChanged(nameof(IsSelectedForImport));
+            }
+        }
+    }
+
+    protected void OnPropertyChanged(string propertyName)
+        => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
 }
 
 public class DiscoveryResult

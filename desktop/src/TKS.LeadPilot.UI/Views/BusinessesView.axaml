@@ -435,16 +435,16 @@
             </Border>
         </Border>
 
-        <!-- Discovery Modal Overlay (Cascading Hierarchies + Full Field Disabling during Scan) -->
+        <!-- Discovery Modal Overlay (Cascading Hierarchies + Multi-Source Engines + Full Field Disabling during Scan) -->
         <Border Background="#C0090D16" IsVisible="{Binding IsDiscoveryModalOpen}">
-            <Border Background="#162235" BorderBrush="#2D405D" BorderThickness="1" CornerRadius="12" Width="820" MaxHeight="680" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Border Background="#162235" BorderBrush="#2D405D" BorderThickness="1" CornerRadius="12" Width="920" MaxHeight="720" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Grid RowDefinitions="Auto,Auto,*,Auto">
                     <!-- Header -->
                     <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,14">
                         <Grid ColumnDefinitions="*,Auto">
                             <StackPanel Grid.Column="0" Spacing="2">
-                                <TextBlock Text="OpenStreetMap Lead Discovery Engine" FontSize="19" FontWeight="Bold" Foreground="#F8FAFC"/>
-                                <TextBlock Text="Scan public OpenStreetMap Overpass servers for businesses, clinics, and enterprises without API fees." FontSize="12" Foreground="#94A3B8"/>
+                                <TextBlock Text="Global Multi-Source Lead Discovery Engine" FontSize="19" FontWeight="Bold" Foreground="#F8FAFC"/>
+                                <TextBlock Text="Aggregate live commercial leads across OpenStreetMap, Google Places (GMB), Gemini AI, and verified business catalogs." FontSize="12" Foreground="#94A3B8"/>
                             </StackPanel>
                             <Button Grid.Column="1" Content="📍 Use Nearby Location" Command="{Binding SetDiscoveryNearbyCommand}" Classes="btn-accent" IsEnabled="{Binding !IsDiscovering}" VerticalAlignment="Center"/>
                         </Grid>
@@ -471,14 +471,27 @@
                                 </StackPanel>
                             </Grid>
 
-                            <!-- Category Preset & Action -->
-                            <Grid ColumnDefinitions="*,Auto">
-                                <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                            <!-- Engines & Category Presets -->
+                            <Grid ColumnDefinitions="*,*">
+                                <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                                    <TextBlock Text="Discovery Source Engine:" FontSize="11" FontWeight="SemiBold" Foreground="#64748B" Margin="0,0,0,4"/>
+                                    <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding DiscoveryEngines}" SelectedItem="{Binding SelectedDiscoveryEngine}" IsEnabled="{Binding !IsDiscovering}"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Margin="6,0,0,0">
                                     <TextBlock Text="Business Category Preset:" FontSize="11" FontWeight="SemiBold" Foreground="#64748B" Margin="0,0,0,4"/>
                                     <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding DiscoveryCategoryPresets}" SelectedItem="{Binding SelectedDiscoveryCategoryPreset}" IsEnabled="{Binding !IsDiscovering}"/>
                                 </StackPanel>
+                            </Grid>
 
-                                <Button Grid.Column="1" Content="🛰️ Start Overpass Scan" Command="{Binding StartDiscoveryScanCommand}" Classes="btn-accent" IsEnabled="{Binding !IsDiscovering}" Padding="18,10" VerticalAlignment="Bottom"/>
+                            <!-- Custom Keyword Filter & Action -->
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                    <TextBlock Text="Custom Search Keyword (Optional):" FontSize="11" FontWeight="SemiBold" Foreground="#64748B" Margin="0,0,0,4"/>
+                                    <TextBox Text="{Binding DiscoveryCustomKeyword}" PlaceholderText="e.g. Solar, Software House, Textile, Hospital, Wedding Hall..." IsEnabled="{Binding !IsDiscovering}"/>
+                                </StackPanel>
+
+                                <Button Grid.Column="1" Content="⚡ Start Multi-Source Scan" Command="{Binding StartDiscoveryScanCommand}" Classes="btn-accent" IsEnabled="{Binding !IsDiscovering}" Padding="18,10" VerticalAlignment="Bottom"/>
                             </Grid>
 
                             <!-- Suggested Opportunities Bar (Disabled during scan) -->
@@ -531,10 +544,21 @@
                                       BorderThickness="0"
                                       RowBackground="#0C1422">
                                 <DataGrid.Columns>
-                                    <DataGridCheckBoxColumn Header="Import" Binding="{Binding IsSelectedForImport}" Width="45" />
+                                    <DataGridTemplateColumn Header="Import" Width="60">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate x:DataType="m:DiscoveredLead">
+                                                <CheckBox IsChecked="{Binding IsSelectedForImport, Mode=TwoWay}"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"
+                                                          IsEnabled="{Binding !IsDuplicate}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="Status" Binding="{Binding DuplicateStatusText}" IsReadOnly="True" Width="110" />
                                     <DataGridTextColumn Header="Business Name" Binding="{Binding Business.Name}" IsReadOnly="True" Width="1.8*" />
-                                    <DataGridTextColumn Header="Category" Binding="{Binding Business.Category}" IsReadOnly="True" Width="1.3*" />
-                                    <DataGridTextColumn Header="City" Binding="{Binding Business.City}" IsReadOnly="True" Width="100" />
+                                    <DataGridTextColumn Header="Category" Binding="{Binding Business.Category}" IsReadOnly="True" Width="1.2*" />
+                                    <DataGridTextColumn Header="City" Binding="{Binding Business.City}" IsReadOnly="True" Width="95" />
+                                    <DataGridTextColumn Header="Source Engine" Binding="{Binding Business.SourceProvider}" IsReadOnly="True" Width="1.3*" />
                                     <DataGridTextColumn Header="Website" Binding="{Binding Business.WebsiteUrl}" IsReadOnly="True" Width="1.3*" />
                                     <DataGridTextColumn Header="Phone" Binding="{Binding Business.PhonePrimary}" IsReadOnly="True" Width="120" />
                                 </DataGrid.Columns>
@@ -543,10 +567,16 @@
                     </Grid>
 
                     <!-- Footer Actions -->
-                    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-                        <Button Content="Close" Command="{Binding CloseDiscoveryModalCommand}" Classes="btn-secondary" IsEnabled="{Binding !IsDiscovering}"/>
-                        <Button Content="Import Selected Leads" Command="{Binding ExecuteDiscoveryImportCommand}" Classes="btn-success" IsEnabled="{Binding !IsDiscovering}" Padding="18,8"/>
-                    </StackPanel>
+                    <Grid Grid.Row="3" ColumnDefinitions="Auto,*">
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                            <Button Content="✓ Select All (New)" Command="{Binding SelectAllDiscoveredLeadsCommand}" Classes="btn-secondary" IsEnabled="{Binding !IsDiscovering}" Padding="10,6" FontSize="11"/>
+                            <Button Content="✕ Deselect All" Command="{Binding DeselectAllDiscoveredLeadsCommand}" Classes="btn-secondary" IsEnabled="{Binding !IsDiscovering}" Padding="10,6" FontSize="11"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+                            <Button Content="Close" Command="{Binding CloseDiscoveryModalCommand}" Classes="btn-secondary" IsEnabled="{Binding !IsDiscovering}"/>
+                            <Button Content="📥 Import Selected Leads" Command="{Binding ExecuteDiscoveryImportCommand}" Classes="btn-success" IsEnabled="{Binding !IsDiscovering}" Padding="18,8"/>
+                        </StackPanel>
+                    </Grid>
                 </Grid>
             </Border>
         </Border>

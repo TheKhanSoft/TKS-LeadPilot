@@ -101,6 +101,7 @@ public interface IGooglePlacesEnrichmentService
     Task SaveConfigAsync(GooglePlacesConfig config, string? apiKey = null, CancellationToken ct = default);
     Task<GooglePlacesEnrichmentResult> EnrichBusinessAsync(Business business, bool forceRefresh = false, CancellationToken ct = default);
     Task<int> GetRemainingRequestsTodayAsync(CancellationToken ct = default);
+    Task<List<Business>> DiscoverPlacesAsync(string query, string city, string country, int limit = 20, CancellationToken ct = default);
 }
 
 public interface IAiProposalSynthesizer
@@ -110,6 +111,7 @@ public interface IAiProposalSynthesizer
     Task<AuditProposalSynthesisResult> SynthesizeProposalAsync(AuditProposalSynthesisRequest request, CancellationToken ct = default);
     AuditProposalSynthesisResult SynthesizeDeterministicProposal(AuditProposalSynthesisRequest request);
     Task<int> GetRemainingRequestsTodayAsync(CancellationToken ct = default);
+    Task<List<Business>> DiscoverBusinessesAiAsync(string city, string country, string category, int count = 25, CancellationToken ct = default);
 }
 
 public interface IAuditComparisonService

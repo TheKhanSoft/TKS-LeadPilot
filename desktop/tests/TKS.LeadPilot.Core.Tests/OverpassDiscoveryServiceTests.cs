@@ -71,6 +71,7 @@ public class OverpassDiscoveryServiceTests
         var query = new DiscoveryQuery
         {
             City = "Karachi",
+            SearchEngine = "OpenStreetMap Overpass (Free Live QL)",
             TargetAmenities = ["dentist", "clinic"]
         };
 
@@ -130,6 +131,72 @@ public class OverpassDiscoveryServiceTests
         importResult.CreatedCount.Should().Be(1);
         fakeRepo.Storage.Should().HaveCount(1);
         fakeRepo.Storage[0].Name.Should().Be("Prime Diagnostics");
+    }
+
+    [Fact]
+    public void MapNominatimToBusinesses_ExtractsAllPropertiesAccurately()
+    {
+        var nominatimJson = """
+        [
+          {
+            "place_id": 998877,
+            "osm_type": "node",
+            "osm_id": 12345678,
+            "lat": "34.0151",
+            "lon": "71.5249",
+            "name": "Rehman Medical Institute",
+            "display_name": "Rehman Medical Institute, Phase 5, Hayatabad, Peshawar, Khyber Pakhtunkhwa, 25000, Pakistan",
+            "category": "amenity",
+            "type": "hospital",
+            "address": {
+              "hospital": "Rehman Medical Institute",
+              "suburb": "Hayatabad",
+              "city": "Peshawar",
+              "state": "Khyber Pakhtunkhwa",
+              "postcode": "25000",
+              "country": "Pakistan"
+            },
+            "extratags": {
+              "phone": "+92 91 5838000",
+              "website": "https://rmi.edu.pk"
+            }
+          }
+        ]
+        """;
+
+        var businesses = OverpassResultMapper.MapNominatimToBusinesses(nominatimJson, "Peshawar", "Pakistan", "Khyber Pakhtunkhwa");
+
+        businesses.Should().HaveCount(1);
+        var b = businesses[0];
+        b.Name.Should().Be("Rehman Medical Institute");
+        b.Category.Should().Contain("Hospital");
+        b.City.Should().Be("Peshawar");
+        b.Country.Should().Be("Pakistan");
+        b.StateProvince.Should().Be("Khyber Pakhtunkhwa");
+        b.PhonePrimary.Should().Be("+92 91 5838000");
+        b.WebsiteUrl.Should().Be("https://rmi.edu.pk");
+        b.SourceProvider.Should().Be("OpenStreetMap (Nominatim)");
+    }
+
+    [Fact]
+    public void OverpassQueryBuilder_BuildsBroadCommercialTags_ForCityScan()
+    {
+        var query = new DiscoveryQuery
+        {
+            City = "Peshawar",
+            Country = "Pakistan",
+            TargetAmenities = ["all_commercial"],
+            CategoryPreset = "⭐ All Commercial Businesses & Enterprises"
+        };
+
+        var ql = OverpassQueryBuilder.BuildQuery(query);
+
+        ql.Should().Contain("node[\"office\"]");
+        ql.Should().Contain("node[\"craft\"]");
+        ql.Should().Contain("node[\"healthcare\"]");
+        ql.Should().Contain("node[\"amenity\"]");
+        ql.Should().Contain("node[\"shop\"]");
+        ql.Should().Contain("33.9500,71.4500,34.0500,71.6000");
     }
 
     private class MockHttpMessageHandler(string responseContent) : HttpMessageHandler

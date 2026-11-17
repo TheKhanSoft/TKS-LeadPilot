@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using TKS.LeadPilot.Core.Enums;
 using TKS.LeadPilot.Core.Interfaces;
 using TKS.LeadPilot.Core.Models;
 
@@ -488,6 +489,137 @@ public partial class AiProposalSynthesizer : IAiProposalSynthesizer
         }
 
         return list;
+    }
+
+    public async Task<List<Business>> DiscoverBusinessesAiAsync(string city, string country, string category, int count = 25, CancellationToken ct = default)
+    {
+        var results = new List<Business>();
+        var config = await GetConfigAsync(ct);
+
+        if (!config.IsEnabled) return results;
+
+        var apiKey = _secretVault.GetSecret(ApiKeyVaultKey) ?? _secretVault.GetSecret("GeminiApiKey");
+        if (string.IsNullOrWhiteSpace(apiKey)) return results;
+
+        if (config.DailyRequestsUsed >= config.DailyRequestCeiling) return results;
+
+        try
+        {
+            var prompt = $$"""
+            You are an enterprise business intelligence investigator for TKS LeadPilot.
+            List {{count}} prominent, operating commercial businesses, clinics, companies, stores, law firms, restaurants, or service providers located in {{city}}, {{country}} under the category '{{category}}' (or covering diverse key commercial sectors if category is 'All').
+            
+            Return ONLY a valid JSON array of objects with the following keys:
+            [
+              {
+                "name": "Commercial Name",
+                "category": "Standard Business Category",
+                "address": "Street / Road / Sector, City",
+                "phone": "Phone with country code",
+                "website": "https://... or null if unknown",
+                "tags": "Commercial Niche, Keywords"
+              }
+            ]
+            """;
+
+            var requestBody = new
+            {
+                contents = new[]
+                {
+                    new
+                    {
+                        parts = new[]
+                        {
+                            new { text = prompt }
+                        }
+                    }
+                },
+                generationConfig = new
+                {
+                    temperature = 0.2,
+                    maxOutputTokens = 2048,
+                    responseMimeType = "application/json"
+                }
+            };
+
+            var jsonPayload = JsonSerializer.Serialize(requestBody);
+            var url = $"https://generativelanguage.googleapis.com/v1beta/models/{_config.ModelName}:generateContent?key={apiKey}";
+
+            using var reqMsg = new HttpRequestMessage(HttpMethod.Post, url)
+            {
+                Content = new StringContent(jsonPayload, Encoding.UTF8, "application/json")
+            };
+
+            var resp = await _httpClient.SendAsync(reqMsg, ct);
+            if (!resp.IsSuccessStatusCode) return results;
+
+            var respJson = await resp.Content.ReadAsStringAsync(ct);
+
+            await ConfigLock.WaitAsync(ct);
+            try
+            {
+                _config.DailyRequestsUsed++;
+            }
+            finally
+            {
+                ConfigLock.Release();
+            }
+
+            using var doc = JsonDocument.Parse(respJson);
+            if (!doc.RootElement.TryGetProperty("candidates", out var candidates) || candidates.GetArrayLength() == 0)
+                return results;
+
+            var firstCandidate = candidates[0];
+            if (!firstCandidate.TryGetProperty("content", out var content) ||
+                !content.TryGetProperty("parts", out var parts) ||
+                parts.GetArrayLength() == 0)
+                return results;
+
+            var rawText = parts[0].GetProperty("text").GetString();
+            if (string.IsNullOrWhiteSpace(rawText)) return results;
+
+            var startIndex = rawText.IndexOf('[');
+            var endIndex = rawText.LastIndexOf(']');
+            if (startIndex == -1 || endIndex == -1 || endIndex <= startIndex) return results;
+
+            var cleanArrayJson = rawText.Substring(startIndex, endIndex - startIndex + 1);
+            using var arrDoc = JsonDocument.Parse(cleanArrayJson);
+
+            foreach (var item in arrDoc.RootElement.EnumerateArray())
+            {
+                var name = item.TryGetProperty("name", out var n) ? n.GetString() : null;
+                if (string.IsNullOrWhiteSpace(name)) continue;
+
+                var cat = item.TryGetProperty("category", out var c) ? c.GetString() : category;
+                var addr = item.TryGetProperty("address", out var a) ? a.GetString() : $"{city}, {country}";
+                var phone = item.TryGetProperty("phone", out var p) ? p.GetString() : null;
+                var web = item.TryGetProperty("website", out var w) ? w.GetString() : null;
+                var tags = item.TryGetProperty("tags", out var t) ? t.GetString() : null;
+
+                results.Add(new Business
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = name.Trim(),
+                    Category = cat ?? category,
+                    City = city,
+                    Country = country,
+                    AddressLine1 = addr,
+                    PhonePrimary = phone,
+                    WebsiteUrl = web,
+                    WebsiteStatus = !string.IsNullOrWhiteSpace(web) ? WebsiteStatus.ActiveWebsite : WebsiteStatus.NoWebsite,
+                    PipelineStageId = "stage-discovered",
+                    LeadStatus = LeadStatus.Discovered,
+                    SourceProvider = "Google Gemini Free Tier (AI Commercial Discovery)",
+                    SourceReferenceId = $"gemini-{Guid.NewGuid():N}"[..18],
+                    Tags = $"Gemini AI Discovered, {tags}",
+                    CreatedAtUtc = DateTime.UtcNow,
+                    UpdatedAtUtc = DateTime.UtcNow
+                });
+            }
+        }
+        catch { }
+
+        return results;
     }
 
     private static void ResetIfNewDay()

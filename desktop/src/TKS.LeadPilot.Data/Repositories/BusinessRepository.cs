@@ -81,6 +81,10 @@ public class BusinessRepository : IBusinessRepository
 
     public async Task<Business> AddAsync(Business business, CancellationToken ct = default)
     {
+        if (string.IsNullOrWhiteSpace(business.PipelineStageId))
+        {
+            business.PipelineStageId = "stage-discovered";
+        }
         business.CreatedAtUtc = DateTime.UtcNow;
         business.UpdatedAtUtc = DateTime.UtcNow;
         _context.Businesses.Add(business);
@@ -90,14 +94,103 @@ public class BusinessRepository : IBusinessRepository
 
     public async Task AddBatchAsync(IEnumerable<Business> businesses, CancellationToken ct = default)
     {
+        var list = businesses.ToList();
+        if (list.Count == 0) return;
+
+        // Fetch existing records for duplicate safety
+        var existing = await _context.Businesses
+            .AsNoTracking()
+            .Where(b => !b.IsDeleted)
+            .Select(b => new { b.Id, b.Name, b.City, b.WebsiteUrl, b.PhonePrimary })
+            .ToListAsync(ct);
+
+        var existingDomains = new HashSet<string>(
+            existing.Where(b => !string.IsNullOrWhiteSpace(b.WebsiteUrl))
+                    .Select(b => CleanDomain(b.WebsiteUrl!)),
+            StringComparer.OrdinalIgnoreCase);
+
+        var existingPhones = new HashSet<string>(
+            existing.Where(b => !string.IsNullOrWhiteSpace(b.PhonePrimary))
+                    .Select(b => CleanPhone(b.PhonePrimary!)),
+            StringComparer.OrdinalIgnoreCase);
+
+        var existingNameCity = new HashSet<string>(
+            existing.Select(b => $"{CleanName(b.Name)}|{b.City.Trim().ToLowerInvariant()}"),
+            StringComparer.OrdinalIgnoreCase);
+
         var now = DateTime.UtcNow;
-        foreach (var b in businesses)
+        var filteredToInsert = new List<Business>();
+
+        foreach (var b in list)
         {
+            if (string.IsNullOrWhiteSpace(b.PipelineStageId))
+            {
+                b.PipelineStageId = "stage-discovered";
+            }
+
+            // Check if domain duplicate
+            var d = CleanDomain(b.WebsiteUrl);
+            if (!string.IsNullOrEmpty(d) && existingDomains.Contains(d))
+            {
+                continue; // Skip duplicate domain
+            }
+
+            // Check if phone duplicate
+            var p = CleanPhone(b.PhonePrimary);
+            if (!string.IsNullOrEmpty(p) && p.Length >= 8 && existingPhones.Contains(p))
+            {
+                continue; // Skip duplicate phone
+            }
+
+            // Check if name + city duplicate
+            var nc = $"{CleanName(b.Name)}|{(b.City ?? "").Trim().ToLowerInvariant()}";
+            if (existingNameCity.Contains(nc))
+            {
+                continue; // Skip duplicate name + city
+            }
+
             b.CreatedAtUtc = now;
             b.UpdatedAtUtc = now;
+            filteredToInsert.Add(b);
+
+            // Track within batch so duplicates within the same batch are also caught
+            if (!string.IsNullOrEmpty(d)) existingDomains.Add(d);
+            if (!string.IsNullOrEmpty(p)) existingPhones.Add(p);
+            existingNameCity.Add(nc);
         }
-        _context.Businesses.AddRange(businesses);
-        await _context.SaveChangesAsync(ct);
+
+        if (filteredToInsert.Count > 0)
+        {
+            _context.Businesses.AddRange(filteredToInsert);
+            await _context.SaveChangesAsync(ct);
+        }
+    }
+
+    private static string CleanDomain(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return string.Empty;
+        var u = url.Trim().ToLowerInvariant();
+        if (u.StartsWith("https://")) u = u[8..];
+        else if (u.StartsWith("http://")) u = u[7..];
+        if (u.StartsWith("www.")) u = u[4..];
+        var slash = u.IndexOf('/');
+        if (slash >= 0) u = u[..slash];
+        return u.Trim();
+    }
+
+    private static string CleanPhone(string? phone)
+    {
+        if (string.IsNullOrWhiteSpace(phone)) return string.Empty;
+        var digits = new string(phone.Where(char.IsDigit).ToArray());
+        if (digits.StartsWith("00")) digits = digits[2..];
+        else if (digits.StartsWith("0") && digits.Length >= 10) digits = "92" + digits[1..];
+        return digits;
+    }
+
+    private static string CleanName(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return string.Empty;
+        return System.Text.RegularExpressions.Regex.Replace(name.ToLowerInvariant(), @"[^\w\d]", "").Trim();
     }
 
     public async Task UpdateAsync(Business business, CancellationToken ct = default)

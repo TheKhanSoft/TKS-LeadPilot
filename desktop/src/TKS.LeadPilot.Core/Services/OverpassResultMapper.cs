@@ -197,4 +197,101 @@ public static class OverpassResultMapper
             return house;
         return null;
     }
+
+    public static List<Business> MapNominatimToBusinesses(string jsonContent, string defaultCity = "Karachi", string defaultCountry = "Pakistan", string? defaultState = null)
+    {
+        var results = new List<Business>();
+        if (string.IsNullOrWhiteSpace(jsonContent)) return results;
+
+        try
+        {
+            using var doc = JsonDocument.Parse(jsonContent);
+            if (doc.RootElement.ValueKind != JsonValueKind.Array) return results;
+
+            foreach (var elem in doc.RootElement.EnumerateArray())
+            {
+                var name = string.Empty;
+                if (elem.TryGetProperty("name", out var nameProp) && !string.IsNullOrWhiteSpace(nameProp.GetString()))
+                {
+                    name = nameProp.GetString()!;
+                }
+                else if (elem.TryGetProperty("display_name", out var dnProp) && !string.IsNullOrWhiteSpace(dnProp.GetString()))
+                {
+                    name = dnProp.GetString()!.Split(',')[0].Trim();
+                }
+
+                if (string.IsNullOrWhiteSpace(name)) continue;
+
+                var type = elem.TryGetProperty("type", out var typeProp) ? typeProp.GetString() : "commercial";
+                var category = FormatCategory(type);
+
+                double? lat = null;
+                double? lon = null;
+                if (elem.TryGetProperty("lat", out var latProp) && double.TryParse(latProp.GetString(), System.Globalization.CultureInfo.InvariantCulture, out var lVal)) lat = lVal;
+                if (elem.TryGetProperty("lon", out var lonProp) && double.TryParse(lonProp.GetString(), System.Globalization.CultureInfo.InvariantCulture, out var loVal)) lon = loVal;
+
+                string? phone = null;
+                string? website = null;
+                string? email = null;
+
+                if (elem.TryGetProperty("extratags", out var extra) && extra.ValueKind == JsonValueKind.Object)
+                {
+                    phone = GetTagValue(extra, "phone", "contact:phone", "mobile");
+                    website = GetTagValue(extra, "website", "contact:website", "url");
+                    email = GetTagValue(extra, "email", "contact:email");
+                }
+
+                var address = string.Empty;
+                var city = defaultCity;
+                var state = defaultState;
+                var country = defaultCountry;
+
+                if (elem.TryGetProperty("address", out var addr) && addr.ValueKind == JsonValueKind.Object)
+                {
+                    var road = GetTagValue(addr, "road", "street");
+                    var suburb = GetTagValue(addr, "suburb", "neighbourhood", "residential");
+                    address = CombineAddress(road, suburb) ?? string.Empty;
+
+                    var addrCity = GetTagValue(addr, "city", "town", "county");
+                    if (!string.IsNullOrWhiteSpace(addrCity)) city = addrCity;
+
+                    var addrState = GetTagValue(addr, "state", "province");
+                    if (!string.IsNullOrWhiteSpace(addrState)) state = addrState;
+
+                    var addrCountry = GetTagValue(addr, "country");
+                    if (!string.IsNullOrWhiteSpace(addrCountry)) country = addrCountry;
+                }
+
+                if (string.IsNullOrWhiteSpace(address) && elem.TryGetProperty("display_name", out var fullDn))
+                {
+                    address = fullDn.GetString() ?? string.Empty;
+                }
+
+                results.Add(new Business
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = name.Trim(),
+                    Category = category,
+                    City = city.Trim(),
+                    StateProvince = state,
+                    Country = country.Trim(),
+                    AddressLine1 = string.IsNullOrWhiteSpace(address) ? null : address.Trim(),
+                    PhonePrimary = phone,
+                    WebsiteUrl = website,
+                    EmailPrimary = email,
+                    WebsiteStatus = !string.IsNullOrWhiteSpace(website) ? WebsiteStatus.ActiveWebsite : WebsiteStatus.NoWebsite,
+                    Latitude = lat,
+                    Longitude = lon,
+                    SourceProvider = "OpenStreetMap (Nominatim)",
+                    SourceReferenceId = elem.TryGetProperty("place_id", out var pid) ? pid.ToString() : null,
+                    Tags = $"OSM Nominatim, {category}",
+                    CreatedAtUtc = DateTime.UtcNow,
+                    UpdatedAtUtc = DateTime.UtcNow
+                });
+            }
+        }
+        catch { }
+
+        return results;
+    }
 }
