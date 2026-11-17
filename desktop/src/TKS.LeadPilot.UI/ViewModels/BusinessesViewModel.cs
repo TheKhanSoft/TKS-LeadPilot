@@ -20,6 +20,11 @@ public partial class BusinessesViewModel : ViewModelBase
 {
     public static event Action<string>? GlobalNavigationRequested;
 
+    public static void RequestGlobalNavigation(string destination)
+    {
+        GlobalNavigationRequested?.Invoke(destination);
+    }
+
     [RelayCommand]
     public void OpenDiscoveryStation()
     {
@@ -1292,23 +1297,15 @@ public partial class BusinessesViewModel : ViewModelBase
     public void OpenLandingPageStudio(Business? business = null)
     {
         var b = business ?? SelectedBusiness;
-        if (b == null) return;
+        if (b == null)
+        {
+            StatusMessage = "⚠️ Select a business first to launch AI Landing Page Studio.";
+            return;
+        }
 
-        try
-        {
-            var studioVm = _serviceProvider.GetRequiredService<LandingPageStudioViewModel>();
-            studioVm.PopulateFromBusiness(b);
-            var window = new LandingPageStudioWindow
-            {
-                DataContext = studioVm
-            };
-            window.Show();
-            StatusMessage = $"🎨 Launched AI Landing Page Studio window for '{b.Name}'.";
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"Studio Launch Error: {ex.Message}";
-        }
+        LandingPageStudioViewModel.TargetBusinessForStudio = b;
+        GlobalNavigationRequested?.Invoke("LandingStudio");
+        StatusMessage = $"🎨 Pre-filled AI Landing Page Studio for '{b.Name}'.";
     }
 
     // --- Add Business ---
@@ -1806,12 +1803,11 @@ public partial class BusinessesViewModel : ViewModelBase
         }
         else
         {
-            var remaining = Math.Max(0, config.DailyRequestCeiling - config.DailyRequestsUsed);
-            EnrichConfirmMessage = $"Enrich '{SelectedBusiness.Name}' with verified Google Places data (Rating, Reviews, Address, Hours).\n\n" +
-                                   $"• Daily Ceiling: {config.DailyRequestCeiling} requests/day\n" +
-                                   $"• Used Today: {config.DailyRequestsUsed}\n" +
-                                   $"• Remaining: {remaining}\n\n" +
-                                   "Strict Cost Guard is active to prevent unexpected billing. Do you wish to continue?";
+            EnrichConfirmMessage = $"Enrich '{SelectedBusiness.Name}' with verified Google Places data.\n\n" +
+                                   $"• SKU Tier: {config.SkuTier}\n" +
+                                   $"• Daily Ceiling: {config.DailyRequestsUsed} / {config.DailyRequestCeiling} ({config.DailyRequestsRemaining} remaining today)\n" +
+                                   $"• Monthly Free Cap: {config.MonthlyRequestsUsed} / {config.MonthlyFreeAllowance:N0} ({config.MonthlyRequestsRemaining:N0} remaining this month)\n\n" +
+                                   "Strict Zero-Cost Guard guarantees $0.00 spend on Google Cloud. Do you wish to continue?";
         }
 
         IsEnrichConfirmModalOpen = true;
@@ -1841,7 +1837,7 @@ public partial class BusinessesViewModel : ViewModelBase
                 }
                 else
                 {
-                    StatusMessage = $"Enriched '{result.BusinessName}' via Google Places (★ {result.Rating:F1}, {result.UserRatingsTotal} reviews). Daily quota: {result.RequestsUsedToday}/{result.DailyLimit}.";
+                    StatusMessage = $"Enriched '{result.BusinessName}' via Google Places (New) (★ {result.Rating:F1}, {result.UserRatingsTotal} reviews). Today: {result.RequestsUsedToday}/{result.DailyLimit} | Month: {result.MonthlyRequestsUsed}/{result.MonthlyLimit:N0}.";
                 }
 
                 // Refresh business from repository to update all UI properties

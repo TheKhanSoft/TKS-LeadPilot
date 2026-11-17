@@ -48,36 +48,82 @@
                 </StackPanel>
             </Border>
 
-            <!-- Google Places API (Paid / Commercial Enrichment) -->
-            <Border Background="#0E1626" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="10" Padding="20">
+            <!-- Google Places API (New) Commercial Enrichment & Discovery -->
+            <Border Background="#0E1626" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="12" Padding="20">
                 <StackPanel Spacing="16">
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="Google Places API (Paid Commercial Enrichment)" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC"/>
-                        <TextBlock Text="Optional commercial enrichment for ratings, reviews, opening hours, and verified addresses with hard cost controls." FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap"/>
-                    </StackPanel>
-
-                    <!-- Enable / Opt-in Toggle -->
-                    <CheckBox IsChecked="{Binding IsGooglePlacesEnabled}" Content="Enable Google Places Commercial Enrichment" Foreground="#F8FAFC" FontWeight="SemiBold"/>
-
-                    <!-- API Key Input -->
-                    <StackPanel Spacing="6">
-                        <TextBlock Text="Google Places API Key" FontSize="12" FontWeight="SemiBold" Foreground="#64748B"/>
-                        <TextBox Text="{Binding GooglePlacesApiKey}" PlaceholderText="AIzaSy..." Background="#0B1322" Foreground="#F8FAFC" BorderBrush="#22324A" CornerRadius="7" Padding="12,8"/>
-                    </StackPanel>
-
-                    <!-- Daily Ceiling Cost Control -->
                     <Grid ColumnDefinitions="*,Auto">
-                        <StackPanel Grid.Column="0" Spacing="2">
-                            <TextBlock Text="Daily Request Ceiling (Hard Cost Limit)" FontWeight="SemiBold" Foreground="#F8FAFC"/>
-                            <TextBlock Text="Enrichment calls will be blocked once this daily count is reached." FontSize="12" Foreground="#64748B"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                            <TextBox Width="80" Text="{Binding GooglePlacesDailyCeiling}" Background="#0B1322" Foreground="#F8FAFC" BorderBrush="#22324A" CornerRadius="7" Padding="8,6" HorizontalContentAlignment="Center"/>
-                            <TextBlock Text="{Binding GooglePlacesUsedToday, StringFormat='Used Today: {0}'}" FontSize="12" Foreground="#38BDF8" VerticalAlignment="Center"/>
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="📍 Google Places API (New)" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC"/>
+                                <Border Background="#064E3B" BorderBrush="#059669" BorderThickness="1" CornerRadius="4" Padding="6,2">
+                                    <TextBlock Text="🛡️ $0.00 Cost Guard Active" FontSize="11" FontWeight="Bold" Foreground="#34D399"/>
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Text="Commercial place intelligence directly from Google Maps Platform. Strictly governed by Highest-Tier SKU limits, mandatory field masks, and zero-cost billing shields." FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap"/>
                         </StackPanel>
                     </Grid>
 
-                    <Button Content="💾 Save Google Places Settings" Command="{Binding SaveGooglePlacesSettingsCommand}" Classes="btn-primary" Padding="16,8"/>
+                    <!-- Enable / Opt-in Toggle -->
+                    <CheckBox IsChecked="{Binding IsGooglePlacesEnabled}" Content="Enable Google Places Commercial Enrichment &amp; Discovery" Foreground="#F8FAFC" FontWeight="SemiBold"/>
+
+                    <!-- SKU Tier Selection (Controls Highest-Tier Billing & Field Mask) -->
+                    <StackPanel Spacing="6">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="Google Places SKU Tier &amp; Field Mask" FontSize="12" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                                <TextBlock Text="Per Google Maps billing rules, requests are charged at the highest tier of fields requested. Select your quota tier." FontSize="11" Foreground="#64748B"/>
+                            </StackPanel>
+                        </Grid>
+                        <ComboBox ItemsSource="{Binding GooglePlacesSkuTiers}" SelectedItem="{Binding SelectedGooglePlacesSkuTier}" Background="#0B1322" Foreground="#F8FAFC" BorderBrush="#22324A" CornerRadius="7" Padding="12,8" HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+
+                    <!-- API Key Input -->
+                    <StackPanel Spacing="6">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="Google Cloud API Key (Places API New Enabled)" FontSize="12" FontWeight="SemiBold" Foreground="#64748B"/>
+                            <TextBlock Grid.Column="1" Text="Saved securely in Local Vault" FontSize="11" Foreground="#10B981"/>
+                        </Grid>
+                        <TextBox Text="{Binding GooglePlacesApiKey}" PlaceholderText="AIzaSy..." Background="#0B1322" Foreground="#F8FAFC" BorderBrush="#22324A" CornerRadius="7" Padding="12,8"/>
+                    </StackPanel>
+
+                    <!-- Quota & Live Spending Telemetry -->
+                    <Border Background="#0B1322" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="14">
+                        <StackPanel Spacing="10">
+                            <Grid ColumnDefinitions="*,*">
+                                <!-- Daily Request Ceiling -->
+                                <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,10,0">
+                                    <TextBlock Text="Daily Request Hard Ceiling" FontSize="12" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                                    <TextBlock Text="Stops queries once daily limit is hit." FontSize="11" Foreground="#64748B"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                                        <TextBox Width="70" Text="{Binding GooglePlacesDailyCeiling}" Background="#0E1626" Foreground="#F8FAFC" BorderBrush="#22324A" CornerRadius="6" Padding="6,4" HorizontalContentAlignment="Center"/>
+                                        <TextBlock Text="{Binding GooglePlacesUsedToday, StringFormat='Used: {0}'}" FontSize="12" Foreground="#38BDF8" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding GooglePlacesDailyRemaining, StringFormat='({0} left)'}" FontSize="11" Foreground="#94A3B8" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!-- Monthly Free Tier Cap -->
+                                <StackPanel Grid.Column="1" Spacing="4" Margin="10,0,0,0">
+                                    <TextBlock Text="Monthly Free Tier Cap Consumption" FontSize="12" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                                    <TextBlock Text="Resets on 1st of each month (UTC)." FontSize="11" Foreground="#64748B"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                                        <TextBlock Text="{Binding GooglePlacesMonthlyUsed}" FontSize="14" FontWeight="Bold" Foreground="#10B981" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding GooglePlacesMonthlyLimit, StringFormat='/ {0:N0} Free Calls'}" FontSize="12" Foreground="#94A3B8" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding GooglePlacesMonthlyRemaining, StringFormat='({0:N0} remaining)'}" FontSize="11" Foreground="#34D399" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Monthly Quota Progress Bar -->
+                            <ProgressBar Value="{Binding GooglePlacesMonthlyUsed}" Maximum="{Binding GooglePlacesMonthlyLimit}" Height="6" Foreground="#10B981" Background="#1E293B" CornerRadius="3"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Action Buttons -->
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Button Content="💾 Save Places Settings" Command="{Binding SaveGooglePlacesSettingsCommand}" Classes="btn-primary" Padding="16,8"/>
+                        <Button Content="⚡ Test API Connection" Command="{Binding TestGooglePlacesConnectionCommand}" Background="#1E293B" Foreground="#38BDF8" BorderBrush="#38BDF8" BorderThickness="1" CornerRadius="7" Padding="14,8"/>
+                        <Button Content="🔄 Reset Usage Counters" Command="{Binding ResetGooglePlacesCountersCommand}" Background="#0E1626" Foreground="#94A3B8" BorderBrush="#22324A" BorderThickness="1" CornerRadius="7" Padding="12,8"/>
+                    </StackPanel>
                 </StackPanel>
             </Border>
 

@@ -17,6 +17,8 @@ namespace TKS.LeadPilot.UI.ViewModels;
 
 public partial class LandingPageStudioViewModel : ViewModelBase
 {
+    public static Business? TargetBusinessForStudio { get; set; }
+
     private readonly ILandingPageGeneratorService _generatorService;
     private readonly IBusinessRepository _businessRepository;
     private readonly ISecretVault _secretVault;
@@ -122,6 +124,11 @@ public partial class LandingPageStudioViewModel : ViewModelBase
         var modules = _generatorService.GetAvailableModules();
         AvailableModules = new ObservableCollection<LandingPageModuleOption>(modules);
 
+        if (TargetBusinessForStudio != null)
+        {
+            PopulateFromBusiness(TargetBusinessForStudio);
+        }
+
         _ = LoadSavedBusinessesAsync();
     }
 
@@ -131,6 +138,24 @@ public partial class LandingPageStudioViewModel : ViewModelBase
         {
             var list = await _businessRepository.GetAllAsync();
             SavedBusinesses = new ObservableCollection<Business>(list.OrderBy(b => b.Name));
+
+            if (TargetBusinessForStudio != null)
+            {
+                var target = TargetBusinessForStudio;
+                TargetBusinessForStudio = null;
+
+                var match = SavedBusinesses.FirstOrDefault(b => b.Id == target.Id || b.Name.Equals(target.Name, StringComparison.OrdinalIgnoreCase));
+                if (match != null)
+                {
+                    SelectedSavedBusiness = match;
+                }
+                else
+                {
+                    SavedBusinesses.Insert(0, target);
+                    SelectedSavedBusiness = target;
+                }
+                PopulateFromBusiness(SelectedSavedBusiness);
+            }
         }
         catch { }
     }
@@ -150,36 +175,55 @@ public partial class LandingPageStudioViewModel : ViewModelBase
         PhonePrimary = !string.IsNullOrWhiteSpace(b.PhonePrimary) ? b.PhonePrimary : "+92 300 1234567";
         EmailPrimary = !string.IsNullOrWhiteSpace(b.EmailPrimary) ? b.EmailPrimary : $"info@{b.Name.ToLowerInvariant().Replace(" ", "")}.com";
 
-        // Auto-match archetype & style based on category
-        var cat = b.Category.ToLowerInvariant();
+        // Auto-match archetype, style & audience based on category
+        var cat = (b.Category ?? string.Empty).ToLowerInvariant();
         if (cat.Contains("health") || cat.Contains("dent") || cat.Contains("clinic") || cat.Contains("medic"))
         {
             SelectedArchetype = "Local Service Booking & Clinic Funnel";
             SelectedDesignStyle = "Trustworthy Emerald (Healthcare, Dental & Eco)";
+            TargetAudience = $"Patients and families in {City} seeking trusted, painless clinical care.";
             CustomInstructions = $"Emphasize verified practitioner credentials, same-day appointments in {City}, patient comfort, and an urgent consultation CTA.";
         }
         else if (cat.Contains("law") || cat.Contains("legal") || cat.Contains("consult"))
         {
             SelectedArchetype = "Corporate Agency & Authority Portal";
             SelectedDesignStyle = "Midnight Luxury Gold (Clinics, Law & Executive)";
+            TargetAudience = $"Corporate clients, executives, and individuals in {City} requiring high-calibre legal advisory.";
             CustomInstructions = $"Position as high-calibre corporate counsel in {City}. Emphasize track record, regulatory compliance, and confidential advisory.";
         }
         else if (cat.Contains("soft") || cat.Contains("it") || cat.Contains("tech") || cat.Contains("saas"))
         {
             SelectedArchetype = "Modern SaaS & Tech Product";
             SelectedDesignStyle = "Modern Slate & Cyan (Tech, SaaS & Corporate)";
+            TargetAudience = $"CTOs, tech leaders, and enterprises seeking scalable digital infrastructure.";
             CustomInstructions = "Focus on cloud scalability, enterprise throughput, dedicated SLA, and interactive pilot booking.";
         }
         else if (cat.Contains("solar") || cat.Contains("energy"))
         {
             SelectedArchetype = "Lead Generation Funnel (High-Converting)";
-            SelectedDesignStyle = "TrustworthyEmerald";
+            SelectedDesignStyle = "Trustworthy Emerald (Healthcare, Dental & Eco)";
+            TargetAudience = $"Commercial property owners and residents looking to cut utility costs with green power.";
             CustomInstructions = "Highlight 3-year ROI payback, Tier-1 solar panels, net-metering approval, and free energy audit.";
+        }
+        else if (cat.Contains("real") || cat.Contains("prop"))
+        {
+            SelectedArchetype = "Luxury Brand & Portfolio Showcase";
+            SelectedDesignStyle = "Midnight Luxury Gold (Clinics, Law & Executive)";
+            TargetAudience = $"Investors, home buyers, and commercial property seekers in {City}.";
+            CustomInstructions = $"Signature architectural aesthetics, prime {City} zoning, VIP walkthrough scheduling, and verified ownership records.";
+        }
+        else if (cat.Contains("restaurant") || cat.Contains("food") || cat.Contains("hospitality") || cat.Contains("hotel"))
+        {
+            SelectedArchetype = "Local Service Booking & Clinic Funnel";
+            SelectedDesignStyle = "Midnight Luxury Gold (Clinics, Law & Executive)";
+            TargetAudience = $"Food lovers, families, tourists, and event organizers in {City}.";
+            CustomInstructions = $"Highlight signature cuisine, private VIP banquet reservations, hygienic open-kitchen prep, and instant table booking via WhatsApp.";
         }
         else
         {
             SelectedArchetype = "Lead Generation Funnel (High-Converting)";
             SelectedDesignStyle = "Modern Slate & Cyan (Tech, SaaS & Corporate)";
+            TargetAudience = $"Clients, businesses, and discerning customers in {City} seeking reliable {b.Category} solutions.";
             CustomInstructions = $"Tailored commercial website for {b.Name} in {City} designed to turn search visitors into paying clients.";
         }
 
@@ -407,23 +451,6 @@ public partial class LandingPageStudioViewModel : ViewModelBase
         }
     }
 
-    [RelayCommand]
-    public void OpenStandaloneWindow()
-    {
-        try
-        {
-            var window = new LandingPageStudioWindow
-            {
-                DataContext = this
-            };
-            window.Show();
-            StatusMessage = "🪟 AI Landing Page Studio opened in standalone window.";
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"Window Launch Error: {ex.Message}";
-        }
-    }
 
     private static async Task CopyToClipboardAsync(string text)
     {

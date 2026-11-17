@@ -13,17 +13,12 @@
         <Border Grid.Column="0" Background="#0C1422" BorderBrush="#1F2F47" BorderThickness="1" CornerRadius="12" Padding="18" Margin="0,0,14,0">
             <Grid RowDefinitions="Auto,*,Auto">
                 <!-- Header -->
-                <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,12">
-                    <Grid ColumnDefinitions="*,Auto">
-                        <StackPanel Grid.Column="0" Spacing="2">
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <TextBlock Text="🎨" FontSize="18" VerticalAlignment="Center"/>
-                                <TextBlock Text="AI Landing Page Studio" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC"/>
-                            </StackPanel>
-                            <TextBlock Text="Synthesize bespoke landing pages, module architectures, and Tailwind code with Gemini AI." FontSize="11" Foreground="#94A3B8"/>
-                        </StackPanel>
-                        <Button Grid.Column="1" Content="🪟 Detach Window" Command="{Binding OpenStandaloneWindowCommand}" Classes="btn-secondary" Padding="8,5" FontSize="11" ToolTip.Tip="Open as separate desktop window"/>
-                    </Grid>
+                <StackPanel Grid.Row="0" Spacing="3" Margin="0,0,0,12">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="🎨" FontSize="18" VerticalAlignment="Center"/>
+                        <TextBlock Text="AI Landing Page Studio" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC"/>
+                    </StackPanel>
+                    <TextBlock Text="Synthesize bespoke landing pages, module architectures, and Tailwind code with Gemini AI." FontSize="11" Foreground="#94A3B8"/>
                 </StackPanel>
 
                 <!-- Scrollable Form Inputs -->
@@ -176,10 +171,10 @@
         <Border Grid.Column="1" Background="#0C1422" BorderBrush="#1F2F47" BorderThickness="1" CornerRadius="12" Padding="20">
             <Grid RowDefinitions="Auto,Auto,*">
                 <!-- Top Header & Action Controls -->
-                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
-                    <StackPanel Grid.Column="0" Spacing="4">
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,14">
+                    <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center" Margin="0,0,12,0">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="{Binding CurrentResult.BusinessName, FallbackValue='Landing Page Studio Workspace'}" FontSize="20" FontWeight="ExtraBold" Foreground="#F8FAFC"/>
+                            <TextBlock Text="{Binding CurrentResult.BusinessName, FallbackValue='Landing Page Studio Workspace'}" FontSize="18" FontWeight="ExtraBold" Foreground="#F8FAFC" TextTrimming="CharacterEllipsis"/>
                             <Border Background="#064E3B" CornerRadius="4" Padding="6,2" VerticalAlignment="Center" IsVisible="{Binding CurrentResult, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                                 <TextBlock Text="{Binding CurrentResult.ConversionScore, StringFormat='Score: {0}/100'}" FontSize="10" FontWeight="Bold" Foreground="#34D399"/>
                             </Border>
@@ -187,29 +182,88 @@
                                 <TextBlock Text="{Binding CurrentResult.Provider}" FontSize="10" Foreground="#94A3B8"/>
                             </Border>
                         </StackPanel>
-                        <TextBlock Text="{Binding CurrentResult.Headline, FallbackValue='Configure business parameters on the left and trigger AI synthesis to generate production-ready code.'}" FontSize="12" Foreground="#94A3B8" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding CurrentResult.Headline, FallbackValue='Configure business parameters on the left and trigger AI synthesis to generate production-ready code.'}" FontSize="11" Foreground="#94A3B8" TextTrimming="CharacterEllipsis"/>
                     </StackPanel>
 
                     <!-- Fast Action Toolbar -->
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                        <Button Content="🌐 Open in Web Browser" Command="{Binding OpenInBrowserCommand}" Classes="btn-success" Padding="14,8" ToolTip.Tip="Launch generated HTML in your default browser"/>
-                        <Button Content="📋 Copy HTML" Command="{Binding CopyHtmlCommand}" Classes="btn-secondary" Padding="10,8"/>
-                        <Button Content="📄 Copy Blueprint" Command="{Binding CopyBlueprintCommand}" Classes="btn-secondary" Padding="10,8"/>
-                        <Button Content="💾 Save .html" Command="{Binding SaveHtmlFileCommand}" Classes="btn-secondary" Padding="10,8"/>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <Button Command="{Binding OpenInBrowserCommand}" Classes="btn-success" Padding="10,6" FontSize="11">
+                            <Button.ToolTip>
+                                <ToolTip Background="#0F172A" BorderBrush="#10B981" BorderThickness="1" CornerRadius="8" Padding="10">
+                                    <StackPanel Spacing="3">
+                                        <TextBlock Text="🌐 Live Browser Preview" FontWeight="Bold" FontSize="11" Foreground="#34D399"/>
+                                        <TextBlock Text="Launch the generated HTML5 + Tailwind CSS page in your default web browser to test responsiveness." FontSize="10" Foreground="#94A3B8" TextWrapping="Wrap" MaxWidth="280"/>
+                                    </StackPanel>
+                                </ToolTip>
+                            </Button.ToolTip>
+                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                <TextBlock Text="🌐" FontSize="12" VerticalAlignment="Center"/>
+                                <TextBlock Text="Preview" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Command="{Binding CopyHtmlCommand}" Classes="btn-secondary" Padding="10,6" FontSize="11">
+                            <Button.ToolTip>
+                                <ToolTip Background="#0F172A" BorderBrush="#38BDF8" BorderThickness="1" CornerRadius="8" Padding="10">
+                                    <StackPanel Spacing="3">
+                                        <TextBlock Text="📋 Copy HTML5 Code" FontWeight="Bold" FontSize="11" Foreground="#38BDF8"/>
+                                        <TextBlock Text="Copy complete standalone HTML5 code with Tailwind CSS CDN and WhatsApp widgets to clipboard." FontSize="10" Foreground="#94A3B8" TextWrapping="Wrap" MaxWidth="280"/>
+                                    </StackPanel>
+                                </ToolTip>
+                            </Button.ToolTip>
+                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                <TextBlock Text="📋" FontSize="12" VerticalAlignment="Center"/>
+                                <TextBlock Text="Copy HTML" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Command="{Binding CopyBlueprintCommand}" Classes="btn-secondary" Padding="10,6" FontSize="11">
+                            <Button.ToolTip>
+                                <ToolTip Background="#0F172A" BorderBrush="#38BDF8" BorderThickness="1" CornerRadius="8" Padding="10">
+                                    <StackPanel Spacing="3">
+                                        <TextBlock Text="📄 Copy Architecture Blueprint" FontWeight="Bold" FontSize="11" Foreground="#38BDF8"/>
+                                        <TextBlock Text="Copy modular layout specifications, UX rationale, and agency sales pitch to clipboard." FontSize="10" Foreground="#94A3B8" TextWrapping="Wrap" MaxWidth="280"/>
+                                    </StackPanel>
+                                </ToolTip>
+                            </Button.ToolTip>
+                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                <TextBlock Text="📄" FontSize="12" VerticalAlignment="Center"/>
+                                <TextBlock Text="Blueprint" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Command="{Binding SaveHtmlFileCommand}" Classes="btn-secondary" Padding="10,6" FontSize="11">
+                            <Button.ToolTip>
+                                <ToolTip Background="#0F172A" BorderBrush="#38BDF8" BorderThickness="1" CornerRadius="8" Padding="10">
+                                    <StackPanel Spacing="3">
+                                        <TextBlock Text="💾 Export .html File" FontWeight="Bold" FontSize="11" Foreground="#38BDF8"/>
+                                        <TextBlock Text="Save self-contained production .html file directly into your user Downloads directory." FontSize="10" Foreground="#94A3B8" TextWrapping="Wrap" MaxWidth="280"/>
+                                    </StackPanel>
+                                </ToolTip>
+                            </Button.ToolTip>
+                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                <TextBlock Text="💾" FontSize="12" VerticalAlignment="Center"/>
+                                <TextBlock Text="Export" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
                 </Grid>
 
                 <!-- Navigation Tabs -->
                 <Border Grid.Row="1" Background="#10192A" BorderBrush="#1F2F47" BorderThickness="1" CornerRadius="8" Padding="4" Margin="0,0,0,14">
                     <Grid ColumnDefinitions="*,*,*,*">
-                        <Button Grid.Column="0" Content="🌐 Visual Preview &amp; Launch" Command="{Binding SetTabCommand}" CommandParameter="Preview"
-                                Classes="tab-btn" Classes.active="{Binding IsPreviewTab}" Margin="2,0"/>
-                        <Button Grid.Column="1" Content="📐 Architecture Blueprint" Command="{Binding SetTabCommand}" CommandParameter="Blueprint"
-                                Classes="tab-btn" Classes.active="{Binding IsBlueprintTab}" Margin="2,0"/>
-                        <Button Grid.Column="2" Content="💻 Production HTML5 Code" Command="{Binding SetTabCommand}" CommandParameter="Html"
-                                Classes="tab-btn" Classes.active="{Binding IsHtmlTab}" Margin="2,0"/>
-                        <Button Grid.Column="3" Content="🤖 AI Prompts &amp; Ad Copy" Command="{Binding SetTabCommand}" CommandParameter="Prompts"
-                                Classes="tab-btn" Classes.active="{Binding IsPromptsTab}" Margin="2,0"/>
+                        <Button Grid.Column="0" Content="🌐 Visual Preview" Command="{Binding SetTabCommand}" CommandParameter="Preview"
+                                Classes="tab-btn" Classes.active="{Binding IsPreviewTab}" Margin="2,0"
+                                ToolTip.Tip="Live responsive preview &amp; page module architecture cards"/>
+                        <Button Grid.Column="1" Content="📐 Blueprint" Command="{Binding SetTabCommand}" CommandParameter="Blueprint"
+                                Classes="tab-btn" Classes.active="{Binding IsBlueprintTab}" Margin="2,0"
+                                ToolTip.Tip="Conversion architecture, UX module hierarchy, and agency consulting pitch"/>
+                        <Button Grid.Column="2" Content="💻 HTML5 Code" Command="{Binding SetTabCommand}" CommandParameter="Html"
+                                Classes="tab-btn" Classes.active="{Binding IsHtmlTab}" Margin="2,0"
+                                ToolTip.Tip="Standalone production HTML5 source code with Tailwind CDN &amp; scripts"/>
+                        <Button Grid.Column="3" Content="🤖 AI Prompts" Command="{Binding SetTabCommand}" CommandParameter="Prompts"
+                                Classes="tab-btn" Classes.active="{Binding IsPromptsTab}" Margin="2,0"
+                                ToolTip.Tip="System instructions &amp; developer prompt used for AI synthesis"/>
                     </Grid>
                 </Border>
 

@@ -206,8 +206,8 @@ public class GooglePlacesEnrichmentServiceTests
         var repo = new InMemoryBusinessRepository();
 
         var service = new GooglePlacesEnrichmentService(httpClient, vault, repo);
-        // Set low ceiling: 2 requests
-        await service.SaveConfigAsync(new GooglePlacesConfig { IsEnabled = true, DailyRequestCeiling = 2 });
+        // Set low ceiling: 2 requests and reset counters
+        await service.SaveConfigAsync(new GooglePlacesConfig { IsEnabled = true, DailyRequestCeiling = 2, DailyRequestsUsed = 0, MonthlyRequestsUsed = 0 });
 
         var b1 = new Business { Name = "Hospital 1", City = "Karachi" };
         var b2 = new Business { Name = "Hospital 2", City = "Karachi" };
@@ -296,5 +296,118 @@ public class GooglePlacesEnrichmentServiceTests
         business.HasTag("Rated 4.8★").Should().BeTrue();
         business.AddressLine1.Should().Be("Main Shahrah-e-Faisal, Block 6 PECHS, Karachi, Pakistan");
         business.BusinessHours.Should().Contain("Monday: Open 24 hours");
+    }
+
+    private const string SamplePlacesNewJsonResponse = """
+    {
+      "places": [
+        {
+          "id": "ChIJ_3jP9E89sz4Rt_r3g1G-r0s",
+          "displayName": {
+            "text": "The Indus Hospital & Health Network",
+            "languageCode": "en"
+          },
+          "formattedAddress": "Main Shahrah-e-Faisal, Block 6 PECHS, Karachi, Pakistan",
+          "location": {
+            "latitude": 24.8614622,
+            "longitude": 67.0698188
+          },
+          "rating": 4.8,
+          "userRatingCount": 542,
+          "businessStatus": "OPERATIONAL",
+          "nationalPhoneNumber": "+92 21 111 111 880",
+          "websiteUri": "https://indushospital.org.pk",
+          "regularOpeningHours": {
+            "weekdayDescriptions": [
+              "Monday: Open 24 hours",
+              "Tuesday: Open 24 hours",
+              "Wednesday: Open 24 hours"
+            ]
+          }
+        }
+      ]
+    }
+    """;
+
+    [Fact]
+    public void ParseGooglePlacesResponse_PlacesApiNew_ParsesAllFieldsAccurately()
+    {
+        var result = GooglePlacesEnrichmentService.ParseGooglePlacesResponse(SamplePlacesNewJsonResponse);
+
+        result.IsSuccess.Should().BeTrue();
+        result.PlaceId.Should().Be("ChIJ_3jP9E89sz4Rt_r3g1G-r0s");
+        result.BusinessName.Should().Be("The Indus Hospital & Health Network");
+        result.FormattedAddress.Should().Be("Main Shahrah-e-Faisal, Block 6 PECHS, Karachi, Pakistan");
+        result.Phone.Should().Be("+92 21 111 111 880");
+        result.Website.Should().Be("https://indushospital.org.pk");
+        result.Rating.Should().Be(4.8);
+        result.UserRatingsTotal.Should().Be(542);
+        result.Latitude.Should().Be(24.8614622);
+        result.Longitude.Should().Be(67.0698188);
+        result.BusinessStatus.Should().Be("OPERATIONAL");
+        result.OpeningHours.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public void GetFieldMask_EnforcesStrictNonWildcardMasksBySkuTier()
+    {
+        var essentialsSearch = GooglePlacesEnrichmentService.GetSearchTextFieldMask(PlacesSkuTier.Essentials);
+        var enterpriseSearch = GooglePlacesEnrichmentService.GetSearchTextFieldMask(PlacesSkuTier.EnterpriseWithAtmosphere);
+
+        essentialsSearch.Should().NotContain("*");
+        essentialsSearch.Should().Contain("places.id");
+        essentialsSearch.Should().Contain("places.displayName");
+        essentialsSearch.Should().NotContain("places.rating"); // Essentials excludes rating to protect 10k free tier
+
+        enterpriseSearch.Should().NotContain("*");
+        enterpriseSearch.Should().Contain("places.rating");
+        enterpriseSearch.Should().Contain("places.userRatingCount");
+    }
+
+    [Fact]
+    public async Task EnrichBusinessAsync_WhenMonthlyFreeCapReached_BlocksCallToPreventCloudBilling()
+    {
+        var mockHttp = new MockHttpMessageHandler(SamplePlacesNewJsonResponse);
+        var httpClient = new HttpClient(mockHttp);
+        var vault = new FakeSecretVault();
+        vault.SaveSecret("GOOGLE_PLACES_API_KEY", "AIzaSyValidKey_123");
+        var repo = new InMemoryBusinessRepository();
+
+        var service = new GooglePlacesEnrichmentService(httpClient, vault, repo);
+        await service.SaveConfigAsync(new GooglePlacesConfig
+        {
+            IsEnabled = true,
+            SkuTier = PlacesSkuTier.EnterpriseWithAtmosphere,
+            DailyRequestCeiling = 100
+        });
+
+        // Artificially simulate reaching the 1,000 monthly free tier limit
+        var config = await service.GetConfigAsync();
+        config.MonthlyRequestsUsed = 1000;
+        await service.SaveConfigAsync(config);
+
+        var b = new Business { Name = "Test Clinic", City = "Islamabad" };
+        var result = await service.EnrichBusinessAsync(b);
+
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("Monthly free tier cap");
+        mockHttp.CallCount.Should().Be(0); // Zero cost: request was stopped BEFORE hitting network
+    }
+
+    [Fact]
+    public async Task TestApiConnectionAsync_SendsIdsOnlyRequest_AtZeroCost()
+    {
+        var mockHttp = new MockHttpMessageHandler("""{ "places": [{ "id": "ChIJ2eUgeAK6j4ARMBk5bpBiMYo" }] }""");
+        var httpClient = new HttpClient(mockHttp);
+        var vault = new FakeSecretVault();
+        vault.SaveSecret("GOOGLE_PLACES_API_KEY", "AIzaSyValidKey_123");
+        var repo = new InMemoryBusinessRepository();
+
+        var service = new GooglePlacesEnrichmentService(httpClient, vault, repo);
+        var (isSuccess, msg) = await service.TestApiConnectionAsync();
+
+        isSuccess.Should().BeTrue();
+        msg.Should().Contain("$0.00 cost");
+        mockHttp.CallCount.Should().Be(1);
     }
 }

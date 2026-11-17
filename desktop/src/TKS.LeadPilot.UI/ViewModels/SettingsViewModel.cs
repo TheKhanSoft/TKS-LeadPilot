@@ -1,4 +1,5 @@
 using System;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -31,7 +32,7 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private string _selectedGeminiModel = "gemini-1.5-flash";
 
-    // Google Places Settings (Stage 7)
+    // Google Places Settings (Stage 7 - Google Places API New)
     [ObservableProperty]
     private string _googlePlacesApiKey = string.Empty;
 
@@ -43,6 +44,30 @@ public partial class SettingsViewModel : ViewModelBase
 
     [ObservableProperty]
     private int _googlePlacesUsedToday = 0;
+
+    [ObservableProperty]
+    private int _googlePlacesMonthlyUsed = 0;
+
+    [ObservableProperty]
+    private int _googlePlacesMonthlyLimit = 1000;
+
+    [ObservableProperty]
+    private int _googlePlacesMonthlyRemaining = 1000;
+
+    [ObservableProperty]
+    private int _googlePlacesDailyRemaining = 50;
+
+    [ObservableProperty]
+    private string _selectedGooglePlacesSkuTier = "Enterprise + Atmosphere (1,000 Free/Mo)";
+
+    [ObservableProperty]
+    private ObservableCollection<string> _googlePlacesSkuTiers = new([
+        "Enterprise + Atmosphere (1,000 Free/Mo)",
+        "Essentials (10,000 Free/Mo)"
+    ]);
+
+    [ObservableProperty]
+    private bool _isTestingPlacesConnection = false;
 
     // Groq Cloud Free AI Engine Settings (100% Free - Fast Llama 3)
     [ObservableProperty]
@@ -123,6 +148,13 @@ public partial class SettingsViewModel : ViewModelBase
         IsGooglePlacesEnabled = placesConfig.IsEnabled;
         GooglePlacesDailyCeiling = placesConfig.DailyRequestCeiling;
         GooglePlacesUsedToday = placesConfig.DailyRequestsUsed;
+        GooglePlacesMonthlyUsed = placesConfig.MonthlyRequestsUsed;
+        GooglePlacesMonthlyLimit = placesConfig.MonthlyFreeAllowance;
+        GooglePlacesMonthlyRemaining = placesConfig.MonthlyRequestsRemaining;
+        GooglePlacesDailyRemaining = placesConfig.DailyRequestsRemaining;
+        SelectedGooglePlacesSkuTier = placesConfig.SkuTier == PlacesSkuTier.Essentials
+            ? "Essentials (10,000 Free/Mo)"
+            : "Enterprise + Atmosphere (1,000 Free/Mo)";
 
         // Groq Cloud AI Settings
         var groqKey = _secretVault.GetSecret("GROQ_API_KEY");
@@ -199,15 +231,20 @@ public partial class SettingsViewModel : ViewModelBase
         StatusMessage = "✅ Gemini API Key is configured in vault. Ready for Free Tier calls.";
     }
 
-    // Google Places Commands (Stage 7)
+    // Google Places Commands (Stage 7 - Places API New)
     [RelayCommand]
     public async Task SaveGooglePlacesSettings()
     {
         try
         {
+            var tier = SelectedGooglePlacesSkuTier != null && SelectedGooglePlacesSkuTier.Contains("Essentials", StringComparison.OrdinalIgnoreCase)
+                ? PlacesSkuTier.Essentials
+                : PlacesSkuTier.EnterpriseWithAtmosphere;
+
             var config = new GooglePlacesConfig
             {
                 IsEnabled = IsGooglePlacesEnabled,
+                SkuTier = tier,
                 DailyRequestCeiling = GooglePlacesDailyCeiling
             };
 
@@ -218,12 +255,53 @@ public partial class SettingsViewModel : ViewModelBase
             }
 
             await _placesService.SaveConfigAsync(config, keyToSave);
-            StatusMessage = "✅ Google Places settings and cost controls saved successfully.";
+            StatusMessage = $"✅ Google Places (New) settings saved: {tier} tier ({config.MonthlyFreeAllowance:N0} free/month).";
             await LoadSettingsAsync();
         }
         catch (Exception ex)
         {
             StatusMessage = $"Error saving Google Places settings: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public async Task TestGooglePlacesConnection()
+    {
+        try
+        {
+            IsTestingPlacesConnection = true;
+            StatusMessage = "Testing Google Places API (New) credentials and endpoint...";
+
+            if (!string.IsNullOrWhiteSpace(GooglePlacesApiKey) && !GooglePlacesApiKey.Contains("..."))
+            {
+                _secretVault.SaveSecret(GooglePlacesKeyName, GooglePlacesApiKey.Trim());
+            }
+
+            var (success, msg) = await _placesService.TestApiConnectionAsync();
+            StatusMessage = msg;
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Connection test error: {ex.Message}";
+        }
+        finally
+        {
+            IsTestingPlacesConnection = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task ResetGooglePlacesCounters()
+    {
+        try
+        {
+            await _placesService.ResetUsageCountersAsync();
+            StatusMessage = "✅ Google Places request counters successfully reset to 0.";
+            await LoadSettingsAsync();
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error resetting counters: {ex.Message}";
         }
     }
 
