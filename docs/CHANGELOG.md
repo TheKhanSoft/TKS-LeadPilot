@@ -6,6 +6,27 @@ All notable changes to the TKS LeadPilot project will be documented in this file
 
 ## [Unreleased]
 
+### [0.8.0] — Stage 8: AI-Assisted Website Audit Report Synthesizer & Audit Comparison — 2026-11-17
+#### Added
+- Gemini AI Proposal Synthesis Domain Models (`AiTone`, `GeminiConfig`, `AuditProposalSynthesisRequest`, `AuditProposalSynthesisResult`, `AuditComparisonResult`).
+- Zero-Cost Gemini Free Tier Proposal Synthesizer (`IAiProposalSynthesizer`, `AiProposalSynthesizer`):
+  - Strict 12 RPM local sliding-window rate limit (under Google Free Tier's 15 RPM cap).
+  - Hard 1,200 RPD daily quota ceiling (under Google Free Tier's 1,500 RPD cap) resetting automatically at 00:00 UTC.
+  - Zero-cost architecture ($0.00 ceiling, emergency kill-switch, Windows DPAPI secret vault storage).
+  - Automatic pre-flight PII redaction scrubbing customer phone numbers and emails before prompt delivery.
+  - Multi-tone proposal generation (`Consultative`, `RoiFocused`, `Technical`).
+  - Automatic mapping of audit defects to targeted TKS Service Packages (Web Modernization, Zero-Trust Security, Local SEO Dominance).
+  - 100% Offline-First Deterministic Proposal Generator (`SynthesizeDeterministicProposal`) providing instant client proposals with zero network dependency.
+- Audit History & Re-Audit Comparison Engine (`IAuditComparisonService`, `AuditComparisonService`):
+  - Side-by-side delta analysis between baseline and re-audits (Overall, Performance, Security, and SEO score trends).
+  - Tri-state finding classification (`Resolved`, `New`, `Persistent`).
+  - Automated executive comparison markdown table generation.
+- Desktop UI Enhancements:
+  - Added "✨ AI Proposal Studio" modal in `AuditsView.axaml` and `AuditsViewModel.cs` with tone selector, real-time Gemini synthesis, offline template generation, markdown editor, and one-click export.
+  - Added "⚖️ Compare Audits" modal tracking progress across historical scans with visual delta chips.
+  - Added Gemini AI model selection, safety toggle, and daily request usage meters in `SettingsView.axaml` and `SettingsViewModel.cs`.
+- 7 new unit tests across `AiProposalSynthesizerTests.cs` and `AuditComparisonServiceTests.cs` (total 74 passing tests, 0 failures).
+
 ### [0.7.0] — Stage 7: Paid / Official Places Enrichment (Google Places API - Cost-Guarded) — 2026-11-17
 #### Added
 - Google Places Enrichment Domain Models (`GooglePlacesConfig`, `GooglePlacesEnrichmentResult`).

@@ -12,8 +12,9 @@ public partial class SettingsViewModel : ViewModelBase
     private const string GooglePlacesKeyName = "GOOGLE_PLACES_API_KEY";
     private readonly ISecretVault _secretVault;
     private readonly IGooglePlacesEnrichmentService _placesService;
+    private readonly IAiProposalSynthesizer _aiSynthesizer;
 
-    // Gemini Settings
+    // Gemini Settings (Stage 8)
     [ObservableProperty]
     private string _geminiApiKey = string.Empty;
 
@@ -22,6 +23,12 @@ public partial class SettingsViewModel : ViewModelBase
 
     [ObservableProperty]
     private int _dailyAiLimit = 1200;
+
+    [ObservableProperty]
+    private int _dailyAiUsedToday = 0;
+
+    [ObservableProperty]
+    private string _selectedGeminiModel = "gemini-1.5-flash";
 
     // Google Places Settings (Stage 7)
     [ObservableProperty]
@@ -39,20 +46,30 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private string _statusMessage = string.Empty;
 
-    public SettingsViewModel(ISecretVault secretVault, IGooglePlacesEnrichmentService placesService)
+    public SettingsViewModel(
+        ISecretVault secretVault,
+        IGooglePlacesEnrichmentService placesService,
+        IAiProposalSynthesizer aiSynthesizer)
     {
         _secretVault = secretVault;
         _placesService = placesService;
+        _aiSynthesizer = aiSynthesizer;
         _ = LoadSettingsAsync();
     }
 
     private async Task LoadSettingsAsync()
     {
-        var key = _secretVault.GetSecret("GeminiApiKey");
+        var key = _secretVault.GetSecret("GeminiApiKey") ?? _secretVault.GetSecret("GEMINI_API_KEY");
         if (!string.IsNullOrEmpty(key))
         {
             GeminiApiKey = key.Length > 10 ? $"{key[..6]}...{key[^4..]}" : "********";
         }
+
+        var aiConfig = await _aiSynthesizer.GetConfigAsync();
+        IsAiDisabled = !aiConfig.IsEnabled;
+        DailyAiLimit = aiConfig.DailyRequestCeiling;
+        DailyAiUsedToday = aiConfig.DailyRequestsUsed;
+        SelectedGeminiModel = aiConfig.ModelName;
 
         var placesKey = _secretVault.GetSecret(GooglePlacesKeyName);
         if (!string.IsNullOrEmpty(placesKey))
@@ -60,30 +77,44 @@ public partial class SettingsViewModel : ViewModelBase
             GooglePlacesApiKey = placesKey.Length > 10 ? $"{placesKey[..6]}...{placesKey[^4..]}" : "********";
         }
 
-        var config = await _placesService.GetConfigAsync();
-        IsGooglePlacesEnabled = config.IsEnabled;
-        GooglePlacesDailyCeiling = config.DailyRequestCeiling;
-        GooglePlacesUsedToday = config.DailyRequestsUsed;
+        var placesConfig = await _placesService.GetConfigAsync();
+        IsGooglePlacesEnabled = placesConfig.IsEnabled;
+        GooglePlacesDailyCeiling = placesConfig.DailyRequestCeiling;
+        GooglePlacesUsedToday = placesConfig.DailyRequestsUsed;
     }
 
     [RelayCommand]
-    public void SaveApiKey()
+    public async Task SaveApiKey()
     {
-        if (string.IsNullOrWhiteSpace(GeminiApiKey) || GeminiApiKey.Contains("..."))
+        try
         {
-            StatusMessage = "Please enter a valid Gemini API key.";
-            return;
-        }
+            var config = new GeminiConfig
+            {
+                IsEnabled = !IsAiDisabled,
+                ModelName = SelectedGeminiModel,
+                DailyRequestCeiling = DailyAiLimit
+            };
 
-        _secretVault.SaveSecret("GeminiApiKey", GeminiApiKey.Trim());
-        StatusMessage = "✅ Gemini API key securely saved in Windows DPAPI vault.";
-        _ = LoadSettingsAsync();
+            string? keyToSave = null;
+            if (!string.IsNullOrWhiteSpace(GeminiApiKey) && !GeminiApiKey.Contains("..."))
+            {
+                keyToSave = GeminiApiKey.Trim();
+            }
+
+            await _aiSynthesizer.SaveConfigAsync(config, keyToSave);
+            StatusMessage = "✅ Gemini AI settings and safety limits saved successfully.";
+            await LoadSettingsAsync();
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error saving Gemini settings: {ex.Message}";
+        }
     }
 
     [RelayCommand]
     public void TestAiConnection()
     {
-        if (!_secretVault.HasSecret("GeminiApiKey"))
+        if (!_secretVault.HasSecret("GeminiApiKey") && !_secretVault.HasSecret("GEMINI_API_KEY"))
         {
             StatusMessage = "❌ No Gemini API key found in vault. Please save a key first.";
             return;

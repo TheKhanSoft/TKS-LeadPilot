@@ -99,3 +99,17 @@ public interface IGooglePlacesEnrichmentService
     Task<GooglePlacesEnrichmentResult> EnrichBusinessAsync(Business business, bool forceRefresh = false, CancellationToken ct = default);
     Task<int> GetRemainingRequestsTodayAsync(CancellationToken ct = default);
 }
+
+public interface IAiProposalSynthesizer
+{
+    Task<GeminiConfig> GetConfigAsync(CancellationToken ct = default);
+    Task SaveConfigAsync(GeminiConfig config, string? apiKey = null, CancellationToken ct = default);
+    Task<AuditProposalSynthesisResult> SynthesizeProposalAsync(AuditProposalSynthesisRequest request, CancellationToken ct = default);
+    AuditProposalSynthesisResult SynthesizeDeterministicProposal(AuditProposalSynthesisRequest request);
+    Task<int> GetRemainingRequestsTodayAsync(CancellationToken ct = default);
+}
+
+public interface IAuditComparisonService
+{
+    AuditComparisonResult CompareAudits(WebsiteAudit baseline, WebsiteAudit target);
+}

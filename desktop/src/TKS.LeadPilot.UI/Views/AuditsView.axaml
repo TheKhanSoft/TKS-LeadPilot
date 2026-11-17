@@ -5,120 +5,240 @@
              x:Class="TKS.LeadPilot.UI.Views.AuditsView"
              x:DataType="vm:AuditsViewModel">
 
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*" Margin="24">
-        <!-- 1. Top Header & Toolbar -->
-        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,14">
-            <StackPanel Grid.Column="0" Spacing="4">
-                <TextBlock Text="Website Intelligence &amp; Technical Auditor" FontSize="22" FontWeight="SemiBold" Foreground="#F8FAFC"/>
-                <TextBlock Text="Diagnose SSL encryption, security headers, Core Web Vitals, CMS, and SEO readiness." FontSize="13" Foreground="#94A3B8"/>
-            </StackPanel>
-
-            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                <Button Content="📄 Export Markdown Report" Command="{Binding ExportReportCommand}" IsEnabled="{Binding CurrentAudit, Converter={x:Static ObjectConverters.IsNotNull}}" Background="#1E293B" Foreground="#38BDF8" BorderBrush="#26334A" BorderThickness="1" CornerRadius="6" Padding="14,8"/>
-            </StackPanel>
-        </Grid>
-
-        <!-- 2. Target Control Bar -->
-        <Border Grid.Row="1" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,14">
-            <Grid ColumnDefinitions="2*,3*,Auto" RowDefinitions="Auto,Auto">
-                <!-- Select Lead Dropdown -->
-                <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                    <TextBlock Text="Target Business Lead:" FontSize="11" Foreground="#64748B" Margin="0,0,0,4"/>
-                    <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding BusinessesWithWebsites}" SelectedItem="{Binding SelectedBusiness}" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate x:DataType="m:Business">
-                                <TextBlock Text="{Binding Name}"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                </StackPanel>
-
-                <!-- Target URL Input -->
-                <StackPanel Grid.Column="1" Margin="0,0,10,0">
-                    <TextBlock Text="Website URL to Audit:" FontSize="11" Foreground="#64748B" Margin="0,0,0,4"/>
-                    <TextBox Text="{Binding TargetUrl}" PlaceholderText="https://example.com" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6" Padding="10,6" VerticalContentAlignment="Center"/>
-                </StackPanel>
-
-                <!-- Run Audit Button -->
-                <Button Grid.Column="2" Content="🔬 Run Audit" Command="{Binding RunAuditCommand}" IsEnabled="{Binding !IsAuditing}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="20,8" FontWeight="SemiBold" VerticalAlignment="Bottom"/>
-
-                <!-- Status Feedback -->
-                <TextBlock Grid.Row="1" Grid.ColumnSpan="3" Text="{Binding StatusMessage}" FontSize="12" Foreground="#38BDF8" Margin="0,8,0,0"/>
-            </Grid>
-        </Border>
-
-        <!-- 3. Key Scorecards -->
-        <Grid Grid.Row="2" ColumnDefinitions="*,*,*,*" Margin="0,0,0,14">
-            <!-- Overall Score -->
-            <Border Grid.Column="0" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,6,0">
-                <StackPanel Spacing="4">
-                    <TextBlock Text="OVERALL SCORE" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
-                    <TextBlock Text="{Binding CurrentAudit.OverallScore, TargetNullValue='--'}" FontSize="28" FontWeight="Bold" Foreground="#38BDF8"/>
-                    <TextBlock Text="Composite Health Index" FontSize="11" Foreground="#94A3B8"/>
-                </StackPanel>
-            </Border>
-
-            <!-- Security Score -->
-            <Border Grid.Column="1" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="14" Margin="3,0,3,0">
-                <StackPanel Spacing="4">
-                    <TextBlock Text="SECURITY SCORE" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
-                    <TextBlock Text="{Binding CurrentAudit.SecurityScore, TargetNullValue='--'}" FontSize="28" FontWeight="Bold" Foreground="#10B981"/>
-                    <TextBlock Text="{Binding CurrentAudit.SslValid, TargetNullValue='SSL: Unknown', StringFormat='SSL Active: {0}'}" FontSize="11" Foreground="#94A3B8"/>
-                </StackPanel>
-            </Border>
-
-            <!-- Performance Score -->
-            <Border Grid.Column="2" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="14" Margin="3,0,3,0">
-                <StackPanel Spacing="4">
-                    <TextBlock Text="PERFORMANCE SCORE" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
-                    <TextBlock Text="{Binding CurrentAudit.PerformanceScore, TargetNullValue='--'}" FontSize="28" FontWeight="Bold" Foreground="#F59E0B"/>
-                    <TextBlock Text="{Binding CurrentAudit.TtfbMs, TargetNullValue='TTFB: --', StringFormat='TTFB: {0:F0}ms'}" FontSize="11" Foreground="#94A3B8"/>
-                </StackPanel>
-            </Border>
-
-            <!-- SEO Score -->
-            <Border Grid.Column="3" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="14" Margin="6,0,0,0">
-                <StackPanel Spacing="4">
-                    <TextBlock Text="SEO HYGIENE" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
-                    <TextBlock Text="{Binding CurrentAudit.SeoScore, TargetNullValue='--'}" FontSize="28" FontWeight="Bold" Foreground="#8B5CF6"/>
-                    <TextBlock Text="{Binding CurrentAudit.HasRobotsTxt, TargetNullValue='Robots: --', StringFormat='Robots: {0}'}" FontSize="11" Foreground="#94A3B8"/>
-                </StackPanel>
-            </Border>
-        </Grid>
-
-        <!-- 4. Tech Stack & Diagnostics Summary -->
-        <Border Grid.Row="3" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,14">
-            <Grid ColumnDefinitions="*,*">
+    <Grid>
+        <!-- Main Layout -->
+        <Grid RowDefinitions="Auto,Auto,Auto,Auto,*" Margin="24">
+            <!-- 1. Top Header & Toolbar -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,14">
                 <StackPanel Grid.Column="0" Spacing="4">
-                    <TextBlock Text="DETECTED TECHNOLOGY STACK" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
-                    <TextBlock Text="{Binding CurrentAudit.DetectedTechStack, TargetNullValue='Run audit to detect CMS, frameworks, and analytics'}" FontSize="13" Foreground="#F8FAFC" TextWrapping="Wrap"/>
+                    <TextBlock Text="Website Intelligence &amp; Technical Auditor" FontSize="22" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                    <TextBlock Text="Diagnose SSL encryption, security headers, Core Web Vitals, CMS, and synthesize AI client proposals." FontSize="13" Foreground="#94A3B8"/>
                 </StackPanel>
-                <StackPanel Grid.Column="1" Spacing="4" Margin="14,0,0,0">
-                    <TextBlock Text="SSL &amp; HOSTING DIAGNOSTICS" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
-                    <TextBlock Text="{Binding CurrentAudit.SslIssuer, TargetNullValue='Issuer: --', StringFormat='Issuer: {0}'}" FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap"/>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <Button Content="✨ AI Proposal Studio" Command="{Binding OpenProposalModalCommand}" IsEnabled="{Binding CurrentAudit, Converter={x:Static ObjectConverters.IsNotNull}}" Background="#7C3AED" Foreground="#FFFFFF" CornerRadius="6" Padding="14,8" FontWeight="SemiBold"/>
+                    <Button Content="⚖️ Compare Audits" Command="{Binding OpenComparisonModalCommand}" IsEnabled="{Binding CurrentAudit, Converter={x:Static ObjectConverters.IsNotNull}}" Background="#1E293B" Foreground="#10B981" BorderBrush="#26334A" BorderThickness="1" CornerRadius="6" Padding="14,8"/>
+                    <Button Content="📄 Export Markdown" Command="{Binding ExportReportCommand}" IsEnabled="{Binding CurrentAudit, Converter={x:Static ObjectConverters.IsNotNull}}" Background="#1E293B" Foreground="#38BDF8" BorderBrush="#26334A" BorderThickness="1" CornerRadius="6" Padding="14,8"/>
                 </StackPanel>
             </Grid>
+
+            <!-- 2. Target Control Bar -->
+            <Border Grid.Row="1" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,14">
+                <Grid ColumnDefinitions="2*,3*,Auto" RowDefinitions="Auto,Auto">
+                    <!-- Select Lead Dropdown -->
+                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                        <TextBlock Text="Target Business Lead:" FontSize="11" Foreground="#64748B" Margin="0,0,0,4"/>
+                        <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding BusinessesWithWebsites}" SelectedItem="{Binding SelectedBusiness}" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="m:Business">
+                                    <TextBlock Text="{Binding Name}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- Target URL Input -->
+                    <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                        <TextBlock Text="Website URL to Audit:" FontSize="11" Foreground="#64748B" Margin="0,0,0,4"/>
+                        <TextBox Text="{Binding TargetUrl}" PlaceholderText="https://example.com" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6" Padding="10,6" VerticalContentAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Run Audit Button -->
+                    <Button Grid.Column="2" Content="🔬 Run Audit" Command="{Binding RunAuditCommand}" IsEnabled="{Binding !IsAuditing}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="20,8" FontWeight="SemiBold" VerticalAlignment="Bottom"/>
+
+                    <!-- Status Feedback -->
+                    <TextBlock Grid.Row="1" Grid.ColumnSpan="3" Text="{Binding StatusMessage}" FontSize="12" Foreground="#38BDF8" Margin="0,8,0,0"/>
+                </Grid>
+            </Border>
+
+            <!-- 3. Key Scorecards -->
+            <Grid Grid.Row="2" ColumnDefinitions="*,*,*,*" Margin="0,0,0,14">
+                <!-- Overall Score -->
+                <Border Grid.Column="0" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,6,0">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="OVERALL SCORE" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
+                        <TextBlock Text="{Binding CurrentAudit.OverallScore, TargetNullValue='--'}" FontSize="28" FontWeight="Bold" Foreground="#38BDF8"/>
+                        <TextBlock Text="Composite Health Index" FontSize="11" Foreground="#94A3B8"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Security Score -->
+                <Border Grid.Column="1" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="14" Margin="3,0,3,0">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="SECURITY SCORE" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
+                        <TextBlock Text="{Binding CurrentAudit.SecurityScore, TargetNullValue='--'}" FontSize="28" FontWeight="Bold" Foreground="#10B981"/>
+                        <TextBlock Text="{Binding CurrentAudit.SslValid, TargetNullValue='SSL: Unknown', StringFormat='SSL Active: {0}'}" FontSize="11" Foreground="#94A3B8"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Performance Score -->
+                <Border Grid.Column="2" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="14" Margin="3,0,3,0">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="PERFORMANCE SCORE" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
+                        <TextBlock Text="{Binding CurrentAudit.PerformanceScore, TargetNullValue='--'}" FontSize="28" FontWeight="Bold" Foreground="#F59E0B"/>
+                        <TextBlock Text="{Binding CurrentAudit.TtfbMs, TargetNullValue='TTFB: --', StringFormat='TTFB: {0:F0}ms'}" FontSize="11" Foreground="#94A3B8"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- SEO Score -->
+                <Border Grid.Column="3" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="14" Margin="6,0,0,0">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="SEO HYGIENE" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
+                        <TextBlock Text="{Binding CurrentAudit.SeoScore, TargetNullValue='--'}" FontSize="28" FontWeight="Bold" Foreground="#8B5CF6"/>
+                        <TextBlock Text="{Binding CurrentAudit.HasRobotsTxt, TargetNullValue='Robots: --', StringFormat='Robots: {0}'}" FontSize="11" Foreground="#94A3B8"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- 4. Tech Stack & Diagnostics Summary -->
+            <Border Grid.Row="3" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,14">
+                <Grid ColumnDefinitions="*,*">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <TextBlock Text="DETECTED TECHNOLOGY STACK" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
+                        <TextBlock Text="{Binding CurrentAudit.DetectedTechStack, TargetNullValue='Run audit to detect CMS, frameworks, and analytics'}" FontSize="13" Foreground="#F8FAFC" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="4" Margin="14,0,0,0">
+                        <TextBlock Text="SSL &amp; HOSTING DIAGNOSTICS" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
+                        <TextBlock Text="{Binding CurrentAudit.SslIssuer, TargetNullValue='Issuer: --', StringFormat='Issuer: {0}'}" FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- 5. Audit Findings DataGrid -->
+            <Border Grid.Row="4" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8">
+                <DataGrid ItemsSource="{Binding Findings}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          GridLinesVisibility="Horizontal"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto"
+                          RowBackground="#151E2E"
+                          BorderThickness="0"
+                          CornerRadius="8">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Severity" Binding="{Binding Severity}" Width="0.8*" />
+                        <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="1*" />
+                        <DataGridTextColumn Header="Issue Title" Binding="{Binding Title}" Width="2*" />
+                        <DataGridTextColumn Header="Description &amp; Impact" Binding="{Binding Description}" Width="3*" />
+                        <DataGridTextColumn Header="Recommended Fix" Binding="{Binding RecommendedFix}" Width="2.5*" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+        </Grid>
+
+        <!-- 6. MODAL OVERLAYS (Stage 8) -->
+
+        <!-- AI Proposal Studio Modal Overlay -->
+        <Border Background="#C0090D16" IsVisible="{Binding IsProposalModalOpen}">
+            <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="12" Width="820" MaxHeight="720" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Grid RowDefinitions="Auto,Auto,*,Auto">
+                    <!-- Header -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,14">
+                        <StackPanel Grid.Column="0" Spacing="2">
+                            <TextBlock Text="AI Proposal &amp; Outreach Studio" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC"/>
+                            <TextBlock Text="Synthesize high-converting client proposals from technical audit findings using Gemini Free Tier." FontSize="12" Foreground="#94A3B8"/>
+                        </StackPanel>
+                        <Border Grid.Column="1" Background="#4C1D95" CornerRadius="4" Padding="8,4" VerticalAlignment="Top">
+                            <TextBlock Text="GEMINI FREE TIER" FontSize="10" FontWeight="Bold" Foreground="#C4B5FD"/>
+                        </Border>
+                    </Grid>
+
+                    <!-- Tone and Controls Ribbon -->
+                    <Border Grid.Row="1" Background="#0F172A" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                        <Grid ColumnDefinitions="2*,Auto,Auto">
+                            <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,12,0">
+                                <TextBlock Text="Synthesis Tone &amp; Perspective:" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
+                                <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding AvailableTones}" SelectedItem="{Binding SelectedTone}" Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6"/>
+                            </StackPanel>
+
+                            <Button Grid.Column="1" Content="✨ Synthesize with AI" Command="{Binding GenerateAiProposalCommand}" IsEnabled="{Binding !IsGeneratingProposal}" Background="#7C3AED" Foreground="#FFFFFF" CornerRadius="6" Padding="16,8" FontWeight="SemiBold" VerticalAlignment="Bottom" Margin="0,0,8,0"/>
+                            <Button Grid.Column="2" Content="📋 Offline Template" Command="{Binding GenerateOfflineProposalCommand}" Background="#1E293B" Foreground="#38BDF8" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="14,8" VerticalAlignment="Bottom"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Proposal Editor / Preview -->
+                    <Grid Grid.Row="2" RowDefinitions="Auto,*" Margin="0,0,0,14">
+                        <!-- Status Bar -->
+                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+                            <TextBlock Grid.Column="0" Text="{Binding AiProposalStatus}" FontSize="12" Foreground="#38BDF8" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                            <ProgressBar Grid.Column="1" IsIndeterminate="True" Width="80" Height="4" IsVisible="{Binding IsGeneratingProposal}" VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <!-- Markdown Text Area -->
+                        <Border Grid.Row="1" Background="#0F172A" BorderBrush="#334155" BorderThickness="1" CornerRadius="8" MinHeight="280">
+                            <TextBox Text="{Binding GeneratedProposalMarkdown}"
+                                     AcceptsReturn="True"
+                                     TextWrapping="Wrap"
+                                     FontFamily="Consolas, monospace"
+                                     FontSize="12"
+                                     Background="#0F172A"
+                                     Foreground="#E2E8F0"
+                                     BorderThickness="0"
+                                     Padding="14"/>
+                        </Border>
+                    </Grid>
+
+                    <!-- Footer Actions -->
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+                        <Button Content="Close" Command="{Binding CloseProposalModalCommand}" Background="#334155" Foreground="#F8FAFC" CornerRadius="6" Padding="14,8"/>
+                        <Button Content="💾 Export Proposal (.md)" Command="{Binding ExportProposalCommand}" Background="#10B981" Foreground="#0F172A" CornerRadius="6" Padding="16,8" FontWeight="Bold"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
         </Border>
 
-        <!-- 5. Audit Findings DataGrid -->
-        <Border Grid.Row="4" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8">
-            <DataGrid ItemsSource="{Binding Findings}"
-                      AutoGenerateColumns="False"
-                      IsReadOnly="True"
-                      GridLinesVisibility="Horizontal"
-                      HorizontalScrollBarVisibility="Auto"
-                      VerticalScrollBarVisibility="Auto"
-                      RowBackground="#151E2E"
-                      BorderThickness="0"
-                      CornerRadius="8">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Severity" Binding="{Binding Severity}" Width="0.8*" />
-                    <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="1*" />
-                    <DataGridTextColumn Header="Issue Title" Binding="{Binding Title}" Width="2*" />
-                    <DataGridTextColumn Header="Description &amp; Impact" Binding="{Binding Description}" Width="3*" />
-                    <DataGridTextColumn Header="Recommended Fix" Binding="{Binding RecommendedFix}" Width="2.5*" />
-                </DataGrid.Columns>
-            </DataGrid>
+        <!-- Audit Comparison Modal Overlay -->
+        <Border Background="#C0090D16" IsVisible="{Binding IsComparisonModalOpen}">
+            <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="12" Width="760" MaxHeight="680" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Grid RowDefinitions="Auto,Auto,*,Auto">
+                    <!-- Header -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,14">
+                        <StackPanel Grid.Column="0" Spacing="2">
+                            <TextBlock Text="Audit History &amp; Re-Audit Comparison" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC"/>
+                            <TextBlock Text="Compare progress across multiple website diagnostics to evaluate resolved issues and score trends." FontSize="12" Foreground="#94A3B8"/>
+                        </StackPanel>
+                        <Border Grid.Column="1" Background="#064E3B" CornerRadius="4" Padding="8,4" VerticalAlignment="Top">
+                            <TextBlock Text="DELTA TRACKER" FontSize="10" FontWeight="Bold" Foreground="#34D399"/>
+                        </Border>
+                    </Grid>
+
+                    <!-- Baseline Picker -->
+                    <Border Grid.Row="1" Background="#0F172A" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Spacing="4">
+                                <TextBlock Text="Select Historical Baseline Audit to Compare Against:" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
+                                <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding HistoricalAuditsForBusiness}" SelectedItem="{Binding SelectedHistoricalAudit}" Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="m:WebsiteAudit">
+                                            <TextBlock Text="{Binding CreatedAtUtc, StringFormat='Audit on {0:yyyy-MM-dd HH:mm} UTC'}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
+                            <Button Grid.Column="1" Content="🔄 Recalculate Delta" Command="{Binding ExecuteAuditComparisonCommand}" Background="#1E293B" Foreground="#38BDF8" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="14,8" VerticalAlignment="Bottom" Margin="10,0,0,0"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Comparison Summary View -->
+                    <Border Grid.Row="2" Background="#0F172A" BorderBrush="#334155" BorderThickness="1" CornerRadius="8" Margin="0,0,0,14">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
+                            <TextBox Text="{Binding ComparisonMarkdown}"
+                                     IsReadOnly="True"
+                                     TextWrapping="Wrap"
+                                     FontFamily="Consolas, monospace"
+                                     FontSize="12"
+                                     Background="Transparent"
+                                     Foreground="#E2E8F0"
+                                     BorderThickness="0"/>
+                        </ScrollViewer>
+                    </Border>
+
+                    <!-- Footer Actions -->
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+                        <Button Content="Close Comparison" Command="{Binding CloseComparisonModalCommand}" Background="#334155" Foreground="#F8FAFC" CornerRadius="6" Padding="16,8" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
         </Border>
     </Grid>
 </UserControl>

@@ -81,6 +81,8 @@ public partial class App : Application
         services.AddScoped<ISsrfValidator, SsrfValidator>();
         services.AddScoped<IWebsiteAuditEngine, WebsiteAuditEngine>();
         services.AddScoped<IGooglePlacesEnrichmentService, GooglePlacesEnrichmentService>();
+        services.AddScoped<IAiProposalSynthesizer, AiProposalSynthesizer>();
+        services.AddScoped<IAuditComparisonService, AuditComparisonService>();
 
         // Secret Vault
         services.AddSingleton<ISecretVault, DpapiSecretVault>();

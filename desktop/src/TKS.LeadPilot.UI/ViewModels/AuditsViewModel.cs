@@ -16,6 +16,8 @@ public partial class AuditsViewModel : ViewModelBase
     private readonly IBusinessRepository _businessRepository;
     private readonly IWebsiteAuditEngine _auditEngine;
     private readonly IAuditRepository _auditRepository;
+    private readonly IAiProposalSynthesizer _aiSynthesizer;
+    private readonly IAuditComparisonService _comparisonService;
 
     [ObservableProperty]
     private ObservableCollection<Business> _businessesWithWebsites = [];
@@ -41,14 +43,56 @@ public partial class AuditsViewModel : ViewModelBase
     [ObservableProperty]
     private string _statusMessage = "Select a business lead with a website to audit.";
 
+    // AI Proposal Studio State (Stage 8)
+    [ObservableProperty]
+    private bool _isProposalModalOpen = false;
+
+    [ObservableProperty]
+    private ObservableCollection<string> _availableTones = ["Consultative (Local Consultant)", "ROI-Focused (Commercial Impact)", "Technical (Security & Standards)"];
+
+    [ObservableProperty]
+    private string _selectedTone = "Consultative (Local Consultant)";
+
+    [ObservableProperty]
+    private string _generatedProposalMarkdown = string.Empty;
+
+    [ObservableProperty]
+    private bool _isGeneratingProposal = false;
+
+    [ObservableProperty]
+    private string _aiProposalStatus = string.Empty;
+
+    [ObservableProperty]
+    private string _customInstructions = string.Empty;
+
+    // Audit Comparison State (Stage 8)
+    [ObservableProperty]
+    private bool _isComparisonModalOpen = false;
+
+    [ObservableProperty]
+    private ObservableCollection<WebsiteAudit> _historicalAuditsForBusiness = [];
+
+    [ObservableProperty]
+    private WebsiteAudit? _selectedHistoricalAudit;
+
+    [ObservableProperty]
+    private AuditComparisonResult? _comparisonResult;
+
+    [ObservableProperty]
+    private string _comparisonMarkdown = string.Empty;
+
     public AuditsViewModel(
         IBusinessRepository businessRepository,
         IWebsiteAuditEngine auditEngine,
-        IAuditRepository auditRepository)
+        IAuditRepository auditRepository,
+        IAiProposalSynthesizer aiSynthesizer,
+        IAuditComparisonService comparisonService)
     {
         _businessRepository = businessRepository;
         _auditEngine = auditEngine;
         _auditRepository = auditRepository;
+        _aiSynthesizer = aiSynthesizer;
+        _comparisonService = comparisonService;
 
         _ = InitializeAsync();
     }
@@ -198,6 +242,177 @@ public partial class AuditsViewModel : ViewModelBase
         {
             StatusMessage = $"Export Error: {ex.Message}";
         }
+    }
+
+    // --- AI Proposal Studio Commands (Stage 8) ---
+    [RelayCommand]
+    public void OpenProposalModal()
+    {
+        if (CurrentAudit == null)
+        {
+            StatusMessage = "Please run or select an audit first before generating a proposal.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(GeneratedProposalMarkdown))
+        {
+            ExecuteOfflineProposalGeneration();
+        }
+
+        IsProposalModalOpen = true;
+    }
+
+    [RelayCommand]
+    public void CloseProposalModal()
+    {
+        IsProposalModalOpen = false;
+    }
+
+    [RelayCommand]
+    public async Task GenerateAiProposal()
+    {
+        if (CurrentAudit == null) return;
+
+        try
+        {
+            IsGeneratingProposal = true;
+            AiProposalStatus = "Connecting to Google Gemini API (Free Tier) to synthesize executive proposal...";
+
+            var tone = SelectedTone.StartsWith("ROI") ? AiTone.RoiFocused
+                     : SelectedTone.StartsWith("Tech") ? AiTone.Technical
+                     : AiTone.Consultative;
+
+            var request = new AuditProposalSynthesisRequest
+            {
+                Business = SelectedBusiness ?? new Business { Name = "Client Lead", WebsiteUrl = TargetUrl },
+                Audit = CurrentAudit,
+                Tone = tone,
+                CustomInstructions = CustomInstructions
+            };
+
+            var result = await _aiSynthesizer.SynthesizeProposalAsync(request);
+
+            GeneratedProposalMarkdown = result.FullProposalMarkdown;
+            if (result.IsLocalFallback)
+            {
+                AiProposalStatus = $"Offline Fallback Generated: {result.ErrorMessage}";
+            }
+            else
+            {
+                AiProposalStatus = $"Generated via Gemini AI ({result.Tone}). Quota used today: {result.RequestsUsedToday}/{result.DailyLimit}. Tokens: {result.TokensUsed ?? 0}.";
+            }
+        }
+        catch (Exception ex)
+        {
+            AiProposalStatus = $"AI Error: {ex.Message}";
+        }
+        finally
+        {
+            IsGeneratingProposal = false;
+        }
+    }
+
+    [RelayCommand]
+    public void GenerateOfflineProposal()
+    {
+        ExecuteOfflineProposalGeneration();
+    }
+
+    private void ExecuteOfflineProposalGeneration()
+    {
+        if (CurrentAudit == null) return;
+
+        var tone = SelectedTone.StartsWith("ROI") ? AiTone.RoiFocused
+                 : SelectedTone.StartsWith("Tech") ? AiTone.Technical
+                 : AiTone.Consultative;
+
+        var request = new AuditProposalSynthesisRequest
+        {
+            Business = SelectedBusiness ?? new Business { Name = "Client Lead", WebsiteUrl = TargetUrl },
+            Audit = CurrentAudit,
+            Tone = tone,
+            CustomInstructions = CustomInstructions
+        };
+
+        var result = _aiSynthesizer.SynthesizeDeterministicProposal(request);
+        GeneratedProposalMarkdown = result.FullProposalMarkdown;
+        AiProposalStatus = "Generated instant deterministic proposal template ($0 cost, 100% offline).";
+    }
+
+    [RelayCommand]
+    public async Task ExportProposal()
+    {
+        if (string.IsNullOrWhiteSpace(GeneratedProposalMarkdown)) return;
+
+        try
+        {
+            var exportDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+            if (!Directory.Exists(exportDir)) exportDir = AppContext.BaseDirectory;
+
+            var filename = $"TKS_Proposal_{SanitizeFilename(SelectedBusiness?.Name ?? "Client")}_{DateTime.Now:yyyyMMdd_HHmm}.md";
+            var path = Path.Combine(exportDir, filename);
+            await File.WriteAllTextAsync(path, GeneratedProposalMarkdown, Encoding.UTF8);
+
+            AiProposalStatus = $"Saved proposal to {path}";
+            StatusMessage = $"Saved proposal to {path}";
+        }
+        catch (Exception ex)
+        {
+            AiProposalStatus = $"Export Error: {ex.Message}";
+        }
+    }
+
+    // --- Audit Comparison Commands (Stage 8) ---
+    [RelayCommand]
+    public async Task OpenComparisonModal()
+    {
+        if (SelectedBusiness == null || CurrentAudit == null)
+        {
+            StatusMessage = "Please select a business with completed audits to compare.";
+            return;
+        }
+
+        try
+        {
+            var allAudits = await _auditRepository.GetAllAuditsForBusinessAsync(SelectedBusiness.Id);
+            var otherAudits = allAudits.Where(a => a.Id != CurrentAudit.Id).ToList();
+
+            if (otherAudits.Count == 0)
+            {
+                StatusMessage = "Only 1 audit exists for this business. Run a re-audit to compare historical changes.";
+                return;
+            }
+
+            HistoricalAuditsForBusiness = new ObservableCollection<WebsiteAudit>(otherAudits);
+            SelectedHistoricalAudit = HistoricalAuditsForBusiness.FirstOrDefault();
+            ExecuteAuditComparison();
+
+            IsComparisonModalOpen = true;
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Comparison error: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public void CloseComparisonModal()
+    {
+        IsComparisonModalOpen = false;
+    }
+
+    [RelayCommand]
+    public void ExecuteAuditComparison()
+    {
+        if (CurrentAudit == null || SelectedHistoricalAudit == null) return;
+
+        var baseline = SelectedHistoricalAudit.CreatedAtUtc < CurrentAudit.CreatedAtUtc
+            ? SelectedHistoricalAudit
+            : CurrentAudit;
+        var target = baseline == SelectedHistoricalAudit ? CurrentAudit : SelectedHistoricalAudit;
+
+        ComparisonResult = _comparisonService.CompareAudits(baseline, target);
+        ComparisonMarkdown = ComparisonResult.ComparisonSummaryMarkdown;
     }
 
     private static string SanitizeFilename(string name)
