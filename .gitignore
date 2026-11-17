@@ -82,3 +82,7 @@ credentials.json
 *.swo
 Thumbs.db
 Desktop.ini
+
+# Internal PRD
+TKS-LeadPilot-PRD.md
+
