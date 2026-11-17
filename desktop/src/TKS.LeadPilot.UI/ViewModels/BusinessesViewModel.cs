@@ -20,6 +20,7 @@ public partial class BusinessesViewModel : ViewModelBase
     private readonly IDeduplicationService _deduplicationService;
     private readonly IDiscoveryService _discoveryService;
     private readonly IGooglePlacesEnrichmentService _placesService;
+    private readonly IGeoLocationService _geoLocationService;
 
     // Collections
     [ObservableProperty]
@@ -28,12 +29,36 @@ public partial class BusinessesViewModel : ViewModelBase
     [ObservableProperty]
     private Business? _selectedBusiness;
 
+    // Cascading Geographic Hierarchies
+    [ObservableProperty]
+    private ObservableCollection<string> _countries = ["All Countries"];
+
+    [ObservableProperty]
+    private string _selectedCountry = "All Countries";
+
+    [ObservableProperty]
+    private ObservableCollection<string> _states = ["All States/Provinces"];
+
+    [ObservableProperty]
+    private string _selectedState = "All States/Provinces";
+
     [ObservableProperty]
     private ObservableCollection<string> _cities = ["All Cities"];
 
     [ObservableProperty]
     private string _selectedCity = "All Cities";
 
+    // Proximity / Nearby Me
+    [ObservableProperty]
+    private bool _isNearbyActive = false;
+
+    [ObservableProperty]
+    private double _nearbyRadiusKm = 15.0;
+
+    [ObservableProperty]
+    private bool _isDetectingLocation = false;
+
+    // Category and Filter Dropdowns
     [ObservableProperty]
     private ObservableCollection<string> _categories = ["All Categories"];
 
@@ -52,6 +77,16 @@ public partial class BusinessesViewModel : ViewModelBase
     [ObservableProperty]
     private string _selectedWebsiteFilter = "All Sites";
 
+    // Quick Filter & Suggested Niches
+    [ObservableProperty]
+    private QuickFilterType _selectedQuickFilter = QuickFilterType.All;
+
+    [ObservableProperty]
+    private string _activeQuickFilterName = "All";
+
+    [ObservableProperty]
+    private ObservableCollection<string> _suggestedNiches = [];
+
     // Search and State
     [ObservableProperty]
     private string _searchQuery = string.Empty;
@@ -64,6 +99,12 @@ public partial class BusinessesViewModel : ViewModelBase
 
     [ObservableProperty]
     private int _filteredCount = 0;
+
+    [ObservableProperty]
+    private int _hotLeadsCount = 0;
+
+    [ObservableProperty]
+    private int _verifiedCount = 0;
 
     [ObservableProperty]
     private string _statusMessage = string.Empty;
@@ -90,18 +131,39 @@ public partial class BusinessesViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isEnrichingWithGoogle = false;
 
-    // Discovery State (Stage 5)
+    // Discovery Modal Cascading Hierarchies
     [ObservableProperty]
-    private ObservableCollection<string> _discoveryCities = ["Karachi", "Lahore", "Islamabad", "Rawalpindi", "Faisalabad", "Peshawar", "Multan"];
+    private ObservableCollection<string> _discoveryCountries = ["Pakistan", "United States", "United Kingdom", "United Arab Emirates", "Canada", "Saudi Arabia", "Australia", "Germany"];
 
     [ObservableProperty]
-    private string _selectedDiscoveryCity = "Karachi";
+    private string _selectedDiscoveryCountry = "Pakistan";
 
     [ObservableProperty]
-    private ObservableCollection<string> _discoveryCategoryPresets = ["Healthcare & Dental", "Restaurants & Food", "Hotels & Lodging", "Retail & Shopping", "Automotive & Repair", "Education & Training"];
+    private ObservableCollection<string> _discoveryStates = [];
+
+    [ObservableProperty]
+    private string _selectedDiscoveryState = "Punjab";
+
+    [ObservableProperty]
+    private ObservableCollection<string> _discoveryCities = [];
+
+    [ObservableProperty]
+    private string _selectedDiscoveryCity = "Lahore";
+
+    [ObservableProperty]
+    private ObservableCollection<string> _discoveryCategoryPresets = [];
 
     [ObservableProperty]
     private string _selectedDiscoveryCategoryPreset = "Healthcare & Dental";
+
+    [ObservableProperty]
+    private ObservableCollection<string> _discoverySuggestedNiches = [];
+
+    [ObservableProperty]
+    private bool _isDiscoveryNearbyMode = false;
+
+    [ObservableProperty]
+    private double _discoveryRadiusKm = 15.0;
 
     [ObservableProperty]
     private ObservableCollection<DiscoveredLead> _discoveredLeads = [];
@@ -144,7 +206,13 @@ public partial class BusinessesViewModel : ViewModelBase
     private string _newBusinessCategory = string.Empty;
 
     [ObservableProperty]
-    private string _newBusinessCity = string.Empty;
+    private string _newBusinessCountry = "Pakistan";
+
+    [ObservableProperty]
+    private string _newBusinessState = "Punjab";
+
+    [ObservableProperty]
+    private string _newBusinessCity = "Lahore";
 
     [ObservableProperty]
     private string _newBusinessPhone = string.Empty;
@@ -180,7 +248,8 @@ public partial class BusinessesViewModel : ViewModelBase
         ICsvImporterService csvImporterService,
         IDeduplicationService deduplicationService,
         IDiscoveryService discoveryService,
-        IGooglePlacesEnrichmentService placesService)
+        IGooglePlacesEnrichmentService placesService,
+        IGeoLocationService geoLocationService)
     {
         _businessRepository = businessRepository;
         _pipelineStageRepository = pipelineStageRepository;
@@ -188,6 +257,7 @@ public partial class BusinessesViewModel : ViewModelBase
         _deduplicationService = deduplicationService;
         _discoveryService = discoveryService;
         _placesService = placesService;
+        _geoLocationService = geoLocationService;
 
         _ = InitializeAsync();
     }
@@ -202,8 +272,28 @@ public partial class BusinessesViewModel : ViewModelBase
             var stages = await _pipelineStageRepository.GetAllAsync();
             PipelineStages = new ObservableCollection<PipelineStage>(stages);
 
-            // Load Distinct Cities & Categories
-            await RefreshFilterOptionsAsync();
+            // Populate Countries
+            var catalogCountries = _geoLocationService.GetAllCountries().Select(c => c.DisplayName).ToList();
+            Countries = new ObservableCollection<string>(new[] { "All Countries" }.Concat(catalogCountries));
+
+            // Populate Categories from presets + DB
+            var catList = await _businessRepository.GetDistinctCategoriesAsync();
+            var presetCategories = _discoveryService.GetPresetCategories().Keys;
+            var mergedCategories = new HashSet<string>(catList.Concat(presetCategories), StringComparer.OrdinalIgnoreCase).OrderBy(c => c);
+            Categories = new ObservableCollection<string>(new[] { "All Categories" }.Concat(mergedCategories));
+
+            // Discovery presets
+            DiscoveryCategoryPresets = new ObservableCollection<string>(_discoveryService.GetPresetCategories().Keys);
+            SelectedDiscoveryCategoryPreset = DiscoveryCategoryPresets.FirstOrDefault() ?? "Healthcare & Dental";
+
+            // Initialize Discovery Locations
+            UpdateDiscoveryStates("Pakistan");
+            UpdateDiscoveryCities("Pakistan", "Punjab");
+
+            // Populate Initial Cascades
+            await RefreshStatesForCountryAsync(SelectedCountry);
+            await RefreshCitiesForStateAsync(SelectedCountry, SelectedState);
+            RefreshSuggestedNiches();
 
             // Load Initial Businesses
             await ApplyFiltersAsync();
@@ -218,14 +308,193 @@ public partial class BusinessesViewModel : ViewModelBase
         }
     }
 
-    private async Task RefreshFilterOptionsAsync()
-    {
-        var cityList = await _businessRepository.GetDistinctCitiesAsync();
-        var catList = await _businessRepository.GetDistinctCategoriesAsync();
+    // --- Cascading Change Handlers for Main View ---
 
-        Cities = new ObservableCollection<string>(new[] { "All Cities" }.Concat(cityList));
-        Categories = new ObservableCollection<string>(new[] { "All Categories" }.Concat(catList));
+    partial void OnSelectedCountryChanged(string value)
+    {
+        _ = Task.Run(async () =>
+        {
+            await RefreshStatesForCountryAsync(value);
+            await RefreshCitiesForStateAsync(value, SelectedState);
+            RefreshSuggestedNiches();
+            await ApplyFiltersAsync();
+        });
     }
+
+    partial void OnSelectedStateChanged(string value)
+    {
+        _ = Task.Run(async () =>
+        {
+            await RefreshCitiesForStateAsync(SelectedCountry, value);
+            RefreshSuggestedNiches();
+            await ApplyFiltersAsync();
+        });
+    }
+
+    partial void OnSelectedCityChanged(string value)
+    {
+        RefreshSuggestedNiches();
+        _ = ApplyFiltersAsync();
+    }
+
+    private async Task RefreshStatesForCountryAsync(string countryDisplay)
+    {
+        var rawCountry = ExtractCountryName(countryDisplay);
+        var stateList = new List<string>();
+
+        if (rawCountry != "All Countries")
+        {
+            var states = _geoLocationService.GetStatesForCountry(rawCountry);
+            stateList = states.Select(s => s.Name).ToList();
+
+            // Also check DB for any distinct states recorded
+            var dbStates = await _businessRepository.GetDistinctStatesAsync(rawCountry);
+            stateList = stateList.Union(dbStates).OrderBy(s => s).ToList();
+        }
+
+        States = new ObservableCollection<string>(new[] { "All States/Provinces" }.Concat(stateList));
+        SelectedState = "All States/Provinces";
+    }
+
+    private async Task RefreshCitiesForStateAsync(string countryDisplay, string stateName)
+    {
+        var rawCountry = ExtractCountryName(countryDisplay);
+        var cityList = new List<string>();
+
+        if (rawCountry != "All Countries" && stateName != "All States/Provinces")
+        {
+            var cities = _geoLocationService.GetCitiesForState(rawCountry, stateName);
+            cityList = cities.Select(c => c.Name).ToList();
+        }
+        else if (rawCountry != "All Countries")
+        {
+            var country = _geoLocationService.GetCountry(rawCountry);
+            if (country != null)
+            {
+                cityList = country.States.SelectMany(s => s.Cities).Select(c => c.Name).ToList();
+            }
+        }
+        else
+        {
+            // All cities from DB
+            cityList = await _businessRepository.GetDistinctCitiesAsync();
+        }
+
+        Cities = new ObservableCollection<string>(new[] { "All Cities" }.Concat(cityList.Distinct().OrderBy(c => c)));
+        SelectedCity = "All Cities";
+    }
+
+    private void RefreshSuggestedNiches()
+    {
+        var rawCountry = ExtractCountryName(SelectedCountry);
+        var rawCity = SelectedCity != "All Cities" ? SelectedCity : null;
+        var countryArg = rawCountry != "All Countries" ? rawCountry : null;
+
+        var niches = _geoLocationService.GetSuggestedNiches(countryArg, rawCity);
+        SuggestedNiches = new ObservableCollection<string>(niches);
+    }
+
+    private static string ExtractCountryName(string countryDisplay)
+    {
+        if (string.IsNullOrWhiteSpace(countryDisplay) || countryDisplay == "All Countries") return "All Countries";
+        // Strips leading flag emojis if present (e.g. "🇵🇰 Pakistan" -> "Pakistan")
+        var parts = countryDisplay.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length > 1 ? string.Join(' ', parts.Skip(1)) : parts[0];
+    }
+
+    // --- Quick Filter Command ---
+
+    [RelayCommand]
+    public async Task ApplyQuickFilter(string filterName)
+    {
+        ActiveQuickFilterName = filterName;
+        SelectedQuickFilter = filterName switch
+        {
+            "🔥 Hot Leads" => QuickFilterType.HotLeads,
+            "❌ No Website" => QuickFilterType.NoWebsite,
+            "✓ Verified" => QuickFilterType.GoogleVerified,
+            "⭐ Top Rated" => QuickFilterType.TopRated,
+            "Needs Audit" => QuickFilterType.NeedsAudit,
+            _ => QuickFilterType.All
+        };
+
+        await ApplyFiltersAsync();
+    }
+
+    [RelayCommand]
+    public async Task ClearQuickFilter()
+    {
+        ActiveQuickFilterName = "All";
+        SelectedQuickFilter = QuickFilterType.All;
+        await ApplyFiltersAsync();
+    }
+
+    [RelayCommand]
+    public async Task SelectSuggestedNiche(string niche)
+    {
+        if (string.IsNullOrWhiteSpace(niche)) return;
+        SearchQuery = niche;
+        await ApplyFiltersAsync();
+    }
+
+    // --- Nearby Me Proximity Detection ---
+
+    [RelayCommand]
+    public async Task DetectNearbyLocation()
+    {
+        try
+        {
+            IsDetectingLocation = true;
+            StatusMessage = "📍 Detecting your approximate location...";
+
+            var nearby = await _geoLocationService.DetectNearbyLocationAsync(NearbyRadiusKm);
+            IsNearbyActive = true;
+
+            // Select Country, State, City
+            var matchedCountry = Countries.FirstOrDefault(c => c.Contains(nearby.Country, StringComparison.OrdinalIgnoreCase));
+            if (matchedCountry != null)
+            {
+                SelectedCountry = matchedCountry;
+            }
+
+            await RefreshStatesForCountryAsync(nearby.Country);
+            var matchedState = States.FirstOrDefault(s => s.Equals(nearby.StateProvince, StringComparison.OrdinalIgnoreCase));
+            if (matchedState != null)
+            {
+                SelectedState = matchedState;
+            }
+
+            await RefreshCitiesForStateAsync(nearby.Country, nearby.StateProvince);
+            var matchedCity = Cities.FirstOrDefault(c => c.Equals(nearby.City, StringComparison.OrdinalIgnoreCase));
+            if (matchedCity != null)
+            {
+                SelectedCity = matchedCity;
+            }
+
+            StatusMessage = $"📍 Proximity Mode: within {nearby.RadiusKm} km of {nearby.City}, {nearby.StateProvince} ({nearby.Country})";
+            await ApplyFiltersAsync();
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Nearby Error: {ex.Message}";
+        }
+        finally
+        {
+            IsDetectingLocation = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task ClearNearby()
+    {
+        IsNearbyActive = false;
+        SelectedCountry = "All Countries";
+        SelectedState = "All States/Provinces";
+        SelectedCity = "All Cities";
+        await ApplyFiltersAsync();
+    }
+
+    // --- Filter Application ---
 
     [RelayCommand]
     public async Task ApplyFilters()
@@ -238,13 +507,18 @@ public partial class BusinessesViewModel : ViewModelBase
         try
         {
             IsLoading = true;
+            var rawCountry = ExtractCountryName(SelectedCountry);
+
             var criteria = new BusinessFilterCriteria
             {
                 SearchQuery = string.IsNullOrWhiteSpace(SearchQuery) ? null : SearchQuery,
+                Country = rawCountry != "All Countries" ? rawCountry : null,
+                StateProvince = SelectedState != "All States/Provinces" ? SelectedState : null,
                 City = SelectedCity != "All Cities" ? SelectedCity : null,
                 Category = SelectedCategory != "All Categories" ? SelectedCategory : null,
                 PipelineStageId = SelectedStage?.Id,
                 HasWebsite = SelectedWebsiteFilter == "Has Website" ? true : SelectedWebsiteFilter == "No Website" ? false : null,
+                QuickFilter = SelectedQuickFilter,
                 Take = 500
             };
 
@@ -252,13 +526,15 @@ public partial class BusinessesViewModel : ViewModelBase
             Businesses = new ObservableCollection<Business>(list);
             FilteredCount = list.Count;
             TotalCount = await _businessRepository.GetTotalCountAsync();
+            HotLeadsCount = await _businessRepository.GetHighOpportunityCountAsync(70);
+            VerifiedCount = Businesses.Count(b => b.IsGoogleVerified);
 
             SelectedBusiness = Businesses.FirstOrDefault();
-            StatusMessage = $"Displaying {FilteredCount} of {TotalCount} businesses";
+            StatusMessage = $"Showing {FilteredCount} of {TotalCount} leads • {HotLeadsCount} High Opportunity • {VerifiedCount} Google Verified";
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Error: {ex.Message}";
+            StatusMessage = $"Filter Error: {ex.Message}";
         }
         finally
         {
@@ -270,10 +546,15 @@ public partial class BusinessesViewModel : ViewModelBase
     public async Task ResetFilters()
     {
         SearchQuery = string.Empty;
+        SelectedCountry = "All Countries";
+        SelectedState = "All States/Provinces";
         SelectedCity = "All Cities";
         SelectedCategory = "All Categories";
         SelectedStage = null;
         SelectedWebsiteFilter = "All Sites";
+        SelectedQuickFilter = QuickFilterType.All;
+        ActiveQuickFilterName = "All";
+        IsNearbyActive = false;
         await ApplyFiltersAsync();
     }
 
@@ -341,7 +622,8 @@ public partial class BusinessesViewModel : ViewModelBase
 
             StatusMessage = $"Import finished: {result.CreatedCount} created, {result.UpdatedCount} updated, {result.SkippedCount} skipped";
             CloseImportModal();
-            await RefreshFilterOptionsAsync();
+            await RefreshStatesForCountryAsync(SelectedCountry);
+            await RefreshCitiesForStateAsync(SelectedCountry, SelectedState);
             await ApplyFiltersAsync();
         }
         catch (Exception ex)
@@ -385,7 +667,9 @@ public partial class BusinessesViewModel : ViewModelBase
     {
         NewBusinessName = string.Empty;
         NewBusinessCategory = string.Empty;
-        NewBusinessCity = string.Empty;
+        NewBusinessCountry = SelectedCountry != "All Countries" ? ExtractCountryName(SelectedCountry) : "Pakistan";
+        NewBusinessState = SelectedState != "All States/Provinces" ? SelectedState : "Punjab";
+        NewBusinessCity = SelectedCity != "All Cities" ? SelectedCity : "Lahore";
         NewBusinessPhone = string.Empty;
         NewBusinessEmail = string.Empty;
         NewBusinessWebsite = string.Empty;
@@ -415,6 +699,8 @@ public partial class BusinessesViewModel : ViewModelBase
             {
                 Name = NewBusinessName.Trim(),
                 Category = string.IsNullOrWhiteSpace(NewBusinessCategory) ? "General" : NewBusinessCategory.Trim(),
+                Country = string.IsNullOrWhiteSpace(NewBusinessCountry) ? "Pakistan" : NewBusinessCountry.Trim(),
+                StateProvince = string.IsNullOrWhiteSpace(NewBusinessState) ? null : NewBusinessState.Trim(),
                 City = string.IsNullOrWhiteSpace(NewBusinessCity) ? "Unspecified" : NewBusinessCity.Trim(),
                 PhonePrimary = string.IsNullOrWhiteSpace(NewBusinessPhone) ? null : NewBusinessPhone.Trim(),
                 EmailPrimary = string.IsNullOrWhiteSpace(NewBusinessEmail) ? null : NewBusinessEmail.Trim(),
@@ -427,7 +713,8 @@ public partial class BusinessesViewModel : ViewModelBase
 
             await _businessRepository.AddAsync(newBiz);
             CloseAddBusinessModal();
-            await RefreshFilterOptionsAsync();
+            await RefreshStatesForCountryAsync(SelectedCountry);
+            await RefreshCitiesForStateAsync(SelectedCountry, SelectedState);
             await ApplyFiltersAsync();
             SelectedBusiness = Businesses.FirstOrDefault(b => b.Id == newBiz.Id);
             StatusMessage = $"Added business '{newBiz.Name}'";
@@ -531,7 +818,58 @@ public partial class BusinessesViewModel : ViewModelBase
         }
     }
 
-    // --- Discovery Commands (Stage 5) ---
+    // --- Discovery Modal Cascading & Commands (Stage 5) ---
+
+    partial void OnSelectedDiscoveryCountryChanged(string value)
+    {
+        UpdateDiscoveryStates(value);
+        UpdateDiscoveryCities(value, SelectedDiscoveryState);
+        UpdateDiscoveryNiches();
+    }
+
+    partial void OnSelectedDiscoveryStateChanged(string value)
+    {
+        UpdateDiscoveryCities(SelectedDiscoveryCountry, value);
+        UpdateDiscoveryNiches();
+    }
+
+    partial void OnSelectedDiscoveryCityChanged(string value)
+    {
+        UpdateDiscoveryNiches();
+    }
+
+    private void UpdateDiscoveryStates(string country)
+    {
+        var states = _geoLocationService.GetStatesForCountry(country).Select(s => s.Name).ToList();
+        DiscoveryStates = new ObservableCollection<string>(states);
+        SelectedDiscoveryState = DiscoveryStates.FirstOrDefault() ?? string.Empty;
+    }
+
+    private void UpdateDiscoveryCities(string country, string state)
+    {
+        var cities = _geoLocationService.GetCitiesForState(country, state).Select(c => c.Name).ToList();
+        DiscoveryCities = new ObservableCollection<string>(cities);
+        SelectedDiscoveryCity = DiscoveryCities.FirstOrDefault() ?? string.Empty;
+    }
+
+    private void UpdateDiscoveryNiches()
+    {
+        var niches = _geoLocationService.GetSuggestedNiches(SelectedDiscoveryCountry, SelectedDiscoveryCity);
+        DiscoverySuggestedNiches = new ObservableCollection<string>(niches);
+    }
+
+    [RelayCommand]
+    public void SelectDiscoveryNiche(string niche)
+    {
+        if (string.IsNullOrWhiteSpace(niche)) return;
+        var preset = DiscoveryCategoryPresets.FirstOrDefault(p =>
+            niche.Contains(p.Split(' ')[0], StringComparison.OrdinalIgnoreCase));
+        if (preset != null)
+        {
+            SelectedDiscoveryCategoryPreset = preset;
+        }
+    }
+
     [RelayCommand]
     public void OpenDiscoveryModal()
     {
@@ -539,7 +877,11 @@ public partial class BusinessesViewModel : ViewModelBase
         DiscoveredTotal = 0;
         DiscoveredNew = 0;
         DiscoveredDuplicates = 0;
-        DiscoveryStatus = "Select target city and category preset to begin scan.";
+        IsDiscoveryNearbyMode = false;
+        UpdateDiscoveryStates(SelectedDiscoveryCountry);
+        UpdateDiscoveryCities(SelectedDiscoveryCountry, SelectedDiscoveryState);
+        UpdateDiscoveryNiches();
+        DiscoveryStatus = $"Ready to scan for {SelectedDiscoveryCategoryPreset} in {SelectedDiscoveryCity}, {SelectedDiscoveryCountry}.";
         IsDiscoveryModalOpen = true;
     }
 
@@ -550,12 +892,45 @@ public partial class BusinessesViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    public async Task SetDiscoveryNearby()
+    {
+        try
+        {
+            IsDiscovering = true;
+            DiscoveryStatus = "📍 Detecting proximity for Discovery...";
+            var loc = await _geoLocationService.DetectNearbyLocationAsync(DiscoveryRadiusKm);
+            IsDiscoveryNearbyMode = true;
+
+            var matchCountry = DiscoveryCountries.FirstOrDefault(c => c.Equals(loc.Country, StringComparison.OrdinalIgnoreCase));
+            if (matchCountry != null) SelectedDiscoveryCountry = matchCountry;
+
+            UpdateDiscoveryStates(loc.Country);
+            var matchState = DiscoveryStates.FirstOrDefault(s => s.Equals(loc.StateProvince, StringComparison.OrdinalIgnoreCase));
+            if (matchState != null) SelectedDiscoveryState = matchState;
+
+            UpdateDiscoveryCities(loc.Country, loc.StateProvince);
+            var matchCity = DiscoveryCities.FirstOrDefault(c => c.Equals(loc.City, StringComparison.OrdinalIgnoreCase));
+            if (matchCity != null) SelectedDiscoveryCity = matchCity;
+
+            DiscoveryStatus = $"📍 Nearby Discovery active: {DiscoveryRadiusKm} km radius around {loc.City} ({loc.Latitude:F4}, {loc.Longitude:F4})";
+        }
+        catch (Exception ex)
+        {
+            DiscoveryStatus = $"Proximity Error: {ex.Message}";
+        }
+        finally
+        {
+            IsDiscovering = false;
+        }
+    }
+
+    [RelayCommand]
     public async Task StartDiscoveryScan()
     {
         try
         {
             IsDiscovering = true;
-            DiscoveryStatus = $"Querying OpenStreetMap Overpass servers for {SelectedDiscoveryCategoryPreset} in {SelectedDiscoveryCity}...";
+            DiscoveryStatus = $"Querying OpenStreetMap Overpass servers for {SelectedDiscoveryCategoryPreset} in {SelectedDiscoveryCity}, {SelectedDiscoveryCountry}...";
 
             var presets = _discoveryService.GetPresetCategories();
             List<string> targetAmenities = ["clinic", "dentist", "pharmacy"];
@@ -564,10 +939,23 @@ public partial class BusinessesViewModel : ViewModelBase
                 targetAmenities = list;
             }
 
+            BoundingBox? bbox = null;
+            if (IsDiscoveryNearbyMode)
+            {
+                var cityInfo = _geoLocationService.FindCity(SelectedDiscoveryCity, SelectedDiscoveryCountry);
+                if (cityInfo != null)
+                {
+                    bbox = _geoLocationService.CalculateProximityBoundingBox(cityInfo.Latitude, cityInfo.Longitude, DiscoveryRadiusKm);
+                }
+            }
+
             var query = new DiscoveryQuery
             {
+                Country = SelectedDiscoveryCountry,
+                StateProvince = SelectedDiscoveryState,
                 City = SelectedDiscoveryCity,
                 TargetAmenities = targetAmenities,
+                BBox = bbox,
                 Limit = 150,
                 TimeoutSeconds = 30
             };
@@ -585,7 +973,14 @@ public partial class BusinessesViewModel : ViewModelBase
             DiscoveredNew = result.NewCount;
             DiscoveredDuplicates = result.DuplicateCount;
 
-            DiscoveryStatus = $"Discovery scan complete in {result.ExecutionDuration.TotalSeconds:F1}s: {DiscoveredTotal} found ({DiscoveredNew} new, {DiscoveredDuplicates} duplicates).";
+            if (DiscoveredTotal > 0)
+            {
+                DiscoveryStatus = $"Scan complete in {result.ExecutionDuration.TotalSeconds:F1}s via {result.Provider}: {DiscoveredTotal} found ({DiscoveredNew} new, {DiscoveredDuplicates} duplicates).";
+            }
+            else
+            {
+                DiscoveryStatus = $"Scan complete in {result.ExecutionDuration.TotalSeconds:F1}s: No matching businesses found in {SelectedDiscoveryCity}.";
+            }
         }
         catch (Exception ex)
         {
@@ -613,7 +1008,8 @@ public partial class BusinessesViewModel : ViewModelBase
 
             StatusMessage = $"Discovery Import: {result.CreatedCount} created, {result.UpdatedCount} merged, {result.SkippedCount} skipped";
             CloseDiscoveryModal();
-            await RefreshFilterOptionsAsync();
+            await RefreshStatesForCountryAsync(SelectedCountry);
+            await RefreshCitiesForStateAsync(SelectedCountry, SelectedState);
             await ApplyFiltersAsync();
         }
         catch (Exception ex)

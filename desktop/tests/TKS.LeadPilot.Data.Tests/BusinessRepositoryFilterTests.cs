@@ -39,6 +39,8 @@ public class BusinessRepositoryFilterTests
                 {
                     Name = "Karachi Health Hub",
                     Category = "Healthcare",
+                    Country = "Pakistan",
+                    StateProvince = "Sindh",
                     City = "Karachi",
                     WebsiteUrl = "https://khihealth.pk",
                     LeadScore = 85,
@@ -49,6 +51,8 @@ public class BusinessRepositoryFilterTests
                 {
                     Name = "Lahore Tech Retail",
                     Category = "Retail",
+                    Country = "Pakistan",
+                    StateProvince = "Punjab",
                     City = "Lahore",
                     WebsiteUrl = null,
                     LeadScore = 40,
@@ -59,6 +63,8 @@ public class BusinessRepositoryFilterTests
                 {
                     Name = "Islamabad Dental Care",
                     Category = "Healthcare",
+                    Country = "Pakistan",
+                    StateProvince = "Islamabad Capital Territory",
                     City = "Islamabad",
                     WebsiteUrl = "https://isbdental.pk",
                     LeadScore = 90,
@@ -92,6 +98,22 @@ public class BusinessRepositoryFilterTests
             // 6. Distinct Tags
             var tags = await repo.GetDistinctTagsAsync();
             tags.Should().Contain(new[] { "VIP", "SpeedAudit", "NoWebsite", "Dental" });
+
+            // 7. Filter by Country and State
+            var countryResults = await repo.GetFilteredAsync(new BusinessFilterCriteria { Country = "Pakistan" });
+            countryResults.Should().NotBeEmpty();
+
+            var distinctCountries = await repo.GetDistinctCountriesAsync();
+            distinctCountries.Should().Contain("Pakistan");
+
+            var distinctStates = await repo.GetDistinctStatesAsync("Pakistan");
+            distinctStates.Should().NotBeEmpty();
+
+            // 8. Quick Filter: Hot Leads
+            var hotLeads = await repo.GetFilteredAsync(new BusinessFilterCriteria { QuickFilter = QuickFilterType.HotLeads });
+            hotLeads.Should().OnlyContain(b => b.LeadScore >= 70);
+            hotLeads.Should().Contain(b => b.Name == "Karachi Health Hub");
+            hotLeads.Should().NotContain(b => b.Name == "Lahore Tech Retail");
         }
         finally
         {

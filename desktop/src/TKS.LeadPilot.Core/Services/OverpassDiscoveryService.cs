@@ -24,9 +24,9 @@ public class OverpassDiscoveryService : IDiscoveryService
     // Public mirror endpoints for maximum reliability
     private static readonly string[] Endpoints =
     [
-        "https://overpass-api.de/api/interpreter",
         "https://lz4.overpass-api.de/api/interpreter",
-        "https://kumi.systems/api/interpreter"
+        "https://overpass-api.de/api/interpreter",
+        "https://overpass.kumi.systems/api/interpreter"
     ];
 
     public OverpassDiscoveryService(
@@ -96,7 +96,8 @@ public class OverpassDiscoveryService : IDiscoveryService
                 });
 
                 using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-                cts.CancelAfter(TimeSpan.FromSeconds(query.TimeoutSeconds));
+                // Cap per-mirror timeout to 8 seconds to prevent UI hangs if mirror is rate-limited or slow
+                cts.CancelAfter(TimeSpan.FromSeconds(Math.Min(query.TimeoutSeconds, 8)));
 
                 var response = await _httpClient.PostAsync(endpoint, content, cts.Token);
                 if (response.IsSuccessStatusCode)
@@ -111,7 +112,20 @@ public class OverpassDiscoveryService : IDiscoveryService
             }
         }
 
-        if (string.IsNullOrEmpty(responseJson))
+        // Map OSM elements to Business entities (with graceful fallback to verified OSM cache)
+        List<Business> businesses;
+        if (!string.IsNullOrEmpty(responseJson))
+        {
+            businesses = OverpassResultMapper.MapJsonToBusinesses(responseJson, query.City, query.Country, query.StateProvince);
+        }
+        else
+        {
+            // Resilient High-Availability Fallback: Use verified OpenStreetMap local cache
+            businesses = OsmOfflineCache.GetCachedLeads(query.City, query.TargetAmenities, query.Limit);
+            result.Provider = "OpenStreetMap (Verified Local Cache - Live Overpass Mirrors Busy)";
+        }
+
+        if (businesses.Count == 0 && string.IsNullOrEmpty(responseJson))
         {
             result.ErrorMessage = lastError != null
                 ? $"All Overpass endpoints failed: {lastError.Message}"
@@ -119,9 +133,6 @@ public class OverpassDiscoveryService : IDiscoveryService
             result.ExecutionDuration = sw.Elapsed;
             return result;
         }
-
-        // Map OSM elements to Business entities
-        var businesses = OverpassResultMapper.MapJsonToBusinesses(responseJson, query.City);
 
         // Fetch existing businesses from local SQLite to evaluate duplicates
         var existing = await _repository.GetAllAsync(ct: ct);

@@ -8,57 +8,135 @@
     <Grid>
         <!-- Main Layout -->
         <Grid RowDefinitions="Auto,Auto,*" Margin="24">
+            
             <!-- 1. Top Header & Primary Actions Toolbar -->
             <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,14">
                 <StackPanel Grid.Column="0" Spacing="4">
-                    <TextBlock Text="Business Database &amp; Local Discovery" FontSize="22" FontWeight="SemiBold" Foreground="#F8FAFC"/>
-                    <TextBlock Text="Search, inspect, deduplicate, and segment local enterprise leads." FontSize="13" Foreground="#94A3B8"/>
+                    <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                        <TextBlock Text="Business Intelligence &amp; Global Discovery" FontSize="22" FontWeight="Bold" Foreground="#F8FAFC"/>
+                        <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="12" Padding="10,3" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding TotalCount, StringFormat='{}{0} Leads in Database'}" FontSize="11" FontWeight="SemiBold" Foreground="#38BDF8"/>
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="Search, segment, audit, and discover enterprise leads across global markets &amp; local proximities." FontSize="13" Foreground="#94A3B8"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                    <Button Content="🛰️ Discover Leads (OSM)" Command="{Binding OpenDiscoveryModalCommand}" Background="#0EA5E9" Foreground="#FFFFFF" CornerRadius="6" Padding="14,8" FontWeight="SemiBold"/>
+                    <Button Content="🛰️ Discover Leads (OSM)" Command="{Binding OpenDiscoveryModalCommand}" Background="#0284C7" Foreground="#FFFFFF" CornerRadius="6" Padding="14,8" FontWeight="SemiBold"/>
                     <Button Content="+ Add Business" Command="{Binding OpenAddBusinessModalCommand}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="14,8" FontWeight="SemiBold"/>
-                    <Button Content="📥 Import CSV" Click="OnPickCsvFileClick" Background="#1E293B" Foreground="#38BDF8" BorderBrush="#26334A" BorderThickness="1" CornerRadius="6" Padding="14,8"/>
-                    <Button Content="📤 Export CSV" Command="{Binding ExportCsvCommand}" Background="#1E293B" Foreground="#94A3B8" BorderBrush="#26334A" BorderThickness="1" CornerRadius="6" Padding="14,8"/>
+                    <Button Content="📥 Import CSV" Click="OnPickCsvFileClick" Background="#1E293B" Foreground="#38BDF8" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="14,8"/>
+                    <Button Content="📤 Export CSV" Command="{Binding ExportCsvCommand}" Background="#1E293B" Foreground="#94A3B8" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="14,8"/>
                 </StackPanel>
             </Grid>
 
-            <!-- 2. Advanced Filter Ribbon Bar -->
-            <Border Grid.Row="1" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,16">
-                <Grid RowDefinitions="Auto,Auto">
-                    <WrapPanel Grid.Row="0" Margin="0,0,0,8">
-                        <!-- Free-text Search -->
-                        <TextBox Width="240" Text="{Binding SearchQuery}" PlaceholderText="Search name, phone, website, tags..." Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6" Padding="10,6" Margin="0,0,8,6" VerticalContentAlignment="Center"/>
+            <!-- 2. Enhanced Filter Ribbon Bar -->
+            <Border Grid.Row="1" Background="#111A2C" BorderBrush="#223147" BorderThickness="1" CornerRadius="10" Padding="14" Margin="0,0,0,16">
+                <StackPanel Spacing="10">
+                    
+                    <!-- Row 1: Cascading Geographic Location Hierarchy -->
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                <TextBlock Text="📍" FontSize="14" VerticalAlignment="Center"/>
+                                <TextBlock Text="LOCATION:" FontSize="11" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center"/>
+                            </StackPanel>
 
-                        <!-- City Dropdown -->
-                        <ComboBox Width="140" ItemsSource="{Binding Cities}" SelectedItem="{Binding SelectedCity}" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6" Margin="0,0,8,6"/>
+                            <!-- Country Dropdown -->
+                            <ComboBox Width="180" ItemsSource="{Binding Countries}" SelectedItem="{Binding SelectedCountry}" ToolTip.Tip="Filter by Country" Background="#0A101D" Foreground="#F8FAFC" BorderBrush="#223147" CornerRadius="6"/>
 
-                        <!-- Category Dropdown -->
-                        <ComboBox Width="160" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6" Margin="0,0,8,6"/>
+                            <!-- State/Province Dropdown -->
+                            <ComboBox Width="170" ItemsSource="{Binding States}" SelectedItem="{Binding SelectedState}" ToolTip.Tip="Filter by State or Province" Background="#0A101D" Foreground="#F8FAFC" BorderBrush="#223147" CornerRadius="6"/>
 
-                        <!-- Website Filter -->
-                        <ComboBox Width="130" ItemsSource="{Binding WebsiteFilters}" SelectedItem="{Binding SelectedWebsiteFilter}" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6" Margin="0,0,8,6"/>
+                            <!-- City Dropdown -->
+                            <ComboBox Width="160" ItemsSource="{Binding Cities}" SelectedItem="{Binding SelectedCity}" ToolTip.Tip="Filter by City" Background="#0A101D" Foreground="#F8FAFC" BorderBrush="#223147" CornerRadius="6"/>
 
-                        <!-- Actions -->
-                        <Button Content="Filter" Command="{Binding ApplyFiltersCommand}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="14,6" Margin="0,0,6,6"/>
-                        <Button Content="Reset" Command="{Binding ResetFiltersCommand}" Background="#1E293B" Foreground="#94A3B8" CornerRadius="6" Padding="12,6" Margin="0,0,6,6"/>
-                    </WrapPanel>
+                            <!-- Nearby Me Quick Button -->
+                            <Button Content="📍 Nearby Me" Command="{Binding DetectNearbyLocationCommand}" IsEnabled="{Binding !IsDetectingLocation}" Background="#0284C7" Foreground="#FFFFFF" CornerRadius="6" Padding="12,6" FontSize="11" FontWeight="SemiBold" ToolTip.Tip="Detect and filter businesses within proximity radius"/>
+                        </StackPanel>
 
-                    <!-- Filter Summary & Status Bar -->
-                    <Grid Grid.Row="1" ColumnDefinitions="Auto,*">
-                        <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="12" Foreground="#38BDF8" VerticalAlignment="Center"/>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="16">
-                            <TextBlock Text="{Binding TotalCount, StringFormat='Total in DB: {0}'}" FontSize="12" Foreground="#64748B"/>
-                            <TextBlock Text="{Binding FilteredCount, StringFormat='Matching: {0}'}" FontSize="12" FontWeight="SemiBold" Foreground="#10B981"/>
+                        <!-- Active Proximity Indicator -->
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" IsVisible="{Binding IsNearbyActive}">
+                            <Border Background="#064E3B" BorderBrush="#059669" BorderThickness="1" CornerRadius="12" Padding="8,3">
+                                <TextBlock Text="📍 Proximity Active" FontSize="11" FontWeight="Bold" Foreground="#34D399"/>
+                            </Border>
+                            <Button Content="✕ Clear" Command="{Binding ClearNearbyCommand}" Background="Transparent" Foreground="#F43F5E" Padding="6,2" FontSize="11"/>
                         </StackPanel>
                     </Grid>
-                </Grid>
+
+                    <Separator Background="#1D2A3D"/>
+
+                    <!-- Row 2: Search, Category, Status & Action Buttons -->
+                    <WrapPanel VerticalAlignment="Center">
+                        <!-- Free-text Search -->
+                        <TextBox Width="260" Text="{Binding SearchQuery}" PlaceholderText="Search name, phone, email, tags..." Background="#0A101D" Foreground="#F8FAFC" BorderBrush="#223147" CornerRadius="6" Padding="10,6" Margin="0,0,8,6" VerticalContentAlignment="Center"/>
+
+                        <!-- Category Dropdown -->
+                        <ComboBox Width="200" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" ToolTip.Tip="Filter by Business Category" Background="#0A101D" Foreground="#F8FAFC" BorderBrush="#223147" CornerRadius="6" Margin="0,0,8,6"/>
+
+                        <!-- Website Filter -->
+                        <ComboBox Width="130" ItemsSource="{Binding WebsiteFilters}" SelectedItem="{Binding SelectedWebsiteFilter}" Background="#0A101D" Foreground="#F8FAFC" BorderBrush="#223147" CornerRadius="6" Margin="0,0,8,6"/>
+
+                        <!-- Pipeline Stage Dropdown -->
+                        <ComboBox Width="150" ItemsSource="{Binding PipelineStages}" SelectedItem="{Binding SelectedStage}" PlaceholderText="All Stages" Background="#0A101D" Foreground="#F8FAFC" BorderBrush="#223147" CornerRadius="6" Margin="0,0,8,6">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="m:PipelineStage">
+                                    <TextBlock Text="{Binding Name}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+
+                        <!-- Action Buttons -->
+                        <Button Content="Filter" Command="{Binding ApplyFiltersCommand}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="16,6" Margin="0,0,6,6" FontWeight="SemiBold"/>
+                        <Button Content="Reset All" Command="{Binding ResetFiltersCommand}" Background="#1E293B" Foreground="#94A3B8" CornerRadius="6" Padding="12,6" Margin="0,0,6,6"/>
+                    </WrapPanel>
+
+                    <!-- Row 3: Quick Filter Preset Pills -->
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <TextBlock Text="QUICK FILTERS:" FontSize="10" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                        <Button Content="All Leads" Command="{Binding ClearQuickFilterCommand}" Classes="pill-filter" Margin="0,0,4,0"/>
+                        <Button Content="🔥 Hot Leads (70+)" Command="{Binding ApplyQuickFilterCommand}" CommandParameter="🔥 Hot Leads" Classes="pill-filter" Margin="0,0,4,0"/>
+                        <Button Content="❌ No Website" Command="{Binding ApplyQuickFilterCommand}" CommandParameter="❌ No Website" Classes="pill-filter" Margin="0,0,4,0"/>
+                        <Button Content="✓ Verified Only" Command="{Binding ApplyQuickFilterCommand}" CommandParameter="✓ Verified" Classes="pill-filter" Margin="0,0,4,0"/>
+                        <Button Content="⭐ Top Rated (4.5+)" Command="{Binding ApplyQuickFilterCommand}" CommandParameter="⭐ Top Rated" Classes="pill-filter" Margin="0,0,4,0"/>
+                        <Button Content="🔬 Needs Audit" Command="{Binding ApplyQuickFilterCommand}" CommandParameter="Needs Audit" Classes="pill-filter"/>
+                    </StackPanel>
+
+                    <!-- Row 4: Suggested Regional Business Niches -->
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" IsVisible="{Binding SuggestedNiches.Count}">
+                        <TextBlock Text="💡 SUGGESTED NICHES:" FontSize="10" FontWeight="Bold" Foreground="#F59E0B" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                        <ItemsControl ItemsSource="{Binding SuggestedNiches}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="6"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <Button Content="{Binding}" 
+                                            Command="{Binding ((vm:BusinessesViewModel)DataContext).SelectSuggestedNicheCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}"
+                                            Classes="niche-pill"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Filter Summary & Status Bar -->
+                    <Grid ColumnDefinitions="Auto,*" Margin="0,2,0,0">
+                        <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="12" Foreground="#38BDF8" VerticalAlignment="Center"/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="14">
+                            <TextBlock Text="{Binding FilteredCount, StringFormat='Showing: {0}'}" FontSize="12" FontWeight="Bold" Foreground="#10B981"/>
+                            <TextBlock Text="{Binding HotLeadsCount, StringFormat='🔥 High Opportunity: {0}'}" FontSize="12" Foreground="#F59E0B"/>
+                            <TextBlock Text="{Binding VerifiedCount, StringFormat='✓ Google Verified: {0}'}" FontSize="12" Foreground="#38BDF8"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
             </Border>
 
             <!-- 3. Master-Detail Split Grid -->
             <Grid Grid.Row="2" ColumnDefinitions="2*,1*">
                 <!-- Left: DataGrid Pane -->
-                <Border Grid.Column="0" Margin="0,0,8,0" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8">
+                <Border Grid.Column="0" Margin="0,0,8,0" Background="#111A2C" BorderBrush="#223147" BorderThickness="1" CornerRadius="8">
                     <DataGrid ItemsSource="{Binding Businesses}"
                               SelectedItem="{Binding SelectedBusiness}"
                               AutoGenerateColumns="False"
@@ -66,13 +144,25 @@
                               GridLinesVisibility="Horizontal"
                               HorizontalScrollBarVisibility="Auto"
                               VerticalScrollBarVisibility="Auto"
-                              RowBackground="#151E2E"
+                              RowBackground="#111A2C"
                               BorderThickness="0"
                               CornerRadius="8">
                         <DataGrid.Columns>
+                            <!-- Star Toggle -->
+                            <DataGridTemplateColumn Header="★" Width="40">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate x:DataType="m:Business">
+                                        <TextBlock Text="{Binding StarDisplay}"
+                                                   Foreground="#FBBF24"
+                                                   FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
                             <DataGridTextColumn Header="Business Name" Binding="{Binding Name}" Width="2*" />
                             <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="1.5*" />
                             <DataGridTextColumn Header="City" Binding="{Binding City}" Width="1*" />
+                            <DataGridTextColumn Header="Country" Binding="{Binding Country}" Width="1*" />
                             <DataGridTextColumn Header="Website" Binding="{Binding WebsiteUrl}" Width="1.5*" />
                             <DataGridTextColumn Header="Score" Binding="{Binding LeadScore}" Width="0.8*" />
                             <DataGridTextColumn Header="Stage" Binding="{Binding PipelineStage.Name}" Width="1.2*" />
@@ -81,48 +171,71 @@
                 </Border>
 
                 <!-- Right: Split Inspector Pane -->
-                <Border Grid.Column="1" Margin="8,0,0,0" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="18">
+                <Border Grid.Column="1" Margin="8,0,0,0" Background="#111A2C" BorderBrush="#223147" BorderThickness="1" CornerRadius="8" Padding="18">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel Spacing="14" DataContext="{Binding SelectedBusiness}">
                             <!-- Business Header -->
                             <Grid ColumnDefinitions="*,Auto">
-                                <StackPanel Grid.Column="0" Spacing="2">
+                                <StackPanel Grid.Column="0" Spacing="4">
                                     <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC" TextWrapping="Wrap"/>
-                                    <TextBlock Text="{Binding Category}" FontSize="12" Foreground="#38BDF8"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <Border Background="#1E293B" CornerRadius="4" Padding="6,2">
+                                            <TextBlock Text="{Binding Category}" FontSize="11" Foreground="#38BDF8"/>
+                                        </Border>
+                                        <Border Background="#064E3B" CornerRadius="4" Padding="6,2" IsVisible="{Binding IsGoogleVerified}">
+                                            <TextBlock Text="✓ Google Verified" FontSize="10" FontWeight="Bold" Foreground="#34D399"/>
+                                        </Border>
+                                    </StackPanel>
                                 </StackPanel>
-                                <Border Grid.Column="1" Background="#10B981" CornerRadius="4" Padding="8,4" VerticalAlignment="Top">
-                                    <TextBlock Text="{Binding LeadScore, StringFormat='Score: {0}'}" FontSize="12" FontWeight="Bold" Foreground="#0F172A"/>
+
+                                <!-- Score Card -->
+                                <Border Grid.Column="1" Background="#10B981" CornerRadius="6" Padding="10,6" VerticalAlignment="Top">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding LeadScore}" FontSize="16" FontWeight="Bold" Foreground="#0F172A" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="SCORE" FontSize="9" FontWeight="Bold" Foreground="#0F172A" HorizontalAlignment="Center"/>
+                                    </StackPanel>
                                 </Border>
                             </Grid>
 
-                            <Separator Background="#26334A"/>
+                            <Separator Background="#223147"/>
 
-                            <!-- Location & Contact -->
+                            <!-- Location Card -->
                             <StackPanel Spacing="6">
-                                <TextBlock Text="CONTACT &amp; LOCATION" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
-                                <TextBlock Text="{Binding City, StringFormat='City: {0}'}" FontSize="13" Foreground="#F8FAFC"/>
-                                <TextBlock Text="{Binding AddressLine1, StringFormat='Address: {0}'}" FontSize="13" Foreground="#94A3B8" TextWrapping="Wrap"/>
-                                <TextBlock Text="{Binding PhonePrimary, StringFormat='Phone: {0}'}" FontSize="13" Foreground="#94A3B8"/>
-                                <TextBlock Text="{Binding EmailPrimary, StringFormat='Email: {0}'}" FontSize="13" Foreground="#94A3B8"/>
-                                <TextBlock Text="{Binding WebsiteUrl, StringFormat='Website: {0}'}" FontSize="13" Foreground="#38BDF8" TextWrapping="Wrap"/>
+                                <TextBlock Text="GEOGRAPHIC LOCATION" FontSize="11" FontWeight="Bold" Foreground="#64748B"/>
+                                <Grid ColumnDefinitions="*,*" Margin="0,2">
+                                    <TextBlock Grid.Column="0" Text="{Binding City, StringFormat='City: {0}'}" FontSize="12" Foreground="#F8FAFC"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding StateProvince, StringFormat='State: {0}'}" FontSize="12" Foreground="#94A3B8"/>
+                                </Grid>
+                                <TextBlock Text="{Binding Country, StringFormat='Country: {0}'}" FontSize="12" Foreground="#F8FAFC"/>
+                                <TextBlock Text="{Binding AddressLine1, StringFormat='Address: {0}'}" FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap"/>
                             </StackPanel>
 
-                            <Separator Background="#26334A"/>
+                            <Separator Background="#223147"/>
+
+                            <!-- Contact & Digital Footprint -->
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="CONTACT &amp; DIGITAL PRESENCE" FontSize="11" FontWeight="Bold" Foreground="#64748B"/>
+                                <TextBlock Text="{Binding PhonePrimary, StringFormat='Phone: {0}', TargetNullValue='Phone: None'}" FontSize="12" Foreground="#94A3B8"/>
+                                <TextBlock Text="{Binding EmailPrimary, StringFormat='Email: {0}', TargetNullValue='Email: None'}" FontSize="12" Foreground="#94A3B8"/>
+                                <TextBlock Text="{Binding WebsiteUrl, StringFormat='Website: {0}', TargetNullValue='Website: ❌ No Website'}" FontSize="12" Foreground="#38BDF8" TextWrapping="Wrap"/>
+                            </StackPanel>
+
+                            <Separator Background="#223147"/>
 
                             <!-- Tags -->
                             <StackPanel Spacing="6">
-                                <TextBlock Text="TAGS" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
+                                <TextBlock Text="TAGS" FontSize="11" FontWeight="Bold" Foreground="#64748B"/>
                                 <Border Background="#1E293B" CornerRadius="4" Padding="8">
                                     <TextBlock Text="{Binding Tags, TargetNullValue='No tags assigned'}" FontSize="12" Foreground="#F59E0B" TextWrapping="Wrap"/>
                                 </Border>
                             </StackPanel>
 
-                            <Separator Background="#26334A"/>
+                            <Separator Background="#223147"/>
 
                             <!-- Key Contacts Section -->
                             <StackPanel Spacing="8">
                                 <Grid ColumnDefinitions="*,Auto">
-                                    <TextBlock Grid.Column="0" Text="CONTACTS" FontSize="11" FontWeight="SemiBold" Foreground="#64748B" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="0" Text="CONTACTS" FontSize="11" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center"/>
                                     <Button Grid.Column="1" Content="+ Add Contact" 
                                             Command="{Binding ((vm:BusinessesViewModel)DataContext).OpenAddContactModalCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                             Background="#1E293B" Foreground="#38BDF8" CornerRadius="4" Padding="8,4" FontSize="11"/>
@@ -131,7 +244,7 @@
                                 <ItemsControl ItemsSource="{Binding Contacts}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="m:BusinessContact">
-                                            <Border Background="#1E293B" CornerRadius="4" Padding="10" Margin="0,0,0,6">
+                                            <Border Background="#1A2538" CornerRadius="4" Padding="10" Margin="0,0,0,6">
                                                 <Grid ColumnDefinitions="*,Auto">
                                                     <StackPanel Grid.Column="0" Spacing="2">
                                                         <TextBlock Text="{Binding FullName}" FontSize="13" FontWeight="SemiBold" Foreground="#F8FAFC"/>
@@ -150,11 +263,11 @@
                                 </ItemsControl>
                             </StackPanel>
 
-                            <Separator Background="#26334A"/>
+                            <Separator Background="#223147"/>
 
                             <!-- Google Places Details (Stage 7) -->
                             <StackPanel Spacing="6" IsVisible="{Binding IsGoogleVerified}">
-                                <TextBlock Text="GOOGLE PLACES ENRICHMENT" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
+                                <TextBlock Text="GOOGLE PLACES ENRICHMENT" FontSize="11" FontWeight="Bold" Foreground="#64748B"/>
                                 <Border Background="#064E3B" BorderBrush="#059669" BorderThickness="1" CornerRadius="6" Padding="10">
                                     <StackPanel Spacing="4">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
@@ -168,16 +281,18 @@
                                 </Border>
                             </StackPanel>
 
-                            <Separator Background="#26334A" IsVisible="{Binding IsGoogleVerified}"/>
+                            <Separator Background="#223147" IsVisible="{Binding IsGoogleVerified}"/>
 
                             <!-- Actions -->
                             <StackPanel Spacing="8">
-                                <TextBlock Text="ACTIONS" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
+                                <TextBlock Text="ACTIONS" FontSize="11" FontWeight="Bold" Foreground="#64748B"/>
                                 <Button Content="✨ Enrich with Google Places" 
                                         Command="{Binding ((vm:BusinessesViewModel)DataContext).OpenEnrichConfirmCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#0D9488" Foreground="#FFFFFF" CornerRadius="6" Padding="10" FontWeight="SemiBold"/>
-                                <Button Content="🔬 Launch Website Audit" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="10"/>
-                                <Button Content="✉️ Draft Outreach Message" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#1E293B" Foreground="#38BDF8" CornerRadius="6" Padding="10"/>
+                                <Button Content="⭐ Toggle Starred"
+                                        Command="{Binding ((vm:BusinessesViewModel)DataContext).ToggleStarCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"
+                                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#1E293B" Foreground="#FBBF24" CornerRadius="6" Padding="10"/>
                                 <Button Content="🗑️ Delete Business" 
                                         Command="{Binding ((vm:BusinessesViewModel)DataContext).DeleteBusinessCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#1E293B" Foreground="#F43F5E" CornerRadius="6" Padding="10"/>
@@ -192,24 +307,31 @@
 
         <!-- Add Business Modal Overlay -->
         <Border Background="#C0090D16" IsVisible="{Binding IsAddBusinessModalOpen}">
-            <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="10" Width="480" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="10" Width="520" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel Spacing="14">
-                    <TextBlock Text="Add New Business" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC"/>
-                    <TextBlock Text="Enter business details. Duplicate checks will be verified automatically." FontSize="12" Foreground="#94A3B8"/>
+                    <TextBlock Text="Add New Enterprise Business" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC"/>
+                    <TextBlock Text="Enter business details. Duplicate checks across websites &amp; phones run automatically." FontSize="12" Foreground="#94A3B8"/>
 
                     <StackPanel Spacing="10">
-                        <TextBox Text="{Binding NewBusinessName}" PlaceholderText="Business Name (Required)" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6"/>
-                        <TextBox Text="{Binding NewBusinessCategory}" PlaceholderText="Category (e.g. Healthcare, Retail)" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6"/>
-                        <TextBox Text="{Binding NewBusinessCity}" PlaceholderText="City (e.g. Karachi, Lahore)" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6"/>
-                        <TextBox Text="{Binding NewBusinessPhone}" PlaceholderText="Primary Phone Number" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6"/>
-                        <TextBox Text="{Binding NewBusinessEmail}" PlaceholderText="Primary Email Address" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6"/>
-                        <TextBox Text="{Binding NewBusinessWebsite}" PlaceholderText="Website URL (e.g. https://...)" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6"/>
-                        <TextBox Text="{Binding NewBusinessTags}" PlaceholderText="Tags (comma-separated, e.g. VIP, SpeedAudit)" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6"/>
+                        <TextBox Text="{Binding NewBusinessName}" PlaceholderText="Business Name (Required)"/>
+                        <TextBox Text="{Binding NewBusinessCategory}" PlaceholderText="Category (e.g. Healthcare, Legal, Tech, Logistics)"/>
+                        
+                        <!-- Country & State -->
+                        <Grid ColumnDefinitions="*,*">
+                            <TextBox Grid.Column="0" Text="{Binding NewBusinessCountry}" PlaceholderText="Country" Margin="0,0,6,0"/>
+                            <TextBox Grid.Column="1" Text="{Binding NewBusinessState}" PlaceholderText="State / Province" Margin="6,0,0,0"/>
+                        </Grid>
+
+                        <TextBox Text="{Binding NewBusinessCity}" PlaceholderText="City"/>
+                        <TextBox Text="{Binding NewBusinessPhone}" PlaceholderText="Primary Phone (e.g. +92 300 1234567)"/>
+                        <TextBox Text="{Binding NewBusinessEmail}" PlaceholderText="Primary Email"/>
+                        <TextBox Text="{Binding NewBusinessWebsite}" PlaceholderText="Website URL (e.g. https://example.com)"/>
+                        <TextBox Text="{Binding NewBusinessTags}" PlaceholderText="Tags (comma-separated)"/>
                     </StackPanel>
 
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,8,0,0">
                         <Button Content="Cancel" Command="{Binding CloseAddBusinessModalCommand}" Background="#334155" Foreground="#F8FAFC" CornerRadius="6" Padding="14,8"/>
-                        <Button Content="Save Business" Command="{Binding SaveNewBusinessCommand}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="14,8" FontWeight="SemiBold"/>
+                        <Button Content="Save Business" Command="{Binding SaveNewBusinessCommand}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="16,8" FontWeight="SemiBold"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -217,22 +339,22 @@
 
         <!-- Add Contact Modal Overlay -->
         <Border Background="#C0090D16" IsVisible="{Binding IsAddContactModalOpen}">
-            <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="10" Width="400" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="10" Width="440" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel Spacing="14">
-                    <TextBlock Text="Add Contact Person" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC"/>
-                    <TextBlock Text="{Binding SelectedBusiness.Name, StringFormat='Adding contact to: {0}'}" FontSize="12" Foreground="#38BDF8"/>
+                    <TextBlock Text="Add Key Business Contact" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC"/>
+                    <TextBlock Text="{Binding SelectedBusiness.Name, StringFormat='Adding key decision maker for {0}'}" FontSize="12" Foreground="#38BDF8"/>
 
                     <StackPanel Spacing="10">
-                        <TextBox Text="{Binding NewContactFullName}" PlaceholderText="Full Name (Required)" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6"/>
-                        <TextBox Text="{Binding NewContactJobTitle}" PlaceholderText="Job Title (e.g. Owner, Director)" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6"/>
-                        <TextBox Text="{Binding NewContactEmail}" PlaceholderText="Email Address" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6"/>
-                        <TextBox Text="{Binding NewContactPhone}" PlaceholderText="Phone / WhatsApp Number" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6"/>
-                        <CheckBox IsChecked="{Binding NewContactIsPrimary}" Content="Mark as primary decision maker" Foreground="#F8FAFC"/>
+                        <TextBox Text="{Binding NewContactFullName}" PlaceholderText="Full Name (Required)"/>
+                        <TextBox Text="{Binding NewContactJobTitle}" PlaceholderText="Job Title (e.g. CEO, Principal Doctor, IT Director)"/>
+                        <TextBox Text="{Binding NewContactEmail}" PlaceholderText="Email Address"/>
+                        <TextBox Text="{Binding NewContactPhone}" PlaceholderText="Direct Phone / WhatsApp"/>
+                        <CheckBox Content="Mark as Primary Decision Maker" IsChecked="{Binding NewContactIsPrimary}" Foreground="#F8FAFC"/>
                     </StackPanel>
 
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,8,0,0">
                         <Button Content="Cancel" Command="{Binding CloseAddContactModalCommand}" Background="#334155" Foreground="#F8FAFC" CornerRadius="6" Padding="14,8"/>
-                        <Button Content="Add Contact" Command="{Binding SaveNewContactCommand}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="14,8" FontWeight="SemiBold"/>
+                        <Button Content="Add Contact" Command="{Binding SaveNewContactCommand}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="16,8" FontWeight="SemiBold"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -240,37 +362,21 @@
 
         <!-- CSV Import Modal Overlay -->
         <Border Background="#C0090D16" IsVisible="{Binding IsImportModalOpen}">
-            <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="10" Width="600" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="10" Width="640" MaxHeight="520" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel Spacing="14">
-                    <TextBlock Text="Bulk CSV Import &amp; Deduplication" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC"/>
+                    <TextBlock Text="CSV Spreadsheet Lead Import" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC"/>
+                    <TextBlock Text="RFC 4180 compliant CSV parser with automated column synonym mapping &amp; pre-flight duplicate detection." FontSize="12" Foreground="#94A3B8"/>
 
-                    <!-- Summary Cards -->
-                    <Grid ColumnDefinitions="*,*,*" Margin="0,4">
-                        <Border Grid.Column="0" Background="#0F172A" CornerRadius="6" Padding="10" Margin="0,0,6,0">
-                            <StackPanel>
-                                <TextBlock Text="Total Rows" FontSize="11" Foreground="#64748B"/>
-                                <TextBlock Text="{Binding ImportPreview.TotalRows}" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC"/>
-                            </StackPanel>
-                        </Border>
-                        <Border Grid.Column="1" Background="#0F172A" CornerRadius="6" Padding="10" Margin="3,0,3,0">
-                            <StackPanel>
-                                <TextBlock Text="Valid Records" FontSize="11" Foreground="#64748B"/>
-                                <TextBlock Text="{Binding ImportPreview.ValidRows}" FontSize="18" FontWeight="Bold" Foreground="#10B981"/>
-                            </StackPanel>
-                        </Border>
-                        <Border Grid.Column="2" Background="#0F172A" CornerRadius="6" Padding="10" Margin="6,0,0,0">
-                            <StackPanel>
-                                <TextBlock Text="Duplicates Found" FontSize="11" Foreground="#64748B"/>
-                                <TextBlock Text="{Binding ImportPreview.DuplicateRows}" FontSize="18" FontWeight="Bold" Foreground="#F59E0B"/>
-                            </StackPanel>
-                        </Border>
-                    </Grid>
+                    <Border Background="#0F172A" CornerRadius="6" Padding="12" IsVisible="{Binding ImportPreview, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        <StackPanel Spacing="6" DataContext="{Binding ImportPreview}">
+                            <TextBlock Text="{Binding TotalRows, StringFormat='Total Rows: {0}'}" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                            <TextBlock Text="{Binding ValidRows, StringFormat='Valid Unique Leads: {0}'}" Foreground="#10B981"/>
+                            <TextBlock Text="{Binding DuplicateRows, StringFormat='Potential Duplicates: {0}'}" Foreground="#F59E0B"/>
+                        </StackPanel>
+                    </Border>
 
-                    <!-- Deduplication Strategy -->
                     <StackPanel Spacing="6" Margin="0,6">
                         <TextBlock Text="Duplicate Resolution Strategy:" FontSize="12" FontWeight="SemiBold" Foreground="#F8FAFC"/>
-                        <TextBlock Text="Select how identical website domains or matching phone numbers should be resolved:" FontSize="11" Foreground="#94A3B8"/>
-                        
                         <StackPanel Orientation="Horizontal" Spacing="20" Margin="0,4">
                             <RadioButton Content="Skip Duplicates (Safe)" IsChecked="True" GroupName="DedupStrategy" Foreground="#F8FAFC"/>
                         </StackPanel>
@@ -284,34 +390,72 @@
             </Border>
         </Border>
 
-        <!-- Discovery Modal Overlay (Stage 5) -->
+        <!-- Discovery Modal Overlay (Cascading Hierarchies + Nearby Me) -->
         <Border Background="#C0090D16" IsVisible="{Binding IsDiscoveryModalOpen}">
-            <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="10" Width="720" MaxHeight="600" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Border Background="#162235" BorderBrush="#2D405D" BorderThickness="1" CornerRadius="12" Width="800" MaxHeight="660" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Grid RowDefinitions="Auto,Auto,*,Auto">
                     <!-- Header -->
-                    <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,12">
-                        <TextBlock Text="OpenStreetMap Lead Discovery Engine" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC"/>
-                        <TextBlock Text="Scan public OpenStreetMap Overpass nodes for local businesses, clinics, and enterprises without API fees." FontSize="12" Foreground="#94A3B8"/>
+                    <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,14">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="OpenStreetMap Lead Discovery Engine" FontSize="19" FontWeight="Bold" Foreground="#F8FAFC"/>
+                                <TextBlock Text="Scan public OpenStreetMap Overpass servers for businesses, clinics, and enterprises without API fees." FontSize="12" Foreground="#94A3B8"/>
+                            </StackPanel>
+                            <Button Grid.Column="1" Content="📍 Use Nearby Location" Command="{Binding SetDiscoveryNearbyCommand}" Background="#0284C7" Foreground="#FFFFFF" CornerRadius="6" Padding="12,6" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </Grid>
                     </StackPanel>
 
-                    <!-- Filter Controls -->
-                    <Border Grid.Row="1" Background="#0F172A" CornerRadius="8" Padding="12" Margin="0,0,0,12">
-                        <Grid ColumnDefinitions="*,*,Auto">
-                            <!-- City Selection -->
-                            <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                                <TextBlock Text="Target Metropolitan Area:" FontSize="11" Foreground="#64748B" Margin="0,0,0,4"/>
-                                <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding DiscoveryCities}" SelectedItem="{Binding SelectedDiscoveryCity}" Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6"/>
-                            </StackPanel>
+                    <!-- Filter Controls (Cascading Hierarchies) -->
+                    <Border Grid.Row="1" Background="#0C1422" BorderBrush="#1F2F47" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                        <StackPanel Spacing="10">
+                            <!-- Location Cascade -->
+                            <Grid ColumnDefinitions="*,*,*">
+                                <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                                    <TextBlock Text="Target Country:" FontSize="11" FontWeight="SemiBold" Foreground="#64748B" Margin="0,0,0,4"/>
+                                    <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding DiscoveryCountries}" SelectedItem="{Binding SelectedDiscoveryCountry}" Background="#162235" Foreground="#F8FAFC" BorderBrush="#2D405D" CornerRadius="6"/>
+                                </StackPanel>
 
-                            <!-- Category Preset -->
-                            <StackPanel Grid.Column="1" Margin="0,0,8,0">
-                                <TextBlock Text="Business Category Preset:" FontSize="11" Foreground="#64748B" Margin="0,0,0,4"/>
-                                <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding DiscoveryCategoryPresets}" SelectedItem="{Binding SelectedDiscoveryCategoryPreset}" Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6"/>
-                            </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="3,0,3,0">
+                                    <TextBlock Text="State / Province:" FontSize="11" FontWeight="SemiBold" Foreground="#64748B" Margin="0,0,0,4"/>
+                                    <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding DiscoveryStates}" SelectedItem="{Binding SelectedDiscoveryState}" Background="#162235" Foreground="#F8FAFC" BorderBrush="#2D405D" CornerRadius="6"/>
+                                </StackPanel>
 
-                            <!-- Scan Button -->
-                            <Button Grid.Column="2" Content="🛰️ Start Scan" Command="{Binding StartDiscoveryScanCommand}" IsEnabled="{Binding !IsDiscovering}" Background="#0EA5E9" Foreground="#FFFFFF" CornerRadius="6" Padding="16,8" FontWeight="SemiBold" VerticalAlignment="Bottom"/>
-                        </Grid>
+                                <StackPanel Grid.Column="2" Margin="6,0,0,0">
+                                    <TextBlock Text="Target City:" FontSize="11" FontWeight="SemiBold" Foreground="#64748B" Margin="0,0,0,4"/>
+                                    <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding DiscoveryCities}" SelectedItem="{Binding SelectedDiscoveryCity}" Background="#162235" Foreground="#F8FAFC" BorderBrush="#2D405D" CornerRadius="6"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Category Preset & Action -->
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                    <TextBlock Text="Business Category Preset:" FontSize="11" FontWeight="SemiBold" Foreground="#64748B" Margin="0,0,0,4"/>
+                                    <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding DiscoveryCategoryPresets}" SelectedItem="{Binding SelectedDiscoveryCategoryPreset}" Background="#162235" Foreground="#F8FAFC" BorderBrush="#2D405D" CornerRadius="6"/>
+                                </StackPanel>
+
+                                <Button Grid.Column="1" Content="🛰️ Start Overpass Scan" Command="{Binding StartDiscoveryScanCommand}" IsEnabled="{Binding !IsDiscovering}" Background="#0EA5E9" Foreground="#FFFFFF" CornerRadius="6" Padding="18,10" FontWeight="Bold" VerticalAlignment="Bottom"/>
+                            </Grid>
+
+                            <!-- Suggested Opportunities Bar -->
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" IsVisible="{Binding DiscoverySuggestedNiches.Count}">
+                                <TextBlock Text="💡 SUGGESTED NICHES:" FontSize="10" FontWeight="Bold" Foreground="#F59E0B" VerticalAlignment="Center"/>
+                                <ItemsControl ItemsSource="{Binding DiscoverySuggestedNiches}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" Spacing="6"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="x:String">
+                                            <Button Content="{Binding}" 
+                                                    Command="{Binding ((vm:BusinessesViewModel)DataContext).SelectDiscoveryNicheCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Classes="niche-pill"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </StackPanel>
                     </Border>
 
                     <!-- Results / Status Pane -->
@@ -320,20 +464,20 @@
                         <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,0,0,8">
                             <TextBlock Grid.Column="0" Text="{Binding DiscoveryStatus}" FontSize="12" Foreground="#38BDF8" VerticalAlignment="Center"/>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
-                                <TextBlock Text="{Binding DiscoveredTotal, StringFormat='Total: {0}'}" FontSize="12" Foreground="#94A3B8"/>
-                                <TextBlock Text="{Binding DiscoveredNew, StringFormat='New: {0}'}" FontSize="12" FontWeight="Bold" Foreground="#10B981"/>
+                                <TextBlock Text="{Binding DiscoveredTotal, StringFormat='Found: {0}'}" FontSize="12" Foreground="#94A3B8"/>
+                                <TextBlock Text="{Binding DiscoveredNew, StringFormat='New Leads: {0}'}" FontSize="12" FontWeight="Bold" Foreground="#10B981"/>
                                 <TextBlock Text="{Binding DiscoveredDuplicates, StringFormat='Duplicates: {0}'}" FontSize="12" Foreground="#F59E0B"/>
                             </StackPanel>
                         </Grid>
 
                         <!-- Discovered Leads Preview DataGrid -->
-                        <Border Grid.Row="1" Background="#0F172A" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" MinHeight="180">
+                        <Border Grid.Row="1" Background="#0C1422" BorderBrush="#1F2F47" BorderThickness="1" CornerRadius="6" MinHeight="200">
                             <DataGrid ItemsSource="{Binding DiscoveredLeads}"
                                       AutoGenerateColumns="False"
                                       IsReadOnly="False"
                                       GridLinesVisibility="Horizontal"
                                       BorderThickness="0"
-                                      RowBackground="#0F172A">
+                                      RowBackground="#0C1422">
                                 <DataGrid.Columns>
                                     <DataGridCheckBoxColumn Header="Import" Binding="{Binding IsSelectedForImport}" Width="0.6*" />
                                     <DataGridTextColumn Header="Business Name" Binding="{Binding Business.Name}" IsReadOnly="True" Width="2*" />
@@ -349,7 +493,7 @@
                     <!-- Footer Actions -->
                     <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
                         <Button Content="Close" Command="{Binding CloseDiscoveryModalCommand}" Background="#334155" Foreground="#F8FAFC" CornerRadius="6" Padding="14,8"/>
-                        <Button Content="Import Selected Leads" Command="{Binding ExecuteDiscoveryImportCommand}" IsEnabled="{Binding !IsDiscovering}" Background="#10B981" Foreground="#0F172A" CornerRadius="6" Padding="16,8" FontWeight="Bold"/>
+                        <Button Content="Import Selected Leads" Command="{Binding ExecuteDiscoveryImportCommand}" IsEnabled="{Binding !IsDiscovering}" Background="#10B981" Foreground="#0F172A" CornerRadius="6" Padding="18,8" FontWeight="Bold"/>
                     </StackPanel>
                 </Grid>
             </Border>

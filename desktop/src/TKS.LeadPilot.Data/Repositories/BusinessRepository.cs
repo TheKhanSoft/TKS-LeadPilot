@@ -172,6 +172,33 @@ public class BusinessRepository : IBusinessRepository
         return await _context.Businesses.CountAsync(b => !b.IsDeleted && b.LeadScore >= threshold, ct);
     }
 
+    public async Task<List<string>> GetDistinctCountriesAsync(CancellationToken ct = default)
+    {
+        return await _context.Businesses
+            .Where(b => !b.IsDeleted && !string.IsNullOrWhiteSpace(b.Country))
+            .Select(b => b.Country)
+            .Distinct()
+            .OrderBy(c => c)
+            .ToListAsync(ct);
+    }
+
+    public async Task<List<string>> GetDistinctStatesAsync(string? country = null, CancellationToken ct = default)
+    {
+        var query = _context.Businesses
+            .Where(b => !b.IsDeleted && !string.IsNullOrWhiteSpace(b.StateProvince));
+
+        if (!string.IsNullOrWhiteSpace(country))
+        {
+            query = query.Where(b => b.Country == country);
+        }
+
+        return await query
+            .Select(b => b.StateProvince!)
+            .Distinct()
+            .OrderBy(s => s)
+            .ToListAsync(ct);
+    }
+
     public async Task<List<string>> GetDistinctCitiesAsync(CancellationToken ct = default)
     {
         return await _context.Businesses
@@ -293,6 +320,16 @@ public class BusinessRepository : IBusinessRepository
                 (b.Tags != null && b.Tags.ToLower().Contains(search)));
         }
 
+        if (!string.IsNullOrWhiteSpace(criteria.Country))
+        {
+            query = query.Where(b => b.Country == criteria.Country);
+        }
+
+        if (!string.IsNullOrWhiteSpace(criteria.StateProvince))
+        {
+            query = query.Where(b => b.StateProvince == criteria.StateProvince);
+        }
+
         if (!string.IsNullOrWhiteSpace(criteria.City))
         {
             query = query.Where(b => b.City == criteria.City);
@@ -320,6 +357,16 @@ public class BusinessRepository : IBusinessRepository
             }
         }
 
+        if (criteria.IsGoogleVerified.HasValue)
+        {
+            query = query.Where(b => b.IsGoogleVerified == criteria.IsGoogleVerified.Value);
+        }
+
+        if (criteria.MinRating.HasValue)
+        {
+            query = query.Where(b => b.GoogleRating != null && b.GoogleRating >= criteria.MinRating.Value);
+        }
+
         if (criteria.MinScore.HasValue)
         {
             query = query.Where(b => b.LeadScore >= criteria.MinScore.Value);
@@ -339,6 +386,26 @@ public class BusinessRepository : IBusinessRepository
         {
             var tag = criteria.Tag.Trim().ToLower();
             query = query.Where(b => b.Tags != null && b.Tags.ToLower().Contains(tag));
+        }
+
+        // Quick Filter Preset Processing
+        switch (criteria.QuickFilter)
+        {
+            case QuickFilterType.HotLeads:
+                query = query.Where(b => b.LeadScore >= 70);
+                break;
+            case QuickFilterType.NoWebsite:
+                query = query.Where(b => string.IsNullOrWhiteSpace(b.WebsiteUrl));
+                break;
+            case QuickFilterType.GoogleVerified:
+                query = query.Where(b => b.IsGoogleVerified);
+                break;
+            case QuickFilterType.TopRated:
+                query = query.Where(b => b.GoogleRating != null && b.GoogleRating >= 4.5);
+                break;
+            case QuickFilterType.NeedsAudit:
+                query = query.Where(b => !string.IsNullOrWhiteSpace(b.WebsiteUrl) && !b.Audits.Any());
+                break;
         }
 
         return query;

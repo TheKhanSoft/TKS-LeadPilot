@@ -17,38 +17,45 @@
         <Style Selector="Button">
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Transitions">
                 <Transitions>
                     <DoubleTransition Property="Opacity" Duration="0:0:0.15"/>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.12"/>
                 </Transitions>
             </Setter>
         </Style>
         <Style Selector="Button:pointerover">
-            <Setter Property="Opacity" Value="0.92"/>
+            <Setter Property="Opacity" Value="0.94"/>
         </Style>
 
         <!-- Modern DataGrid Styling -->
         <Style Selector="DataGrid">
-            <Setter Property="Background" Value="#0B111D"/>
+            <Setter Property="Background" Value="#0D1524"/>
             <Setter Property="BorderBrush" Value="#1E293B"/>
             <Setter Property="GridLinesVisibility" Value="Horizontal"/>
-            <Setter Property="HorizontalGridLinesBrush" Value="#162234"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#172236"/>
         </Style>
         <Style Selector="DataGridColumnHeader">
-            <Setter Property="Background" Value="#080D16"/>
+            <Setter Property="Background" Value="#090E18"/>
             <Setter Property="Foreground" Value="#94A3B8"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="FontSize" Value="11"/>
-            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="Padding" Value="14,10"/>
         </Style>
         <Style Selector="DataGridRow">
-            <Setter Property="Height" Value="40"/>
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.1"/>
+                </Transitions>
+            </Setter>
         </Style>
         <Style Selector="DataGridRow:pointerover">
-            <Setter Property="Background" Value="#131F33"/>
+            <Setter Property="Background" Value="#152238"/>
         </Style>
         <Style Selector="DataGridRow:selected">
-            <Setter Property="Background" Value="#1C2E4A"/>
+            <Setter Property="Background" Value="#1E3252"/>
         </Style>
         <Style Selector="DataGridCell">
             <Setter Property="FontSize" Value="12"/>
@@ -61,11 +68,57 @@
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="BorderBrush" Value="#26334A"/>
+            <Setter Property="Background" Value="#0F172A"/>
+            <Setter Property="Foreground" Value="#F8FAFC"/>
+            <Setter Property="Padding" Value="10,6"/>
         </Style>
         <Style Selector="ComboBox">
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="BorderBrush" Value="#26334A"/>
+            <Setter Property="Background" Value="#0F172A"/>
+            <Setter Property="Foreground" Value="#F8FAFC"/>
+            <Setter Property="Padding" Value="10,6"/>
+        </Style>
+        <Style Selector="ComboBoxItem">
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+
+        <!-- Quick Filter Pill Buttons -->
+        <Style Selector="Button.pill-filter">
+            <Setter Property="Background" Value="#1E293B"/>
+            <Setter Property="Foreground" Value="#94A3B8"/>
+            <Setter Property="BorderBrush" Value="#334155"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="14"/>
+            <Setter Property="Padding" Value="12,4"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+        <Style Selector="Button.pill-filter:pointerover">
+            <Setter Property="Background" Value="#293952"/>
+            <Setter Property="Foreground" Value="#F8FAFC"/>
+        </Style>
+        <Style Selector="Button.pill-active">
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#3B82F6"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <!-- Suggested Niche Pills -->
+        <Style Selector="Button.niche-pill">
+            <Setter Property="Background" Value="#0F243A"/>
+            <Setter Property="Foreground" Value="#38BDF8"/>
+            <Setter Property="BorderBrush" Value="#1E3E64"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="10,3"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+        <Style Selector="Button.niche-pill:pointerover">
+            <Setter Property="Background" Value="#173B60"/>
+            <Setter Property="Foreground" Value="#7DD3FC"/>
         </Style>
     </Application.Styles>
 </Application>

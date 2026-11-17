@@ -26,6 +26,8 @@ public class BoundingBox
 public class DiscoveryQuery
 {
     public string City { get; set; } = "Karachi";
+    public string Country { get; set; } = "Pakistan";
+    public string? StateProvince { get; set; }
     public List<string> TargetAmenities { get; set; } = ["clinic", "dentist", "pharmacy", "hospital"];
     public BoundingBox? BBox { get; set; }
     public int Limit { get; set; } = 150;

@@ -8,7 +8,7 @@ namespace TKS.LeadPilot.Core.Services;
 
 public static class OverpassResultMapper
 {
-    public static List<Business> MapJsonToBusinesses(string jsonContent, string defaultCity = "Karachi")
+    public static List<Business> MapJsonToBusinesses(string jsonContent, string defaultCity = "Karachi", string defaultCountry = "Pakistan", string? defaultState = null)
     {
         var results = new List<Business>();
         if (string.IsNullOrWhiteSpace(jsonContent)) return results;
@@ -67,11 +67,21 @@ public static class OverpassResultMapper
                 var street = GetTagValue(tags, "addr:street");
                 var locality = GetTagValue(tags, "addr:suburb", "addr:neighbourhood", "addr:district");
                 var city = GetTagValue(tags, "addr:city");
+                var state = GetTagValue(tags, "addr:state", "addr:province");
+                var country = GetTagValue(tags, "addr:country");
                 var postcode = GetTagValue(tags, "addr:postcode");
 
                 if (string.IsNullOrWhiteSpace(city))
                 {
                     city = defaultCity;
+                }
+                if (string.IsNullOrWhiteSpace(state))
+                {
+                    state = defaultState;
+                }
+                if (string.IsNullOrWhiteSpace(country))
+                {
+                    country = defaultCountry;
                 }
 
                 var address = CombineAddress(house, street);
@@ -85,6 +95,8 @@ public static class OverpassResultMapper
                     Name = name.Trim(),
                     Category = category,
                     City = city.Trim(),
+                    StateProvince = string.IsNullOrWhiteSpace(state) ? null : state.Trim(),
+                    Country = country.Trim(),
                     AddressLine1 = string.IsNullOrWhiteSpace(address) ? null : address.Trim(),
                     Locality = string.IsNullOrWhiteSpace(locality) ? null : locality.Trim(),
                     PostalCode = string.IsNullOrWhiteSpace(postcode) ? null : postcode.Trim(),
@@ -136,6 +148,7 @@ public static class OverpassResultMapper
             "pharmacy" => "Pharmacy & Healthcare",
             "hospital" => "Hospital & Medical Center",
             "doctors" => "Medical Practice",
+            "veterinary" => "Veterinary Clinic",
             "restaurant" => "Restaurant & Dining",
             "fast_food" => "Fast Food & Dining",
             "cafe" => "Cafe & Coffee Shop",
@@ -146,9 +159,25 @@ public static class OverpassResultMapper
             "clothes" => "Apparel & Retail",
             "electronics" => "Electronics & Appliances",
             "car_repair" => "Automotive Repair & Services",
+            "car_dealership" => "Automotive Dealership",
             "school" => "School & Education",
             "college" => "College & Higher Education",
             "university" => "University & Academic",
+            "it" or "software" => "Software & IT Agency",
+            "lawyer" or "legal" => "Legal & Corporate Law",
+            "notary" => "Notary & Legal Services",
+            "accountant" or "tax" => "Accounting & Tax Services",
+            "bank" or "financial" => "Finance & Banking",
+            "insurance" => "Insurance Agency",
+            "estate_agent" or "real_estate" => "Real Estate Agency",
+            "fitness_centre" or "gym" => "Fitness & Gym",
+            "hairdresser" or "beauty" => "Beauty Salon & Spa",
+            "spa" => "Spa & Wellness",
+            "courier" or "logistics" => "Logistics & Courier",
+            "industrial" or "factory" => "Manufacturing & Industrial",
+            "architect" => "Architecture & Design",
+            "travel_agency" => "Travel & Tourism Agency",
+            "advertising_agency" => "Marketing & Advertising",
             _ => char.ToUpperInvariant(raw[0]) + raw[1..].Replace("_", " ")
         };
     }

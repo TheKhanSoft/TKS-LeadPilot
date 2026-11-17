@@ -35,6 +35,7 @@ public class Business
     public LeadStatus LeadStatus { get; set; } = LeadStatus.Discovered;
     public string? Tags { get; set; }
     public bool IsStarred { get; set; } = false;
+    public string StarDisplay => IsStarred ? "★" : "☆";
     
     // Provenance & Source
     public string? SourceProvider { get; set; }

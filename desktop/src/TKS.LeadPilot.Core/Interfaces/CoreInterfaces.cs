@@ -21,6 +21,8 @@ public interface IBusinessRepository
     Task<int> GetTotalCountAsync(CancellationToken ct = default);
     Task<int> GetWithWebsiteCountAsync(CancellationToken ct = default);
     Task<int> GetHighOpportunityCountAsync(int threshold = 70, CancellationToken ct = default);
+    Task<List<string>> GetDistinctCountriesAsync(CancellationToken ct = default);
+    Task<List<string>> GetDistinctStatesAsync(string? country = null, CancellationToken ct = default);
     Task<List<string>> GetDistinctCitiesAsync(CancellationToken ct = default);
     Task<List<string>> GetDistinctCategoriesAsync(CancellationToken ct = default);
     Task<List<string>> GetDistinctTagsAsync(CancellationToken ct = default);
@@ -170,4 +172,16 @@ public interface ISyncService
     Task<SyncPushResult> PushLocalChangesAsync(CancellationToken ct = default);
     Task<SyncPullResult> PullRemoteChangesAsync(CancellationToken ct = default);
     Task<FullSyncResult> SynchronizeAsync(CancellationToken ct = default);
+}
+
+public interface IGeoLocationService
+{
+    IReadOnlyList<CountryInfo> GetAllCountries();
+    CountryInfo? GetCountry(string countryNameOrCode);
+    IReadOnlyList<StateProvinceInfo> GetStatesForCountry(string countryNameOrCode);
+    IReadOnlyList<CityInfo> GetCitiesForState(string countryNameOrCode, string stateNameOrCode);
+    CityInfo? FindCity(string cityName, string? country = null);
+    BoundingBox CalculateProximityBoundingBox(double centerLat, double centerLon, double radiusKm);
+    Task<NearbyLocationResult> DetectNearbyLocationAsync(double radiusKm = 15.0, CancellationToken ct = default);
+    IReadOnlyList<string> GetSuggestedNiches(string? country = null, string? city = null);
 }
