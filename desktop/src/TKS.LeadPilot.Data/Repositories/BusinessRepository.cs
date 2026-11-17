@@ -104,7 +104,20 @@ public class BusinessRepository : IBusinessRepository
     {
         business.UpdatedAtUtc = DateTime.UtcNow;
         business.Version += 1;
-        _context.Businesses.Update(business);
+
+        var tracked = _context.ChangeTracker.Entries<Business>().FirstOrDefault(e => e.Entity.Id == business.Id);
+        if (tracked != null)
+        {
+            if (tracked.Entity != business)
+            {
+                tracked.CurrentValues.SetValues(business);
+            }
+        }
+        else
+        {
+            _context.Businesses.Update(business);
+        }
+
         await _context.SaveChangesAsync(ct);
     }
 
@@ -115,8 +128,20 @@ public class BusinessRepository : IBusinessRepository
         {
             b.UpdatedAtUtc = now;
             b.Version += 1;
+
+            var tracked = _context.ChangeTracker.Entries<Business>().FirstOrDefault(e => e.Entity.Id == b.Id);
+            if (tracked != null)
+            {
+                if (tracked.Entity != b)
+                {
+                    tracked.CurrentValues.SetValues(b);
+                }
+            }
+            else
+            {
+                _context.Businesses.Update(b);
+            }
         }
-        _context.Businesses.UpdateRange(businesses);
         await _context.SaveChangesAsync(ct);
     }
 

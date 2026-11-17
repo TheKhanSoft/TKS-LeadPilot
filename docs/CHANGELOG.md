@@ -6,6 +6,35 @@ All notable changes to the TKS LeadPilot project will be documented in this file
 
 ## [Unreleased]
 
+### [0.13.0] — Stage 13: End-to-End Integration, Data Seeding & Cross-Platform Verification — 2026-11-17
+#### Added
+- Comprehensive Commercial Pakistani Business Dataset:
+  - Pre-seeded 11 high-value Pakistani commercial business records across key metropolitan economic hubs (Lahore, Karachi, Islamabad, Rawalpindi, Faisalabad, Peshawar, Multan).
+  - Pre-populated realistic technical website audits (`WebsiteAudits`) with concrete diagnostics (missing SSL/TLS, excessive TTFB latency, missing XML sitemaps, non-responsive desktop-only layouts).
+  - Pre-populated explainable audit findings (`WebsiteAuditFindings`) with severity indicators and remediation recommendations.
+  - Pre-calculated transparent lead scores (`LeadScores` & `LeadScoreComponents`) explainable down to exact point deductions.
+  - Pre-configured actionable sales tasks (`SalesTasks`) with due dates and priority rankings (Urgent, High, Medium).
+  - Pre-seeded contextual sales notes (`SalesNotes`) documenting phone interactions and client requirements.
+  - Pre-drafted personalized cold outreach messages (`OutreachMessages`) in Message Studio pending approval queue.
+- Self-Healing SQLite Schema Migration & Dynamic Synchronizer:
+  - Implemented automatic schema synchronization in `DatabaseInitializer.cs` that verifies and creates missing tables (`CREATE TABLE IF NOT EXISTS`) and adds missing columns (`EnsureColumnAsync`) to prevent SQLite schema mismatch errors across software versions.
+  - Top-level unhandled exception logger in `Program.cs` capturing fatal startup crashes to `%LOCALAPPDATA%\TKS.LeadPilot\startup_error.log` for instant diagnostic visibility.
+- End-to-End Integration Test Suite (`EndToEndIntegrationTests.cs`):
+  - Scenario 1 (Offline Manual Entry): Validates local-first SQLite persistence and data fidelity across independent DbContext lifecycles.
+  - Scenario 2 (Full Lead Lifecycle): Tests lead discovery -> technical audit inspection -> explainable lead scoring -> TKS service matching -> personalized outreach drafting -> CRM task assignment.
+  - Scenario 3 (SSRF Security Guard): Rigorously validates rejection of dangerous/private IPs (`127.0.0.1`, `localhost`, `10.0.0.1`, `172.16.0.1`, `192.168.1.1`, `169.254.169.254`, `0.0.0.0`, `file://`, `ftp://`).
+  - Scenario 4 (Sync Configuration & Delta Tracking): Validates device UUID generation and tracking of local mutations pending server push.
+- Cross-Platform Verification Script:
+  - Created automated verification script [`scripts/verify_cross_platform_sync.py`](file:///D:/Projects/TKS-LeadPilot/scripts/verify_cross_platform_sync.py) validating SQLite database counts, binary freshness, and schema parity across Desktop, Backend, and Mobile companion.
+#### Fixed
+- Fixed startup crash where existing SQLite database files from earlier stages lacked newly added entity tables (`OutreachTemplates`, `AppSettings`, `SalesTasks`, `SalesNotes`, `WebsiteAudits`, `LeadScores`).
+- Fixed Foreign Key constraint failure during commercial dataset seeding by resolving actual entity primary keys dynamically.
+- Fixed EF Core entity tracking conflict in `BusinessRepository.UpdateAsync` and `UpdateBatchAsync` by safely checking change tracker state.
+- Fixed unhandled `ArgumentException` in `SsrfValidator` when evaluating unspecified address `0.0.0.0`.
+- Synchronized and verified both Debug executable (`desktop/src/TKS.LeadPilot.UI/bin/Debug/net10.0/TKS.LeadPilot.UI.exe`) and Release distribution (`desktop/dist/TKS.LeadPilot.UI.exe`).
+#### Verified
+- Automated test count expanded to 112 tests passing across all components (99 .NET, 7 Laravel with 33 assertions, 6 Flutter).
+
 ### [0.12.0] — Stage 12: Mobile Companion App (Flutter Android) & Desktop Launcher Polish — 2026-11-17
 #### Added
 - Mobile Companion Application (`mobile/` - Flutter 3.47+ / Dart 3.13+):

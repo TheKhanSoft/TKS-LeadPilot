@@ -60,6 +60,20 @@ public class SsrfValidator : ISsrfValidator
             return new SsrfValidationResult { IsSafe = false, Reason = "Local or internal hostnames are prohibited." };
         }
 
+        // Direct IP check (e.g. 0.0.0.0, 127.0.0.1, ::0)
+        if (IPAddress.TryParse(host, out var parsedIp))
+        {
+            if (IsPrivateOrRestrictedIp(parsedIp) || parsedIp.Equals(IPAddress.Any) || parsedIp.Equals(IPAddress.IPv6Any))
+            {
+                return new SsrfValidationResult
+                {
+                    IsSafe = false,
+                    ResolvedIp = parsedIp,
+                    Reason = $"Hostname '{host}' is an invalid or restricted IP address."
+                };
+            }
+        }
+
         // DNS Resolution check to prevent DNS rebinding to private/loopback IPs
         try
         {
@@ -89,9 +103,9 @@ public class SsrfValidator : ISsrfValidator
                 ResolvedIp = addresses[0]
             };
         }
-        catch (SocketException ex)
+        catch (Exception ex)
         {
-            return new SsrfValidationResult { IsSafe = false, Reason = $"DNS lookup error: {ex.Message}" };
+            return new SsrfValidationResult { IsSafe = false, Reason = $"DNS resolution rejected or failed for '{host}': {ex.Message}" };
         }
     }
 

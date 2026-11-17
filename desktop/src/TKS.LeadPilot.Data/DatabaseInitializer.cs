@@ -18,6 +18,224 @@ public class DatabaseInitializer : IDatabaseInitializer
     {
         await _context.Database.EnsureCreatedAsync(ct);
 
+        // Ensure all tables across all stages are created even if the SQLite database file already existed from earlier stages
+        await _context.Database.ExecuteSqlRawAsync(@"
+            CREATE TABLE IF NOT EXISTS ""AppSettings"" (
+                ""Key"" TEXT NOT NULL PRIMARY KEY,
+                ""Value"" TEXT NOT NULL,
+                ""Description"" TEXT NULL,
+                ""UpdatedAtUtc"" TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS ""Businesses"" (
+                ""Id"" TEXT NOT NULL PRIMARY KEY,
+                ""Name"" TEXT NOT NULL,
+                ""LegalName"" TEXT NULL,
+                ""Category"" TEXT NOT NULL,
+                ""Subcategory"" TEXT NULL,
+                ""Description"" TEXT NULL,
+                ""AddressLine1"" TEXT NULL,
+                ""AddressLine2"" TEXT NULL,
+                ""Locality"" TEXT NULL,
+                ""City"" TEXT NOT NULL,
+                ""StateProvince"" TEXT NULL,
+                ""PostalCode"" TEXT NULL,
+                ""Country"" TEXT NOT NULL DEFAULT 'Pakistan',
+                ""Latitude"" REAL NULL,
+                ""Longitude"" REAL NULL,
+                ""PhonePrimary"" TEXT NULL,
+                ""EmailPrimary"" TEXT NULL,
+                ""WebsiteUrl"" TEXT NULL,
+                ""WebsiteStatus"" INTEGER NOT NULL DEFAULT 0,
+                ""PipelineStageId"" TEXT NOT NULL,
+                ""LeadScore"" INTEGER NOT NULL DEFAULT 0,
+                ""LeadStatus"" INTEGER NOT NULL DEFAULT 0,
+                ""Tags"" TEXT NULL,
+                ""IsStarred"" INTEGER NOT NULL DEFAULT 0,
+                ""SourceProvider"" TEXT NULL,
+                ""SourceReferenceId"" TEXT NULL,
+                ""GooglePlaceId"" TEXT NULL,
+                ""GoogleRating"" REAL NULL,
+                ""GoogleReviewCount"" INTEGER NULL,
+                ""BusinessHours"" TEXT NULL,
+                ""IsGoogleVerified"" INTEGER NOT NULL DEFAULT 0,
+                ""LastEnrichedAtUtc"" TEXT NULL,
+                ""IsDeleted"" INTEGER NOT NULL DEFAULT 0,
+                ""CreatedAtUtc"" TEXT NOT NULL,
+                ""UpdatedAtUtc"" TEXT NOT NULL,
+                ""DeletedAtUtc"" TEXT NULL,
+                ""Version"" INTEGER NOT NULL DEFAULT 1
+            );
+            CREATE TABLE IF NOT EXISTS ""BusinessContacts"" (
+                ""Id"" TEXT NOT NULL PRIMARY KEY,
+                ""BusinessId"" TEXT NOT NULL,
+                ""FullName"" TEXT NOT NULL,
+                ""JobTitle"" TEXT NULL,
+                ""Email"" TEXT NULL,
+                ""Phone"" TEXT NULL,
+                ""WhatsAppNumber"" TEXT NULL,
+                ""IsPrimary"" INTEGER NOT NULL DEFAULT 0,
+                ""ConsentStatus"" INTEGER NOT NULL DEFAULT 0,
+                ""CreatedAtUtc"" TEXT NOT NULL,
+                ""UpdatedAtUtc"" TEXT NOT NULL,
+                FOREIGN KEY (""BusinessId"") REFERENCES ""Businesses"" (""Id"") ON DELETE CASCADE
+            );
+            CREATE TABLE IF NOT EXISTS ""PipelineStages"" (
+                ""Id"" TEXT NOT NULL PRIMARY KEY,
+                ""Name"" TEXT NOT NULL,
+                ""Code"" TEXT NOT NULL,
+                ""DisplayOrder"" INTEGER NOT NULL,
+                ""ColorHex"" TEXT NOT NULL,
+                ""IsWonStage"" INTEGER NOT NULL DEFAULT 0,
+                ""IsLostStage"" INTEGER NOT NULL DEFAULT 0
+            );
+            CREATE TABLE IF NOT EXISTS ""SalesTasks"" (
+                ""Id"" TEXT NOT NULL PRIMARY KEY,
+                ""BusinessId"" TEXT NOT NULL,
+                ""Title"" TEXT NOT NULL,
+                ""DueDateUtc"" TEXT NULL,
+                ""Priority"" INTEGER NOT NULL DEFAULT 1,
+                ""IsCompleted"" INTEGER NOT NULL DEFAULT 0,
+                ""CompletedAtUtc"" TEXT NULL,
+                ""CreatedAtUtc"" TEXT NOT NULL,
+                FOREIGN KEY (""BusinessId"") REFERENCES ""Businesses"" (""Id"") ON DELETE CASCADE
+            );
+            CREATE TABLE IF NOT EXISTS ""SalesNotes"" (
+                ""Id"" TEXT NOT NULL PRIMARY KEY,
+                ""BusinessId"" TEXT NOT NULL,
+                ""Content"" TEXT NOT NULL,
+                ""AuthorName"" TEXT NOT NULL,
+                ""CreatedAtUtc"" TEXT NOT NULL,
+                ""UpdatedAtUtc"" TEXT NOT NULL,
+                FOREIGN KEY (""BusinessId"") REFERENCES ""Businesses"" (""Id"") ON DELETE CASCADE
+            );
+            CREATE TABLE IF NOT EXISTS ""LeadScores"" (
+                ""Id"" TEXT NOT NULL PRIMARY KEY,
+                ""BusinessId"" TEXT NOT NULL,
+                ""TotalScore"" INTEGER NOT NULL,
+                ""RuleVersion"" TEXT NOT NULL,
+                ""IsManualOverride"" INTEGER NOT NULL DEFAULT 0,
+                ""OverrideReason"" TEXT NULL,
+                ""CalculatedAtUtc"" TEXT NOT NULL,
+                FOREIGN KEY (""BusinessId"") REFERENCES ""Businesses"" (""Id"") ON DELETE CASCADE
+            );
+            CREATE TABLE IF NOT EXISTS ""LeadScoreComponents"" (
+                ""Id"" TEXT NOT NULL PRIMARY KEY,
+                ""LeadScoreId"" TEXT NOT NULL,
+                ""ComponentName"" TEXT NOT NULL,
+                ""PointsAwarded"" INTEGER NOT NULL,
+                ""MaxPointsPossible"" INTEGER NOT NULL,
+                ""Explanation"" TEXT NOT NULL,
+                FOREIGN KEY (""LeadScoreId"") REFERENCES ""LeadScores"" (""Id"") ON DELETE CASCADE
+            );
+            CREATE TABLE IF NOT EXISTS ""TksServices"" (
+                ""Id"" TEXT NOT NULL PRIMARY KEY,
+                ""Name"" TEXT NOT NULL,
+                ""Category"" TEXT NOT NULL,
+                ""Description"" TEXT NOT NULL,
+                ""StartingPriceUsd"" TEXT NULL,
+                ""StartingPricePkr"" TEXT NULL,
+                ""PitchTemplate"" TEXT NOT NULL,
+                ""IsActive"" INTEGER NOT NULL DEFAULT 1
+            );
+            CREATE TABLE IF NOT EXISTS ""WebsiteAudits"" (
+                ""Id"" TEXT NOT NULL PRIMARY KEY,
+                ""BusinessId"" TEXT NOT NULL,
+                ""TargetUrl"" TEXT NOT NULL,
+                ""Status"" INTEGER NOT NULL,
+                ""OverallScore"" INTEGER NULL,
+                ""PerformanceScore"" INTEGER NULL,
+                ""SeoScore"" INTEGER NULL,
+                ""AccessibilityScore"" INTEGER NULL,
+                ""SecurityScore"" INTEGER NULL,
+                ""HttpRedirectsToHttps"" INTEGER NOT NULL DEFAULT 0,
+                ""SslValid"" INTEGER NOT NULL DEFAULT 0,
+                ""SslIssuer"" TEXT NULL,
+                ""SslDaysUntilExpiry"" INTEGER NULL,
+                ""TtfbMs"" REAL NULL,
+                ""HtmlSizeBytes"" INTEGER NULL,
+                ""HasRobotsTxt"" INTEGER NOT NULL DEFAULT 0,
+                ""HasSitemapXml"" INTEGER NOT NULL DEFAULT 0,
+                ""DetectedTechStack"" TEXT NULL,
+                ""PageTitle"" TEXT NULL,
+                ""MetaDescription"" TEXT NULL,
+                ""RawReportJson"" TEXT NULL,
+                ""ErrorMessage"" TEXT NULL,
+                ""CreatedAtUtc"" TEXT NOT NULL,
+                ""CompletedAtUtc"" TEXT NULL,
+                FOREIGN KEY (""BusinessId"") REFERENCES ""Businesses"" (""Id"") ON DELETE CASCADE
+            );
+            CREATE TABLE IF NOT EXISTS ""WebsiteAuditFindings"" (
+                ""Id"" TEXT NOT NULL PRIMARY KEY,
+                ""AuditId"" TEXT NOT NULL,
+                ""Category"" INTEGER NOT NULL,
+                ""Severity"" INTEGER NOT NULL,
+                ""RuleCode"" TEXT NOT NULL DEFAULT '',
+                ""Title"" TEXT NOT NULL,
+                ""Description"" TEXT NOT NULL,
+                ""EvidenceText"" TEXT NULL,
+                ""RecommendedFix"" TEXT NULL,
+                ""BusinessImpact"" TEXT NULL,
+                ""SuggestedServiceId"" TEXT NULL,
+                ""CreatedAtUtc"" TEXT NOT NULL,
+                FOREIGN KEY (""AuditId"") REFERENCES ""WebsiteAudits"" (""Id"") ON DELETE CASCADE
+            );
+            CREATE TABLE IF NOT EXISTS ""OutreachTemplates"" (
+                ""Id"" TEXT NOT NULL PRIMARY KEY,
+                ""Name"" TEXT NOT NULL,
+                ""Channel"" INTEGER NOT NULL,
+                ""Category"" TEXT NOT NULL,
+                ""SubjectTemplate"" TEXT NULL,
+                ""BodyTemplate"" TEXT NOT NULL,
+                ""IsActive"" INTEGER NOT NULL DEFAULT 1
+            );
+            CREATE TABLE IF NOT EXISTS ""OutreachMessages"" (
+                ""Id"" TEXT NOT NULL PRIMARY KEY,
+                ""BusinessId"" TEXT NOT NULL,
+                ""ContactId"" TEXT NULL,
+                ""Channel"" INTEGER NOT NULL,
+                ""Subject"" TEXT NULL,
+                ""Body"" TEXT NOT NULL,
+                ""RenderedBody"" TEXT NOT NULL,
+                ""RecipientAddress"" TEXT NOT NULL,
+                ""ApprovalStatus"" INTEGER NOT NULL,
+                ""IsSent"" INTEGER NOT NULL DEFAULT 0,
+                ""SentAtUtc"" TEXT NULL,
+                ""TemplateId"" TEXT NULL,
+                ""Notes"" TEXT NULL,
+                ""CreatedAtUtc"" TEXT NOT NULL,
+                ""UpdatedAtUtc"" TEXT NOT NULL,
+                FOREIGN KEY (""BusinessId"") REFERENCES ""Businesses"" (""Id"") ON DELETE CASCADE,
+                FOREIGN KEY (""ContactId"") REFERENCES ""BusinessContacts"" (""Id"") ON DELETE SET NULL,
+                FOREIGN KEY (""TemplateId"") REFERENCES ""OutreachTemplates"" (""Id"") ON DELETE SET NULL
+            );
+        ", ct);
+
+        // Self-heal and synchronize columns for existing tables created in earlier versions
+        await EnsureColumnAsync("Businesses", "GooglePlaceId", "TEXT NULL", ct);
+        await EnsureColumnAsync("Businesses", "GoogleRating", "REAL NULL", ct);
+        await EnsureColumnAsync("Businesses", "GoogleReviewCount", "INTEGER NULL", ct);
+        await EnsureColumnAsync("Businesses", "BusinessHours", "TEXT NULL", ct);
+        await EnsureColumnAsync("Businesses", "IsGoogleVerified", "INTEGER NOT NULL DEFAULT 0", ct);
+        await EnsureColumnAsync("Businesses", "LastEnrichedAtUtc", "TEXT NULL", ct);
+
+        await EnsureColumnAsync("WebsiteAudits", "OverallScore", "INTEGER NULL", ct);
+        await EnsureColumnAsync("WebsiteAudits", "HttpRedirectsToHttps", "INTEGER NOT NULL DEFAULT 0", ct);
+        await EnsureColumnAsync("WebsiteAudits", "SslValid", "INTEGER NOT NULL DEFAULT 0", ct);
+        await EnsureColumnAsync("WebsiteAudits", "SslIssuer", "TEXT NULL", ct);
+        await EnsureColumnAsync("WebsiteAudits", "SslDaysUntilExpiry", "INTEGER NULL", ct);
+        await EnsureColumnAsync("WebsiteAudits", "TtfbMs", "REAL NULL", ct);
+        await EnsureColumnAsync("WebsiteAudits", "HtmlSizeBytes", "INTEGER NULL", ct);
+        await EnsureColumnAsync("WebsiteAudits", "HasRobotsTxt", "INTEGER NOT NULL DEFAULT 0", ct);
+        await EnsureColumnAsync("WebsiteAudits", "HasSitemapXml", "INTEGER NOT NULL DEFAULT 0", ct);
+        await EnsureColumnAsync("WebsiteAudits", "DetectedTechStack", "TEXT NULL", ct);
+        await EnsureColumnAsync("WebsiteAudits", "PageTitle", "TEXT NULL", ct);
+        await EnsureColumnAsync("WebsiteAudits", "MetaDescription", "TEXT NULL", ct);
+
+        await EnsureColumnAsync("WebsiteAuditFindings", "RuleCode", "TEXT NOT NULL DEFAULT ''", ct);
+        await EnsureColumnAsync("WebsiteAuditFindings", "EvidenceText", "TEXT NULL", ct);
+        await EnsureColumnAsync("WebsiteAuditFindings", "BusinessImpact", "TEXT NULL", ct);
+        await EnsureColumnAsync("WebsiteAuditFindings", "SuggestedServiceId", "TEXT NULL", ct);
+
         // Seed Pipeline Stages if empty
         if (!await _context.PipelineStages.AnyAsync(ct))
         {
@@ -94,95 +312,7 @@ public class DatabaseInitializer : IDatabaseInitializer
             await _context.SaveChangesAsync(ct);
         }
 
-        // Seed initial initial sample businesses if database has zero businesses
-        if (!await _context.Businesses.AnyAsync(ct))
-        {
-            var defaultStage = await _context.PipelineStages.FirstAsync(s => s.Code == "QUALIFIED", ct);
-
-            var sampleBusinesses = new List<Business>
-            {
-                new()
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Name = "Apex Dental & Implant Care",
-                    Category = "Dentist & Dental Clinic",
-                    City = "Lahore",
-                    AddressLine1 = "Gulberg III, Main Boulevard",
-                    PhonePrimary = "+92 42 35789012",
-                    EmailPrimary = "info@apexdental.pk",
-                    WebsiteUrl = "http://apexdental.pk",
-                    WebsiteStatus = WebsiteStatus.ActiveWebsite,
-                    PipelineStageId = defaultStage.Id,
-                    LeadScore = 88,
-                    LeadStatus = LeadStatus.Qualified,
-                    Tags = "Dental, High Opportunity, Needs SSL",
-                    IsStarred = true,
-                    SourceProvider = "OpenStreetMap",
-                    Contacts =
-                    [
-                        new()
-                        {
-                            FullName = "Dr. Tariq Mahmood",
-                            JobTitle = "Principal Dentist",
-                            Phone = "+92 300 1234567",
-                            Email = "dr.tariq@apexdental.pk",
-                            IsPrimary = true
-                        }
-                    ]
-                },
-                new()
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Name = "Careway Pharmacy & Diagnostic",
-                    Category = "Pharmacy & Healthcare",
-                    City = "Karachi",
-                    AddressLine1 = "Clifton Block 5",
-                    PhonePrimary = "+92 21 35876543",
-                    EmailPrimary = "contact@careway.pk",
-                    WebsiteUrl = null,
-                    WebsiteStatus = WebsiteStatus.NoWebsite,
-                    PipelineStageId = defaultStage.Id,
-                    LeadScore = 78,
-                    LeadStatus = LeadStatus.Qualified,
-                    Tags = "No Website, Healthcare",
-                    IsStarred = false,
-                    SourceProvider = "Manual",
-                    Contacts =
-                    [
-                        new()
-                        {
-                            FullName = "Muhammad Bilal",
-                            JobTitle = "Managing Director",
-                            Phone = "+92 321 7654321",
-                            IsPrimary = true
-                        }
-                    ]
-                },
-                new()
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Name = "Sunrise Grand Hotel",
-                    Category = "Hotels & Hospitality",
-                    City = "Islamabad",
-                    AddressLine1 = "F-7 Markaz",
-                    PhonePrimary = "+92 51 2654321",
-                    EmailPrimary = "reservations@sunrisegrand.pk",
-                    WebsiteUrl = "https://sunrisegrand.pk",
-                    WebsiteStatus = WebsiteStatus.ActiveWebsite,
-                    PipelineStageId = (await _context.PipelineStages.FirstAsync(s => s.Code == "TO_REVIEW", ct)).Id,
-                    LeadScore = 48,
-                    LeadStatus = LeadStatus.ToReview,
-                    Tags = "Hospitality, Moderate",
-                    IsStarred = false,
-                    SourceProvider = "CSV Import"
-                }
-            };
-
-            await _context.Businesses.AddRangeAsync(sampleBusinesses, ct);
-            await _context.SaveChangesAsync(ct);
-        }
-
-        // Seed Outreach Templates if empty (Stage 10)
+        // Seed Outreach Templates if empty
         if (!await _context.OutreachTemplates.AnyAsync(ct))
         {
             var templates = new List<OutreachTemplate>
@@ -224,6 +354,634 @@ public class DatabaseInitializer : IDatabaseInitializer
             };
 
             await _context.OutreachTemplates.AddRangeAsync(templates, ct);
+            await _context.SaveChangesAsync(ct);
+        }
+
+        // Seed or enrich Commercial Pakistani Business Dataset (Stage 13)
+        await SeedCommercialDatasetAsync(ct);
+    }
+
+    private async Task EnsureColumnAsync(string tableName, string columnName, string columnDefinition, CancellationToken ct)
+    {
+        try
+        {
+            var existingCols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var conn = _context.Database.GetDbConnection();
+            if (conn.State != System.Data.ConnectionState.Open)
+            {
+                await _context.Database.OpenConnectionAsync(ct);
+            }
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = $"PRAGMA table_info(\"{tableName}\");";
+            using var reader = await cmd.ExecuteReaderAsync(ct);
+            while (await reader.ReadAsync(ct))
+            {
+                existingCols.Add(reader.GetString(1));
+            }
+
+            if (!existingCols.Contains(columnName))
+            {
+                await _context.Database.ExecuteSqlRawAsync($"ALTER TABLE \"{tableName}\" ADD COLUMN \"{columnName}\" {columnDefinition};", ct);
+            }
+        }
+        catch
+        {
+            // Suppress error if column exists or concurrent execution
+        }
+    }
+
+    private async Task SeedCommercialDatasetAsync(CancellationToken ct)
+    {
+        var existingCount = await _context.Businesses.CountAsync(ct);
+        if (existingCount >= 8 && await _context.WebsiteAudits.AnyAsync(ct))
+        {
+            return;
+        }
+
+        var qualifiedStage = await _context.PipelineStages.FirstOrDefaultAsync(s => s.Code == "QUALIFIED", ct)
+                             ?? await _context.PipelineStages.FirstAsync(ct);
+        var toReviewStage = await _context.PipelineStages.FirstOrDefaultAsync(s => s.Code == "TO_REVIEW", ct)
+                            ?? qualifiedStage;
+        var contactedStage = await _context.PipelineStages.FirstOrDefaultAsync(s => s.Code == "CONTACTED", ct)
+                             ?? qualifiedStage;
+        var discoveredStage = await _context.PipelineStages.FirstOrDefaultAsync(s => s.Code == "DISCOVERED", ct)
+                              ?? qualifiedStage;
+
+        // Base Pakistani Businesses
+        var apexDentalId = "biz-apex-dental-lahore";
+        var carewayPharmacyId = "biz-careway-pharmacy-karachi";
+        var sunriseGrandId = "biz-sunrise-grand-islamabad";
+        var shifaDiagnosticId = "biz-shifa-diagnostic-rawalpindi";
+        var alRehmanTextileId = "biz-alrehman-textile-faisalabad";
+        var khyberGourmetId = "biz-khyber-gourmet-peshawar";
+        var crownLogisticsId = "biz-crown-logistics-karachi";
+        var indusAgroId = "biz-indus-agro-multan";
+
+        var commercialBusinesses = new List<Business>
+        {
+            new()
+            {
+                Id = apexDentalId,
+                Name = "Apex Dental & Implant Care",
+                Category = "Dentist & Dental Clinic",
+                City = "Lahore",
+                AddressLine1 = "Gulberg III, Main Boulevard",
+                PhonePrimary = "+92 42 35789012",
+                EmailPrimary = "info@apexdental.pk",
+                WebsiteUrl = "http://apexdental.pk",
+                WebsiteStatus = WebsiteStatus.ActiveWebsite,
+                PipelineStageId = qualifiedStage.Id,
+                LeadScore = 88,
+                LeadStatus = LeadStatus.Qualified,
+                Tags = "Dental, High Opportunity, Needs SSL",
+                IsStarred = true,
+                SourceProvider = "OpenStreetMap",
+                GoogleRating = 4.7,
+                GoogleReviewCount = 142,
+                IsGoogleVerified = true,
+                Contacts =
+                [
+                    new()
+                    {
+                        FullName = "Dr. Tariq Mahmood",
+                        JobTitle = "Principal Dentist & Founder",
+                        Phone = "+92 300 1234567",
+                        Email = "dr.tariq@apexdental.pk",
+                        IsPrimary = true
+                    }
+                ]
+            },
+            new()
+            {
+                Id = carewayPharmacyId,
+                Name = "Careway Pharmacy & Diagnostic Lab",
+                Category = "Pharmacy & Healthcare",
+                City = "Karachi",
+                AddressLine1 = "Clifton Block 5, Marine Drive",
+                PhonePrimary = "+92 21 35876543",
+                EmailPrimary = "contact@careway.pk",
+                WebsiteUrl = null,
+                WebsiteStatus = WebsiteStatus.NoWebsite,
+                PipelineStageId = qualifiedStage.Id,
+                LeadScore = 78,
+                LeadStatus = LeadStatus.Qualified,
+                Tags = "No Website, Healthcare, Urgent Need",
+                IsStarred = true,
+                SourceProvider = "Manual",
+                GoogleRating = 4.3,
+                GoogleReviewCount = 89,
+                IsGoogleVerified = true,
+                Contacts =
+                [
+                    new()
+                    {
+                        FullName = "Muhammad Bilal",
+                        JobTitle = "Managing Director",
+                        Phone = "+92 321 7654321",
+                        IsPrimary = true
+                    }
+                ]
+            },
+            new()
+            {
+                Id = sunriseGrandId,
+                Name = "Sunrise Grand Boutique Hotel",
+                Category = "Hotels & Hospitality",
+                City = "Islamabad",
+                AddressLine1 = "F-7 Markaz, Jinnah Super",
+                PhonePrimary = "+92 51 2654321",
+                EmailPrimary = "reservations@sunrisegrand.pk",
+                WebsiteUrl = "https://sunrisegrand.pk",
+                WebsiteStatus = WebsiteStatus.ActiveWebsite,
+                PipelineStageId = toReviewStage.Id,
+                LeadScore = 55,
+                LeadStatus = LeadStatus.ToReview,
+                Tags = "Hospitality, Direct Booking Opportunity",
+                IsStarred = false,
+                SourceProvider = "CSV Import",
+                GoogleRating = 4.5,
+                GoogleReviewCount = 310,
+                IsGoogleVerified = true,
+                Contacts =
+                [
+                    new()
+                    {
+                        FullName = "Farhan Shah",
+                        JobTitle = "General Manager",
+                        Phone = "+92 333 5554321",
+                        Email = "gm@sunrisegrand.pk",
+                        IsPrimary = true
+                    }
+                ]
+            },
+            new()
+            {
+                Id = shifaDiagnosticId,
+                Name = "Shifa Diagnostic & Clinical Radiology",
+                Category = "Healthcare & Diagnostics",
+                City = "Rawalpindi",
+                AddressLine1 = "Saddar Road, Cantt",
+                PhonePrimary = "+92 51 5567890",
+                EmailPrimary = "lab@shifadiagnostic.pk",
+                WebsiteUrl = "http://shifadiagnostic.pk",
+                WebsiteStatus = WebsiteStatus.ActiveWebsite,
+                PipelineStageId = qualifiedStage.Id,
+                LeadScore = 85,
+                LeadStatus = LeadStatus.Qualified,
+                Tags = "Healthcare, Insecure Form, Urgent Need",
+                IsStarred = true,
+                SourceProvider = "OpenStreetMap",
+                GoogleRating = 4.1,
+                GoogleReviewCount = 67,
+                IsGoogleVerified = true,
+                Contacts =
+                [
+                    new()
+                    {
+                        FullName = "Dr. Nasir Khan",
+                        JobTitle = "Chief Radiologist",
+                        Phone = "+92 300 9876543",
+                        Email = "dr.nasir@shifadiagnostic.pk",
+                        IsPrimary = true
+                    }
+                ]
+            },
+            new()
+            {
+                Id = alRehmanTextileId,
+                Name = "Al-Rehman Textile & Apparel Mills",
+                Category = "Textile & Manufacturing",
+                City = "Faisalabad",
+                AddressLine1 = "Susan Road, Industrial Estate",
+                PhonePrimary = "+92 41 8765432",
+                EmailPrimary = "export@alrehmantextile.pk",
+                WebsiteUrl = "https://alrehmantextile.pk",
+                WebsiteStatus = WebsiteStatus.ActiveWebsite,
+                PipelineStageId = contactedStage.Id,
+                LeadScore = 92,
+                LeadStatus = LeadStatus.Contacted,
+                Tags = "Export, Legacy Tech, High Ticket Lead",
+                IsStarred = true,
+                SourceProvider = "Manual",
+                GoogleRating = 4.6,
+                GoogleReviewCount = 54,
+                IsGoogleVerified = true,
+                Contacts =
+                [
+                    new()
+                    {
+                        FullName = "Mian Usman Rehman",
+                        JobTitle = "Director Export Sales",
+                        Phone = "+92 322 8887766",
+                        Email = "usman@alrehmantextile.pk",
+                        IsPrimary = true
+                    }
+                ]
+            },
+            new()
+            {
+                Id = khyberGourmetId,
+                Name = "Khyber Gourmet & Grand Banquets",
+                Category = "Restaurants & Catering",
+                City = "Peshawar",
+                AddressLine1 = "University Road, Near Board",
+                PhonePrimary = "+92 91 5843210",
+                EmailPrimary = "events@khybergourmet.pk",
+                WebsiteUrl = null,
+                WebsiteStatus = WebsiteStatus.NoWebsite,
+                PipelineStageId = discoveredStage.Id,
+                LeadScore = 72,
+                LeadStatus = LeadStatus.Discovered,
+                Tags = "No Website, Banquets, High Footfall",
+                IsStarred = false,
+                SourceProvider = "OpenStreetMap",
+                GoogleRating = 4.4,
+                GoogleReviewCount = 420,
+                IsGoogleVerified = true,
+                Contacts =
+                [
+                    new()
+                    {
+                        FullName = "Javed Afridi",
+                        JobTitle = "Managing Partner",
+                        Phone = "+92 345 1122334",
+                        IsPrimary = true
+                    }
+                ]
+            },
+            new()
+            {
+                Id = crownLogisticsId,
+                Name = "Crown Logistics & Express Freight",
+                Category = "Logistics & Supply Chain",
+                City = "Karachi",
+                AddressLine1 = "Port Qasim Industrial Zone",
+                PhonePrimary = "+92 21 34720191",
+                EmailPrimary = "operations@crownlogistics.pk",
+                WebsiteUrl = "http://crownlogistics.pk",
+                WebsiteStatus = WebsiteStatus.ActiveWebsite,
+                PipelineStageId = qualifiedStage.Id,
+                LeadScore = 84,
+                LeadStatus = LeadStatus.Qualified,
+                Tags = "Logistics, Slow Response, Missing HTTPS",
+                IsStarred = false,
+                SourceProvider = "CSV Import",
+                GoogleRating = 4.0,
+                GoogleReviewCount = 38,
+                IsGoogleVerified = true,
+                Contacts =
+                [
+                    new()
+                    {
+                        FullName = "Syed Asad Ali",
+                        JobTitle = "Head of Operations",
+                        Phone = "+92 301 4455667",
+                        Email = "asad@crownlogistics.pk",
+                        IsPrimary = true
+                    }
+                ]
+            },
+            new()
+            {
+                Id = indusAgroId,
+                Name = "Indus Valley Agro Supplies",
+                Category = "Agriculture & Chemicals",
+                City = "Multan",
+                AddressLine1 = "Khanewal Road, Industrial Area",
+                PhonePrimary = "+92 61 6523901",
+                EmailPrimary = "info@indusvalleypk.com",
+                WebsiteUrl = null,
+                WebsiteStatus = WebsiteStatus.NoWebsite,
+                PipelineStageId = discoveredStage.Id,
+                LeadScore = 75,
+                LeadStatus = LeadStatus.Discovered,
+                Tags = "No Website, B2B Distributor",
+                IsStarred = false,
+                SourceProvider = "Manual",
+                GoogleRating = 4.2,
+                GoogleReviewCount = 29,
+                IsGoogleVerified = false
+            }
+        };
+
+        // Add any business not already in database
+        foreach (var b in commercialBusinesses)
+        {
+            if (!await _context.Businesses.AnyAsync(x => x.Id == b.Id || x.Name == b.Name, ct))
+            {
+                await _context.Businesses.AddAsync(b, ct);
+            }
+        }
+        await _context.SaveChangesAsync(ct);
+
+        // Resolve actual database IDs to guarantee Foreign Key integrity
+        var apexBiz = await _context.Businesses.FirstOrDefaultAsync(b => b.Name.Contains("Apex Dental"), ct);
+        var carewayBiz = await _context.Businesses.FirstOrDefaultAsync(b => b.Name.Contains("Careway"), ct);
+        var alRehmanBiz = await _context.Businesses.FirstOrDefaultAsync(b => b.Name.Contains("Al-Rehman"), ct);
+        var sunriseBiz = await _context.Businesses.FirstOrDefaultAsync(b => b.Name.Contains("Sunrise Grand"), ct);
+
+        var actualApexId = apexBiz?.Id ?? apexDentalId;
+        var actualCarewayId = carewayBiz?.Id ?? carewayPharmacyId;
+        var actualAlRehmanId = alRehmanBiz?.Id ?? alRehmanTextileId;
+        var actualSunriseId = sunriseBiz?.Id ?? sunriseGrandId;
+
+        // Seed realistic Website Audits and Findings for businesses with websites
+        if (!await _context.WebsiteAudits.AnyAsync(ct))
+        {
+            var auditApex = new WebsiteAudit
+            {
+                Id = "audit-apex-dental",
+                BusinessId = actualApexId,
+                TargetUrl = "http://apexdental.pk",
+                Status = AuditStatus.Completed,
+                OverallScore = 48,
+                PerformanceScore = 42,
+                SeoScore = 55,
+                AccessibilityScore = 60,
+                SecurityScore = 35,
+                HttpRedirectsToHttps = false,
+                SslValid = false,
+                SslIssuer = null,
+                SslDaysUntilExpiry = null,
+                TtfbMs = 1420.5,
+                HtmlSizeBytes = 2450000,
+                HasRobotsTxt = true,
+                HasSitemapXml = false,
+                DetectedTechStack = "WordPress 5.4, PHP 7.3, jQuery 1.12.4, Apache",
+                PageTitle = "Apex Dental Clinic Lahore - Best Dental Treatments",
+                MetaDescription = "Comprehensive dental implants and root canal procedures in Gulberg Lahore.",
+                CompletedAtUtc = DateTime.UtcNow.AddDays(-2),
+                Findings =
+                [
+                    new()
+                    {
+                        Category = AuditCategory.Security,
+                        Severity = AuditSeverity.Critical,
+                        RuleCode = "SEC-001",
+                        Title = "Missing SSL/TLS Certificate (Insecure HTTP)",
+                        Description = "The website is delivered over unencrypted HTTP. Chrome and Edge flag the site as 'Not Secure', repelling patients from submitting inquiry forms.",
+                        EvidenceText = "http://apexdental.pk does not redirect to HTTPS. Form submissions transmit in plain text.",
+                        RecommendedFix = "Install Let's Encrypt / Cloudflare SSL certificate and enforce 301 HTTPS redirection.",
+                        BusinessImpact = "High client abandonment at online consultation form; negative Google ranking penalty.",
+                        SuggestedServiceId = "svc-security-retainer"
+                    },
+                    new()
+                    {
+                        Category = AuditCategory.Performance,
+                        Severity = AuditSeverity.High,
+                        RuleCode = "PERF-002",
+                        Title = "Excessive Time-to-First-Byte (TTFB > 1.4s)",
+                        Description = "Server took 1,420ms to deliver initial HTML payload due to lack of server-side page caching and outdated PHP 7.3 runtime.",
+                        EvidenceText = "Measured TTFB: 1420.5ms (recommended threshold is < 200ms).",
+                        RecommendedFix = "Migrate to modern PHP 8.3 container and activate Redis object caching.",
+                        BusinessImpact = "High mobile bounce rate (>60% of mobile users abandon pages taking >3s to load).",
+                        SuggestedServiceId = "svc-core-web-vitals"
+                    },
+                    new()
+                    {
+                        Category = AuditCategory.Seo,
+                        Severity = AuditSeverity.Medium,
+                        RuleCode = "SEO-003",
+                        Title = "Missing XML Sitemap Index",
+                        Description = "No sitemap.xml detected at /sitemap.xml or declared in robots.txt.",
+                        EvidenceText = "HTTP 404 Not Found returned when requesting /sitemap.xml.",
+                        RecommendedFix = "Generate automated XML sitemap and submit to Google Search Console.",
+                        BusinessImpact = "Slow discovery of new dental treatment pages by Google search crawler.",
+                        SuggestedServiceId = "svc-web-dev"
+                    }
+                ]
+            };
+
+            var auditAlRehman = new WebsiteAudit
+            {
+                Id = "audit-alrehman-textile",
+                BusinessId = actualAlRehmanId,
+                TargetUrl = "https://alrehmantextile.pk",
+                Status = AuditStatus.Completed,
+                OverallScore = 38,
+                PerformanceScore = 30,
+                SeoScore = 45,
+                AccessibilityScore = 40,
+                SecurityScore = 70,
+                HttpRedirectsToHttps = true,
+                SslValid = true,
+                SslIssuer = "cPanel, Inc. Certification Authority",
+                SslDaysUntilExpiry = 42,
+                TtfbMs = 950.0,
+                HtmlSizeBytes = 4200000,
+                HasRobotsTxt = false,
+                HasSitemapXml = false,
+                DetectedTechStack = "HTML 4.01, Bootstrap 2.3, Flash Player artifacts, PHP 5.6",
+                PageTitle = "Al Rehman Textile Faisalabad - Home",
+                MetaDescription = null,
+                CompletedAtUtc = DateTime.UtcNow.AddDays(-1),
+                Findings =
+                [
+                    new()
+                    {
+                        Category = AuditCategory.Performance,
+                        Severity = AuditSeverity.Critical,
+                        RuleCode = "PERF-001",
+                        Title = "Non-Responsive Desktop-Only Layout (No Viewport Tag)",
+                        Description = "Website renders fixed 1024px width on smartphones, requiring international textile buyers to pinch-to-zoom.",
+                        EvidenceText = "Missing <meta name='viewport'> tag. Viewport evaluation scored 0/100 on mobile emulators.",
+                        RecommendedFix = "Complete mobile-first responsive redesign built on modern Tailwind/Next.js stack.",
+                        BusinessImpact = "Severe loss of international export inquiries arriving from smartphone devices.",
+                        SuggestedServiceId = "svc-web-dev"
+                    },
+                    new()
+                    {
+                        Category = AuditCategory.Performance,
+                        Severity = AuditSeverity.High,
+                        RuleCode = "PERF-004",
+                        Title = "Uncompressed Product Catalog Images (>4.2MB Total Payload)",
+                        Description = "Fabric gallery loads uncompressed 3000x2000 JPEG images without WebP modern formats or lazy loading.",
+                        EvidenceText = "Single homepage payload requires 4.2MB download before rendering completes.",
+                        RecommendedFix = "Convert catalog assets to WebP with responsive srcset and native loading='lazy'.",
+                        BusinessImpact = "Over 7-second page load on 4G cellular connections.",
+                        SuggestedServiceId = "svc-core-web-vitals"
+                    }
+                ]
+            };
+
+            await _context.WebsiteAudits.AddRangeAsync(auditApex, auditAlRehman);
+            await _context.SaveChangesAsync(ct);
+        }
+
+        // Seed Lead Scores and Components
+        if (!await _context.LeadScores.AnyAsync(ct))
+        {
+            var scoreApex = new LeadScore
+            {
+                Id = "score-apex-dental",
+                BusinessId = actualApexId,
+                TotalScore = 88,
+                RuleVersion = "1.0.0",
+                CalculatedAtUtc = DateTime.UtcNow.AddDays(-2),
+                Components =
+                [
+                    new() { ComponentName = "Missing HTTPS/SSL", PointsAwarded = 35, MaxPointsPossible = 35, Explanation = "Website serves insecure HTTP with browser warning." },
+                    new() { ComponentName = "Slow TTFB (>1000ms)", PointsAwarded = 25, MaxPointsPossible = 25, Explanation = "Server response latency is 1,420ms." },
+                    new() { ComponentName = "Missing XML Sitemap", PointsAwarded = 15, MaxPointsPossible = 15, Explanation = "Google indexing hampered by absent sitemap." },
+                    new() { ComponentName = "Verified Google Presence", PointsAwarded = 13, MaxPointsPossible = 25, Explanation = "Established business (142 reviews, 4.7 stars) with high buying power." }
+                ]
+            };
+
+            var scoreCareway = new LeadScore
+            {
+                Id = "score-careway-pharmacy",
+                BusinessId = actualCarewayId,
+                TotalScore = 78,
+                RuleVersion = "1.0.0",
+                CalculatedAtUtc = DateTime.UtcNow.AddDays(-1),
+                Components =
+                [
+                    new() { ComponentName = "Completely Missing Website", PointsAwarded = 50, MaxPointsPossible = 50, Explanation = "Established diagnostic lab operating solely offline." },
+                    new() { ComponentName = "High Demand Medical Category", PointsAwarded = 15, MaxPointsPossible = 25, Explanation = "Online prescription order portals deliver immediate ROI." },
+                    new() { ComponentName = "Verified Phone & Primary Contact", PointsAwarded = 13, MaxPointsPossible = 25, Explanation = "Decision maker (Muhammad Bilal, Managing Director) identified." }
+                ]
+            };
+
+            var scoreAlRehman = new LeadScore
+            {
+                Id = "score-alrehman-textile",
+                BusinessId = actualAlRehmanId,
+                TotalScore = 92,
+                RuleVersion = "1.0.0",
+                CalculatedAtUtc = DateTime.UtcNow.AddDays(-1),
+                Components =
+                [
+                    new() { ComponentName = "Outdated Legacy Web Presence", PointsAwarded = 40, MaxPointsPossible = 40, Explanation = "Desktop-only layout built in 2012 with Flash remnants." },
+                    new() { ComponentName = "B2B Export High-Ticket Potential", PointsAwarded = 30, MaxPointsPossible = 30, Explanation = "International textile exporters have high software modernization budgets." },
+                    new() { ComponentName = "Decision Maker Receptive", PointsAwarded = 22, MaxPointsPossible = 30, Explanation = "Export Director contacted via email." }
+                ]
+            };
+
+            await _context.LeadScores.AddRangeAsync(scoreApex, scoreCareway, scoreAlRehman);
+            await _context.SaveChangesAsync(ct);
+        }
+
+        // Seed Sales Tasks
+        if (!await _context.SalesTasks.AnyAsync(ct))
+        {
+            var tasks = new List<SalesTask>
+            {
+                new()
+                {
+                    Id = "task-apex-followup",
+                    BusinessId = actualApexId,
+                    Title = "Follow up with Dr. Tariq regarding SSL certificate vulnerability",
+                    Priority = TaskPriority.High,
+                    DueDateUtc = DateTime.UtcNow.AddDays(1),
+                    IsCompleted = false
+                },
+                new()
+                {
+                    Id = "task-careway-pitch",
+                    BusinessId = actualCarewayId,
+                    Title = "Send WhatsApp presentation for online prescription & lab booking portal",
+                    Priority = TaskPriority.High,
+                    DueDateUtc = DateTime.UtcNow.AddDays(2),
+                    IsCompleted = false
+                },
+                new()
+                {
+                    Id = "task-alrehman-demo",
+                    BusinessId = actualAlRehmanId,
+                    Title = "Prepare B2B export catalog responsive mockup demo",
+                    Priority = TaskPriority.Urgent,
+                    DueDateUtc = DateTime.UtcNow.AddHours(18),
+                    IsCompleted = false
+                },
+                new()
+                {
+                    Id = "task-sunrise-review",
+                    BusinessId = actualSunriseId,
+                    Title = "Review direct room reservation booking engine proposal",
+                    Priority = TaskPriority.Medium,
+                    DueDateUtc = DateTime.UtcNow.AddDays(4),
+                    IsCompleted = true,
+                    CompletedAtUtc = DateTime.UtcNow.AddDays(-1)
+                }
+            };
+
+            await _context.SalesTasks.AddRangeAsync(tasks, ct);
+            await _context.SaveChangesAsync(ct);
+        }
+
+        // Seed Sales Notes
+        if (!await _context.SalesNotes.AnyAsync(ct))
+        {
+            var notes = new List<SalesNote>
+            {
+                new()
+                {
+                    Id = "note-apex-1",
+                    BusinessId = actualApexId,
+                    AuthorName = "Kashif Ahmad",
+                    Content = "Spoke with front desk receptionist. Dr. Tariq is in clinic Thursdays and Saturdays from 3:00 PM to 8:00 PM. High interest in modernizing clinic booking system.",
+                    CreatedAtUtc = DateTime.UtcNow.AddDays(-2),
+                    UpdatedAtUtc = DateTime.UtcNow.AddDays(-2)
+                },
+                new()
+                {
+                    Id = "note-careway-1",
+                    BusinessId = actualCarewayId,
+                    AuthorName = "Kashif Ahmad",
+                    Content = "Careway is Clifton's busiest neighborhood pharmacy. Currently losing 20-30 repeat monthly prescription orders to Sehat.com.pk due to lack of website.",
+                    CreatedAtUtc = DateTime.UtcNow.AddDays(-1),
+                    UpdatedAtUtc = DateTime.UtcNow.AddDays(-1)
+                },
+                new()
+                {
+                    Id = "note-alrehman-1",
+                    BusinessId = actualAlRehmanId,
+                    AuthorName = "Kashif Ahmad",
+                    Content = "Mian Usman expressed frustration during brief call that European textile buyers are unable to browse fabric catalogs smoothly on their iPhones.",
+                    CreatedAtUtc = DateTime.UtcNow.AddDays(-1),
+                    UpdatedAtUtc = DateTime.UtcNow.AddDays(-1)
+                }
+            };
+
+            await _context.SalesNotes.AddRangeAsync(notes, ct);
+            await _context.SaveChangesAsync(ct);
+        }
+
+        // Seed Outreach Messages (Drafts in Approval Queue)
+        if (!await _context.OutreachMessages.AnyAsync(ct))
+        {
+            var messages = new List<OutreachMessage>
+            {
+                new()
+                {
+                    Id = "msg-apex-draft",
+                    BusinessId = actualApexId,
+                    Channel = OutreachChannel.Email,
+                    Subject = "Technical assessment and growth opportunities for Apex Dental & Implant Care",
+                    Body = "Hi Dr. Tariq,\n\nWe recently conducted a technical assessment of Apex Dental & Implant Care in Lahore. While analyzing http://apexdental.pk, our diagnostics identified key friction points (Missing SSL/TLS Certificate and high server latency of 1420ms).\n\nAt TheKhanSoft, we specialize in Website Security, SSL & Maintenance Retainers. We prepared an executive audit report outlining actionable solutions to protect your patients' data and elevate your Google ranking.\n\nWould you be open to a brief 10-minute conversation this week?\n\nBest regards,\nTheKhanSoft Outreach Team",
+                    RenderedBody = "Hi Dr. Tariq,\n\nWe recently conducted a technical assessment of Apex Dental & Implant Care in Lahore. While analyzing http://apexdental.pk, our diagnostics identified key friction points (Missing SSL/TLS Certificate and high server latency of 1420ms).\n\nAt TheKhanSoft, we specialize in Website Security, SSL & Maintenance Retainers. We prepared an executive audit report outlining actionable solutions to protect your patients' data and elevate your Google ranking.\n\nWould you be open to a brief 10-minute conversation this week?\n\nBest regards,\nTheKhanSoft Outreach Team",
+                    RecipientAddress = "dr.tariq@apexdental.pk",
+                    ApprovalStatus = OutreachApprovalStatus.PendingApproval,
+                    IsSent = false,
+                    TemplateId = "tpl-audit-email",
+                    Notes = "High priority prospect in Gulberg Lahore"
+                },
+                new()
+                {
+                    Id = "msg-careway-draft",
+                    BusinessId = actualCarewayId,
+                    Channel = OutreachChannel.WhatsApp,
+                    Body = "Assalam-o-Alaikum Muhammad Bilal! We noticed Careway Pharmacy & Diagnostic Lab in Karachi is missing an official mobile-friendly website. Potential clients searching for Pharmacy & Healthcare in Karachi are finding competitors instead. TheKhanSoft builds modern high-speed websites tailored for your sector. Would you be interested in viewing a sample mockup?",
+                    RenderedBody = "Assalam-o-Alaikum Muhammad Bilal! We noticed Careway Pharmacy & Diagnostic Lab in Karachi is missing an official mobile-friendly website. Potential clients searching for Pharmacy & Healthcare in Karachi are finding competitors instead. TheKhanSoft builds modern high-speed websites tailored for your sector. Would you be interested in viewing a sample mockup?",
+                    RecipientAddress = "+92 321 7654321",
+                    ApprovalStatus = OutreachApprovalStatus.PendingApproval,
+                    IsSent = false,
+                    TemplateId = "tpl-noweb-wa",
+                    Notes = "Pre-screened WhatsApp outreach lead"
+                }
+            };
+
+            await _context.OutreachMessages.AddRangeAsync(messages, ct);
             await _context.SaveChangesAsync(ct);
         }
     }
