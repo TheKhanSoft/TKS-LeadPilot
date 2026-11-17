@@ -88,4 +88,27 @@ public class TksServiceMatcherTests
         secMatch!.MatchConfidence.Should().Be(98);
         secMatch.GeneratedPitch.Should().Contain("Not Secure");
     }
+
+    [Fact]
+    public async Task MatchServicesAsync_WhenMissingGmb_MatchesGmbLocalSeoService()
+    {
+        var matcher = new TksServiceMatcher();
+        var business = new Business
+        {
+            Name = "Peshawar Carpet House",
+            Category = "Wholesale & Retail",
+            City = "Peshawar",
+            IsGoogleVerified = false,
+            GooglePlaceId = null,
+            WebsiteUrl = "https://peshawarcarpets.pk",
+            WebsiteStatus = WebsiteStatus.ActiveWebsite
+        };
+
+        var matches = await matcher.MatchServicesAsync(business, null, null);
+
+        var gmbMatch = matches.FirstOrDefault(m => m.Service.Id == "svc-gmb-local-seo");
+        gmbMatch.Should().NotBeNull();
+        gmbMatch!.MatchConfidence.Should().Be(92);
+        gmbMatch.GeneratedPitch.Should().Contain("Google Maps");
+    }
 }

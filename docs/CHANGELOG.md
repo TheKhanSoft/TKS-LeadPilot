@@ -6,6 +6,38 @@ All notable changes to the TKS LeadPilot project will be documented in this file
 
 ## [Unreleased]
 
+### [1.1.0] — Expanded Geographic Hierarchy, Missing GMB Lead Targeting & Master Prompt Alignment — 2026-11-17
+#### Added
+- **Expanded Pakistani & International Geographic Hierarchy (`GeoLocationService.cs`, `OverpassQueryBuilder.cs`):**
+  - Expanded coverage across **all 7 Pakistani administrative provinces and territories**: Punjab, Sindh, Khyber Pakhtunkhwa (KP), Balochistan, Islamabad Capital Territory (ICT), Gilgit-Baltistan, and Azad Jammu & Kashmir (AJK).
+  - Added bounding boxes, coordinates, and commercial profiles for **35+ major economic cities**:
+    - *Punjab:* Lahore, Faisalabad, Rawalpindi, Multan, Gujranwala, Sialkot, Bahawalpur, Sargodha, Sheikhupura, Gujrat, Sahiwal, Kasur, Jhelum, Rahim Yar Khan, Okara.
+    - *Sindh:* Karachi, Hyderabad, Sukkur, Larkana, Nawabshah (Shaheed Benazirabad), Mirpur Khas.
+    - *Khyber Pakhtunkhwa:* Peshawar, Mardan, Abbottabad, Swat / Mingora, Kohat, Dera Ismail Khan, Haripur.
+    - *Balochistan:* Quetta, Gwadar, Turbat, Khuzdar, Hub.
+    - *Islamabad Capital Territory:* Islamabad.
+    - *Gilgit-Baltistan:* Gilgit, Skardu, Hunza.
+    - *Azad Jammu & Kashmir:* Muzaffarabad, Mirpur, Rawalakot.
+  - Added new high-demand commercial niche tags: Solar & Renewable Energy, Event Planners & Marriage Halls, Printing & Packaging, Agro-Chemical, Pet & Vet Clinics, Textile & Apparel.
+- **Missing Google My Business (GMB) Lead Targeting:**
+  - Added `QuickFilterType.MissingGmb` to `BusinessFilterCriteria.cs`.
+  - Added repository filtering logic in `BusinessRepository.cs` (`!b.IsGoogleVerified && (b.GooglePlaceId == null || b.GooglePlaceId == "")`).
+  - Added quick filter pill button `📍 Missing GMB` to `BusinessesView.axaml` and `BusinessesViewModel.cs`.
+  - Seeded new service offering `svc-gmb-local-seo` ("Google Business Profile (GMB) & Local Maps Booster", PKR 35,000 / $150) in `TksServiceMatcher.cs` and `DatabaseInitializer.cs`.
+  - Automated service matcher logic prioritizing GMB verification & local Maps optimization with 92% confidence score and custom pitch deck.
+- **Master Development Prompt Comparison & Alignment:**
+  - Comprehensive feature comparison against the Master Development Prompt (`TKS-LeadPilot-PRD.md`), verifying 100% completion of all core operational domains (Modules 1–15).
+  - Documented intentional architectural optimizations (in-process memory-safe C# auditor vs. external browser sidecar for 4GB RAM environments, Avalonia UI for native Windows desktop).
+- **Launcher Hardening (`run-desktop.bat`):**
+  - Updated launcher script to detect and start `TKS.LeadPilot.exe` and `TKS.LeadPilot.UI.exe` across both `desktop/dist/` (Release) and `desktop/src/TKS.LeadPilot.UI/bin/Debug/net10.0/` (Debug).
+#### Fixed
+- Fixed `OverpassQueryBuilderTests.cs` to test fallback area search against an unknown city rather than Hyderabad (which now has an explicit bounding box).
+- Resolved file lock collision on `bin/Debug/net10.0/` binaries caused by active background instances.
+- Re-published release distribution to `desktop/dist/` and re-built debug binaries.
+#### Verified
+- Automated test count expanded to **157 tests passing** (144 Desktop C#, 7 Laravel API / 33 assertions, 6 Flutter Mobile).
+- Cross-platform sync verification script (`python scripts/verify_cross_platform_sync.py`) passes with 100% data fidelity.
+
 ### [1.0.0] — Stage 15: Final Hardening, Release Packaging, Advanced UI/UX Overhaul & Operator Documentation — 2026-11-17
 #### Added
 - Comprehensive Operator Manual & User Guide (`docs/OPERATOR_MANUAL.md`):

@@ -77,6 +77,23 @@ public partial class BusinessesViewModel : ViewModelBase
     [ObservableProperty]
     private string _selectedWebsiteFilter = "All Sites";
 
+    // Sorting & Ordering
+    [ObservableProperty]
+    private ObservableCollection<string> _sortOptions =
+    [
+        "Score: High to Low",
+        "Score: Low to High",
+        "Name: A to Z",
+        "Name: Z to A",
+        "Newest Discovered"
+    ];
+
+    [ObservableProperty]
+    private string _selectedSortOption = "Score: High to Low";
+
+    [ObservableProperty]
+    private ObservableCollection<double> _availableRadii = [5.0, 10.0, 15.0, 25.0, 50.0];
+
     // Quick Filter & Suggested Niches
     [ObservableProperty]
     private QuickFilterType _selectedQuickFilter = QuickFilterType.All;
@@ -337,6 +354,19 @@ public partial class BusinessesViewModel : ViewModelBase
         _ = ApplyFiltersAsync();
     }
 
+    partial void OnSelectedSortOptionChanged(string value)
+    {
+        _ = ApplyFiltersAsync();
+    }
+
+    partial void OnNearbyRadiusKmChanged(double value)
+    {
+        if (IsNearbyActive)
+        {
+            _ = DetectNearbyLocation();
+        }
+    }
+
     private async Task RefreshStatesForCountryAsync(string countryDisplay)
     {
         var rawCountry = ExtractCountryName(countryDisplay);
@@ -520,6 +550,15 @@ public partial class BusinessesViewModel : ViewModelBase
                 PipelineStageId = SelectedStage?.Id,
                 HasWebsite = SelectedWebsiteFilter == "Has Website" ? true : SelectedWebsiteFilter == "No Website" ? false : null,
                 QuickFilter = SelectedQuickFilter,
+                SortBy = SelectedSortOption switch
+                {
+                    "Score: High to Low" => BusinessSortOption.ScoreDescending,
+                    "Score: Low to High" => BusinessSortOption.ScoreAscending,
+                    "Name: A to Z" => BusinessSortOption.NameAscending,
+                    "Name: Z to A" => BusinessSortOption.NameDescending,
+                    "Newest Discovered" => BusinessSortOption.CreatedDescending,
+                    _ => BusinessSortOption.ScoreDescending
+                },
                 Take = 500
             };
 
@@ -659,6 +698,109 @@ public partial class BusinessesViewModel : ViewModelBase
         finally
         {
             IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task ExportJson()
+    {
+        try
+        {
+            IsLoading = true;
+            var exportDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+            if (!Directory.Exists(exportDir)) exportDir = AppContext.BaseDirectory;
+
+            var filename = $"TKS_LeadPilot_Export_{DateTime.Now:yyyyMMdd_HHmmss}.json";
+            var filePath = Path.Combine(exportDir, filename);
+
+            var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
+            var json = System.Text.Json.JsonSerializer.Serialize(Businesses, options);
+            await File.WriteAllTextAsync(filePath, json);
+            StatusMessage = $"📄 Exported {Businesses.Count} leads (JSON) to {filePath}";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Export Error: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    // --- Quick Actions on Selected Lead ---
+
+    [RelayCommand]
+    public async Task CopyPhone()
+    {
+        if (SelectedBusiness != null && !string.IsNullOrWhiteSpace(SelectedBusiness.PhonePrimary))
+        {
+            if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.Clipboard != null)
+            {
+                await desktop.MainWindow.Clipboard.SetTextAsync(SelectedBusiness.PhonePrimary);
+                StatusMessage = $"📞 Phone copied ({SelectedBusiness.PhonePrimary}) to clipboard!";
+            }
+        }
+    }
+
+    [RelayCommand]
+    public async Task CopyEmail()
+    {
+        if (SelectedBusiness != null && !string.IsNullOrWhiteSpace(SelectedBusiness.EmailPrimary))
+        {
+            if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.Clipboard != null)
+            {
+                await desktop.MainWindow.Clipboard.SetTextAsync(SelectedBusiness.EmailPrimary);
+                StatusMessage = $"✉️ Email copied ({SelectedBusiness.EmailPrimary}) to clipboard!";
+            }
+        }
+    }
+
+    [RelayCommand]
+    public void OpenWebsite()
+    {
+        if (SelectedBusiness != null && !string.IsNullOrWhiteSpace(SelectedBusiness.WebsiteUrl))
+        {
+            try
+            {
+                var url = SelectedBusiness.WebsiteUrl.Trim();
+                var uri = url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+                    ? url
+                    : $"https://{url}";
+
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = uri,
+                    UseShellExecute = true
+                });
+                StatusMessage = $"🌐 Launching browser for {SelectedBusiness.Name}...";
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Browser Launch Error: {ex.Message}";
+            }
+        }
+    }
+
+    [RelayCommand]
+    public async Task CopyQuickPitch()
+    {
+        if (SelectedBusiness != null)
+        {
+            var pitch = $"Subject: Digital Growth & Optimization for {SelectedBusiness.Name}\n\n" +
+                        $"Dear {SelectedBusiness.Name} Team,\n\n" +
+                        $"We analyzed local {SelectedBusiness.Category} businesses in {SelectedBusiness.City} and identified high-impact opportunities for your digital client acquisition.\n\n" +
+                        (string.IsNullOrWhiteSpace(SelectedBusiness.WebsiteUrl)
+                            ? $"Currently, {SelectedBusiness.Name} lacks an official, verified website. Prospective customers searching online for {SelectedBusiness.Category} are discovering competitors instead. TheKhanSoft builds ultra-fast, mobile-responsive web platforms engineered to convert local traffic into paying clients.\n\n"
+                            : $"Our technical audit of {SelectedBusiness.WebsiteUrl} identified key optimization areas in load speeds, security hygiene, and search discoverability to drastically improve your conversion rates.\n\n") +
+                        $"Would you be available for a brief 5-minute discovery consultation this week?\n\n" +
+                        $"Sincerely,\nTheKhanSoft Enterprise Team\ninfo@thekhansoft.com";
+
+            if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.Clipboard != null)
+            {
+                await desktop.MainWindow.Clipboard.SetTextAsync(pitch);
+                StatusMessage = $"📋 Tailored outreach pitch for {SelectedBusiness.Name} copied to clipboard!";
+            }
         }
     }
 

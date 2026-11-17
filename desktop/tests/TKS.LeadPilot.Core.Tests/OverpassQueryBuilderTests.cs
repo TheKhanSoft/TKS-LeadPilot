@@ -49,13 +49,13 @@ public class OverpassQueryBuilderTests
     {
         var query = new DiscoveryQuery
         {
-            City = "Hyderabad",
+            City = "UnknownTown",
             TargetAmenities = ["hospital"]
         };
 
         var ql = OverpassQueryBuilder.BuildQuery(query);
 
-        ql.Should().Contain("area[\"name\"=\"Hyderabad\"]->.searchArea;");
+        ql.Should().Contain("area[\"name\"=\"UnknownTown\"]->.searchArea;");
         ql.Should().Contain("node[\"amenity\"=\"hospital\"](area.searchArea);");
     }
 

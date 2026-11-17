@@ -97,7 +97,15 @@ public static class OverpassQueryBuilder
         ["Architecture & Construction"] = ["architect", "construction", "contractor"],
         ["Travel & Tourism Agencies"] = ["travel_agency", "tourist_guide"],
         ["Marketing & Media Studios"] = ["advertising_agency", "design", "photography"],
-        ["Security & Facility Services"] = ["security", "cleaning"]
+        ["Security & Facility Services"] = ["security", "cleaning"],
+
+        // Additional High-Demand Commercial Niches
+        ["Solar & Renewable Energy"] = ["solar", "energy", "photovoltaic", "contractor"],
+        ["Event Planners & Marriage Halls"] = ["events_venue", "banquet_hall", "party", "wedding"],
+        ["Printing, Packaging & Signage"] = ["copyshop", "printer", "packaging", "signage"],
+        ["Agricultural & Agro-Chemical"] = ["agrarian", "fertilizer", "seed", "farm"],
+        ["Pet Care & Veterinary Clinics"] = ["veterinary", "pet", "pet_grooming"],
+        ["Textile, Apparel & Fashion"] = ["tailor", "fabrics", "clothes", "boutique"]
     };
 
     public static string BuildQuery(DiscoveryQuery query)

@@ -178,6 +178,11 @@ public static class OverpassResultMapper
             "architect" => "Architecture & Design",
             "travel_agency" => "Travel & Tourism Agency",
             "advertising_agency" => "Marketing & Advertising",
+            "solar" or "photovoltaic" => "Solar & Renewable Energy",
+            "events_venue" or "banquet_hall" => "Event Planners & Marriage Halls",
+            "copyshop" or "printer" => "Printing, Packaging & Signage",
+            "agrarian" or "fertilizer" => "Agricultural & Agro-Chemical",
+            "tailor" or "fabrics" => "Textile, Apparel & Fashion",
             _ => char.ToUpperInvariant(raw[0]) + raw[1..].Replace("_", " ")
         };
     }

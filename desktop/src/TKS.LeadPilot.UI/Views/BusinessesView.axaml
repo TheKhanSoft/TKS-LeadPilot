@@ -27,7 +27,8 @@
                     <Button Content="🛰️ Discover Leads (OSM)" Command="{Binding OpenDiscoveryModalCommand}" Classes="btn-accent" IsEnabled="{Binding !IsLoading}" Margin="0,0,8,4"/>
                     <Button Content="+ Add Business" Command="{Binding OpenAddBusinessModalCommand}" Classes="btn-primary" IsEnabled="{Binding !IsLoading}" Margin="0,0,8,4"/>
                     <Button Content="📥 Import CSV" Click="OnPickCsvFileClick" Classes="btn-secondary" IsEnabled="{Binding !IsLoading}" Margin="0,0,8,4"/>
-                    <Button Content="📤 Export CSV" Command="{Binding ExportCsvCommand}" Classes="btn-secondary" IsEnabled="{Binding !IsLoading}" Margin="0,0,0,4"/>
+                    <Button Content="📤 Export CSV" Command="{Binding ExportCsvCommand}" Classes="btn-secondary" IsEnabled="{Binding !IsLoading}" Margin="0,0,8,4"/>
+                    <Button Content="📄 Export JSON" Command="{Binding ExportJsonCommand}" Classes="btn-secondary" IsEnabled="{Binding !IsLoading}" Margin="0,0,0,4"/>
                 </WrapPanel>
             </Grid>
 
@@ -54,6 +55,15 @@
 
                             <!-- Nearby Me Quick Button -->
                             <Button Content="📍 Nearby Me" Command="{Binding DetectNearbyLocationCommand}" IsEnabled="{Binding !IsLoading}" Classes="btn-accent" Margin="0,0,8,6" ToolTip.Tip="Detect and filter businesses within proximity radius"/>
+
+                            <!-- Nearby Radius Selector -->
+                            <ComboBox Width="95" ItemsSource="{Binding AvailableRadii}" SelectedItem="{Binding NearbyRadiusKm}" IsEnabled="{Binding !IsLoading}" ToolTip.Tip="Proximity radius (km)" Margin="0,0,8,6">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="x:Double">
+                                        <TextBlock Text="{Binding StringFormat='{}{0} km'}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
                         </WrapPanel>
 
                         <!-- Active Proximity Indicator -->

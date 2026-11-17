@@ -4,8 +4,18 @@ echo ========================================================
 echo  Launching TKS LeadPilot Windows Desktop Application...
 echo ========================================================
 
+if exist "%~dp0desktop\dist\TKS.LeadPilot.exe" (
+    start "" "%~dp0desktop\dist\TKS.LeadPilot.exe"
+    exit /b 0
+)
+
 if exist "%~dp0desktop\dist\TKS.LeadPilot.UI.exe" (
     start "" "%~dp0desktop\dist\TKS.LeadPilot.UI.exe"
+    exit /b 0
+)
+
+if exist "%~dp0desktop\src\TKS.LeadPilot.UI\bin\Debug\net10.0\TKS.LeadPilot.exe" (
+    start "" "%~dp0desktop\src\TKS.LeadPilot.UI\bin\Debug\net10.0\TKS.LeadPilot.exe"
     exit /b 0
 )
 

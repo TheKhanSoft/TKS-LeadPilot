@@ -48,16 +48,26 @@ def verify_local_database():
 
 def verify_desktop_binaries():
     print("\n[2/3] Verifying Desktop Binaries (Debug & Release)...")
-    debug_exe = r"desktop\src\TKS.LeadPilot.UI\bin\Debug\net10.0\TKS.LeadPilot.UI.exe"
-    release_exe = r"desktop\dist\TKS.LeadPilot.UI.exe"
+    debug_candidates = [
+        r"desktop\src\TKS.LeadPilot.UI\bin\Debug\net10.0\TKS.LeadPilot.exe",
+        r"desktop\src\TKS.LeadPilot.UI\bin\Debug\net10.0\TKS.LeadPilot.UI.exe"
+    ]
+    release_candidates = [
+        r"desktop\dist\TKS.LeadPilot.exe",
+        r"desktop\dist\TKS.LeadPilot.UI.exe"
+    ]
 
-    for path, label in [(debug_exe, "Debug Build"), (release_exe, "Release Distribution")]:
-        if os.path.exists(path):
-            size_kb = os.path.getsize(path) / 1024
-            mtime = time.ctime(os.path.getmtime(path))
-            print(f"  ✔ {label}: {path} ({size_kb:.1f} KB, Modified: {mtime})")
-        else:
-            print(f"  ❌ Missing {label} at: {path}")
+    for candidates, label in [(debug_candidates, "Debug Build"), (release_candidates, "Release Distribution")]:
+        found = False
+        for path in candidates:
+            if os.path.exists(path):
+                size_kb = os.path.getsize(path) / 1024
+                mtime = time.ctime(os.path.getmtime(path))
+                print(f"  ✔ {label}: {path} ({size_kb:.1f} KB, Modified: {mtime})")
+                found = True
+                break
+        if not found:
+            print(f"  ❌ Missing {label} in candidates: {candidates}")
             return False
     return True
 
