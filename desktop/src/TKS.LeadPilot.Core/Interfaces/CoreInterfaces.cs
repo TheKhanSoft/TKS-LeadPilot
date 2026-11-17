@@ -161,3 +161,13 @@ public interface IOutreachService
     string BuildMailtoUri(OutreachMessage message);
     string BuildWhatsAppUri(OutreachMessage message);
 }
+
+public interface ISyncService
+{
+    Task<SyncConfig> GetConfigAsync(CancellationToken ct = default);
+    Task SaveConfigAsync(SyncConfig config, CancellationToken ct = default);
+    Task<SyncStatusResult> GetSyncStatusAsync(CancellationToken ct = default);
+    Task<SyncPushResult> PushLocalChangesAsync(CancellationToken ct = default);
+    Task<SyncPullResult> PullRemoteChangesAsync(CancellationToken ct = default);
+    Task<FullSyncResult> SynchronizeAsync(CancellationToken ct = default);
+}

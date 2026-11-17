@@ -89,6 +89,7 @@ public partial class App : Application
         services.AddScoped<ITksServiceMatcher, TksServiceMatcher>();
         services.AddScoped<ICrmService, CrmService>();
         services.AddScoped<IOutreachService, OutreachService>();
+        services.AddScoped<ISyncService, SyncService>();
 
         // Secret Vault
         services.AddSingleton<ISecretVault, DpapiSecretVault>();
