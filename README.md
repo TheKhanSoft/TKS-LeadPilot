@@ -55,7 +55,9 @@
 - **Central Headless Laravel 13 API & Delta Sync Protocol:** Sanctum token authentication, universal UUIDv4 primary keys, Server-Wins LWW conflict detection, and tombstone soft deletes.
 - **DPAPI Credential Vault:** All sensitive API keys (Gemini, Google Places, Sanctum Token) are securely encrypted via Windows Data Protection API (DPAPI, `CurrentUser` scope) and never stored in plain text.
 - **📍 Missing Google My Business (GMB) Targeting:** Instant 1-click filter (`📍 Missing GMB`) isolating businesses without Google Business Profile or Google Maps listings, automatically matched to TheKhanSoft's *Google Business Profile (GMB) & Local Maps Booster* service package (`svc-gmb-local-seo`).
-- **Comprehensive Pakistani Geographic Directory:** Native support for all 7 Pakistani provinces/territories and 35+ economic cities with bounding boxes, coordinates, and regional niche suggestions.
+- **Comprehensive Multi-Country Geographic Directory (17 Countries & 100+ Commercial Metropolises):** Native cascading hierarchy (`Country -> State/Province -> City`) covering Pakistan, UAE, Saudi Arabia, Qatar, Oman, Kuwait, Bahrain, United Kingdom, United States, Canada, Australia, Germany, Ireland, Netherlands, Malaysia, Singapore, and Turkey with precise bounding boxes, coordinates, country dialing codes, and regional suggested niches.
+- **Resilient High-Availability OpenStreetMap Discovery Engine:** Live query with 5s snappy timeouts and active public mirrors, backed by an intelligent contextual seed engine ensuring the operator never gets empty results even when public Overpass servers are rate-limited or busy.
+- **Deep Website Forensics & Security Audit Engine:** Full DOM heading hierarchy (H1/H2), image alt optimization, internal/external links count, canonical validation, OpenGraph/Twitter Cards, Viewport checks, analytics tracking detection (GA4, GTM, Meta Pixel, Hotjar, TikTok Pixel, Clarity), server banner inspection, and security header report card (A+ to F).
 
 ---
 

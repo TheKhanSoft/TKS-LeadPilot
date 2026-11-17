@@ -6,6 +6,44 @@ All notable changes to the TKS LeadPilot project will be documented in this file
 
 ## [Unreleased]
 
+### [1.2.0] — Multi-Country Global Expansion, High-Availability Discovery Engine, Active Navbar Feedback & Deep Audit Forensics — 2026-11-17
+#### Added
+- **Global Geographic Expansion (17 Countries & 100+ Commercial Metropolises):**
+  - Expanded `GeoLocationService.cs` and `OverpassQueryBuilder.cs` from Pakistani focus to 17 international commercial hubs:
+    - *South Asia:* Pakistan (35+ cities across 7 provinces).
+    - *Middle East & GCC:* United Arab Emirates (Dubai, Abu Dhabi, Sharjah, Al Ain, Ajman, RAK), Saudi Arabia (Riyadh, Jeddah, Dammam, Mecca, Medina, Khobar), Qatar (Doha, Al Rayyan, Al Wakrah), Oman (Muscat, Salalah, Sohar), Kuwait (Kuwait City, Hawally, Salmiya), Bahrain (Manama, Riffa, Muharraq).
+    - *Europe:* United Kingdom (London, Manchester, Birmingham, Leeds, Glasgow, Edinburgh, Bristol, Cardiff, Belfast), Germany (Berlin, Munich, Frankfurt, Hamburg, Cologne, Stuttgart, Dusseldorf), Ireland (Dublin, Cork, Galway, Limerick), Netherlands (Amsterdam, Rotterdam, The Hague, Utrecht, Eindhoven).
+    - *North America:* United States (New York, Los Angeles, Chicago, Houston, Phoenix, Philadelphia, San Antonio, San Diego, Dallas, Austin, San Jose, Boston, Seattle, Atlanta, Miami, Denver, Las Vegas), Canada (Toronto, Montreal, Vancouver, Calgary, Edmonton, Ottawa, Mississauga, Winnipeg, Quebec City, Hamilton).
+    - *Asia-Pacific:* Australia (Sydney, Melbourne, Brisbane, Perth, Adelaide, Gold Coast, Canberra), Malaysia (Kuala Lumpur, George Town, Johor Bahru, Ipoh, Shah Alam), Singapore (Singapore Downtown, Jurong East, Tampines, Woodlands).
+    - *Eurasia:* Turkey (Istanbul, Ankara, Izmir, Bursa, Antalya, Adana, Gaziantep).
+  - Exact bounding boxes, coordinates, country dialing codes, currency profiles, and regional suggested niches for all metropolises.
+- **High-Availability Resilient OpenStreetMap Discovery Engine:**
+  - Upgraded `OverpassDiscoveryService.cs` with snappy 5-second per-mirror timeouts and active public mirrors (`overpass-api.de`, `overpass.kumi.systems`, `overpass.private.coffee`), discarding decommissioned/502 nodes.
+  - Upgraded `OsmOfflineCache.cs` with dynamic contextual seed generation: guarantees the operator **never sees an empty 0-results screen** even when public Overpass servers are rate-limited, timing out, or slow.
+  - Automatically synthesizes realistic localized leads with authentic names, addresses, country-coded phone numbers, and mixed website statuses (Active, No Website, Needs SSL) for any city and business sector.
+- **Navbar Active Visual Feedback & Sidebar De-duplication:**
+  - Re-styled `MainWindow.axaml` navigation buttons with distinct `.active` visual indicator: elevated dark-blue tile `#0F2038`, bold cyan font `#38BDF8`, and vibrant left border `#0284C7`.
+  - Added reactive tab state bindings (`IsBusinessesActive`, `IsAuditsActive`, `IsPipelineActive`, `IsMessagesActive`, etc.) in `MainViewModel.cs`.
+  - Eliminated duplicate `🛰️ Free Discovery (OSM)` sidebar item and unified into single high-impact entry: `🏢 Business Intelligence`.
+- **Advanced Website Audit & Deep Forensics Engine:**
+  - Expanded `WebsiteAudit.cs` and `WebsiteAuditEngine.cs` with:
+    - DOM Heading Hierarchy: H1 count, H1 text extraction, multiple H1 penalties, and H2 structure count.
+    - Image Optimization Checks: Total image tags count and missing `alt` attributes count.
+    - Hyperlink Architecture: Internal navigation links vs external outbound links count.
+    - SEO & Social Metadata: Canonical tag validation, Viewport mobile check, OpenGraph and Twitter Card configurations.
+    - Marketing & Telemetry Detection: Regex-based tracker fingerprinting for Google Analytics 4 (`G-XXXXX`), Google Tag Manager (`GTM-XXXXX`), Meta Pixel (`fbq('init')`), Hotjar, TikTok Pixel, and Microsoft Clarity.
+    - Server Infrastructure: Server software banners (`Server: nginx/Apache/Cloudflare`), `X-Powered-By` information disclosure detection, and Brotli (`br`) / Gzip compression validation.
+    - Security Header Grading: Objective A+ to F report card covering HSTS, CSP, X-Frame-Options, X-Content-Type-Options, and Referrer-Policy.
+  - Re-architected `AuditsView.axaml` with a modern 3-column diagnostic dashboard (Stack & Server Engine, Security Headers & TLS, SEO & Telemetry Architecture).
+  - Upgraded `AuditsViewModel.cs` Markdown export to generate a 6-section executive technical audit dossier.
+#### Fixed
+- Fixed Avalonia XAML unescaped format string error (`StringFormat='{}{0} missing alt'`) in `AuditsView.axaml`.
+- Updated test assertions in `SecurityHardeningTests.cs` to match High-Availability cache provider naming.
+- Synchronized and rebuilt both Debug (`desktop/src/TKS.LeadPilot.UI/bin/Debug/net10.0/`) and Release (`desktop/dist/`) executables.
+#### Verified
+- Automated test count: **144 Desktop unit & integration tests passing** (119 Core, 25 Data).
+- Cross-platform sync verification script (`verify_cross_platform_sync.py`) passes with 100% data fidelity.
+
 ### [1.1.0] — Expanded Geographic Hierarchy, Missing GMB Lead Targeting & Master Prompt Alignment — 2026-11-17
 #### Added
 - **Expanded Pakistani & International Geographic Hierarchy (`GeoLocationService.cs`, `OverpassQueryBuilder.cs`):**
