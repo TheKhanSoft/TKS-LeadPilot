@@ -114,6 +114,11 @@ public class BusinessRepositoryFilterTests
             hotLeads.Should().OnlyContain(b => b.LeadScore >= 70);
             hotLeads.Should().Contain(b => b.Name == "Karachi Health Hub");
             hotLeads.Should().NotContain(b => b.Name == "Lahore Tech Retail");
+
+            // 9. Quick Filter: Missing GMB
+            var missingGmb = await repo.GetFilteredAsync(new BusinessFilterCriteria { QuickFilter = QuickFilterType.MissingGmb });
+            missingGmb.Should().Contain(b => b.Name == "Lahore Tech Retail");
+            missingGmb.Should().Contain(b => b.Name == "Islamabad Dental Care");
         }
         finally
         {

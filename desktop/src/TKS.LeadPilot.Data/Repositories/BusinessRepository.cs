@@ -406,6 +406,9 @@ public class BusinessRepository : IBusinessRepository
             case QuickFilterType.NeedsAudit:
                 query = query.Where(b => !string.IsNullOrWhiteSpace(b.WebsiteUrl) && !b.Audits.Any());
                 break;
+            case QuickFilterType.MissingGmb:
+                query = query.Where(b => !b.IsGoogleVerified && (b.GooglePlaceId == null || b.GooglePlaceId == ""));
+                break;
         }
 
         return query;

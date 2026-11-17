@@ -30,7 +30,7 @@ public class DatabaseInitializerTests
                 stages.Should().HaveCount(14, "14 standard pipeline stages must be seeded");
 
                 var services = await context.TksServices.ToListAsync();
-                services.Should().HaveCount(4, "4 core TKS service offerings must be seeded");
+                services.Should().HaveCount(5, "5 core TKS service offerings must be seeded");
 
                 var businesses = await context.Businesses.Include(b => b.Contacts).ToListAsync();
                 businesses.Should().HaveCount(8, "8 realistic commercial Pakistani businesses must be seeded across key cities");

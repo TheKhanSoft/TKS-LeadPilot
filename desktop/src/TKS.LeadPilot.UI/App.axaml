@@ -241,6 +241,43 @@
             <Setter Property="Opacity" Value="0.35"/>
         </Style>
 
+        <!-- 11. AI Guard Buttons in Top Header -->
+        <Style Selector="Button.btn-guard-active">
+            <Setter Property="Background" Value="#7F1D1D"/>
+            <Setter Property="Foreground" Value="#FCA5A5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style Selector="Button.btn-guard-active:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#991B1B"/>
+            <Setter Property="Foreground" Value="#FEE2E2"/>
+        </Style>
+        <Style Selector="Button.btn-guard-active:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#450A0A"/>
+            <Setter Property="Foreground" Value="#F87171"/>
+        </Style>
+
+        <Style Selector="Button.btn-guard-paused">
+            <Setter Property="Background" Value="#991B1B"/>
+            <Setter Property="Foreground" Value="#FEF08A"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style Selector="Button.btn-guard-paused:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#B91C1C"/>
+            <Setter Property="Foreground" Value="#FEF9C3"/>
+        </Style>
+        <Style Selector="Button.btn-guard-paused:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#7F1D1D"/>
+            <Setter Property="Foreground" Value="#FDE047"/>
+        </Style>
+
         <!-- ================================================================= -->
         <!-- MODERN DATAGRID STYLING                                           -->
         <!-- ================================================================= -->

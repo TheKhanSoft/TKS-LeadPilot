@@ -17,7 +17,8 @@ public enum QuickFilterType
     NoWebsite = 2,         // WebsiteUrl is empty
     GoogleVerified = 3,    // IsGoogleVerified == true
     TopRated = 4,          // GoogleRating >= 4.5
-    NeedsAudit = 5         // Audits is empty and has website
+    NeedsAudit = 5,        // Audits is empty and has website
+    MissingGmb = 6         // No Google My Business account (IsGoogleVerified == false && GooglePlaceId is null/empty)
 }
 
 public class BusinessFilterCriteria

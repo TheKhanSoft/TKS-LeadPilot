@@ -412,6 +412,7 @@ public partial class BusinessesViewModel : ViewModelBase
         {
             "🔥 Hot Leads" => QuickFilterType.HotLeads,
             "❌ No Website" => QuickFilterType.NoWebsite,
+            "📍 Missing GMB" or "Missing GMB" => QuickFilterType.MissingGmb,
             "✓ Verified" => QuickFilterType.GoogleVerified,
             "⭐ Top Rated" => QuickFilterType.TopRated,
             "Needs Audit" => QuickFilterType.NeedsAudit,

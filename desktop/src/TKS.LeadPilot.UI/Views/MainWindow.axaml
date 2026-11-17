@@ -82,11 +82,11 @@
 
                     <!-- Emergency AI Kill Switch -->
                     <Button Command="{Binding ToggleEmergencyAiCommand}"
-                            Background="#7F1D1D" Foreground="#FCA5A5" CornerRadius="6" Padding="10,4"
-                            Content="🛑 AI Guard Active" FontSize="11" FontWeight="SemiBold" IsVisible="{Binding !IsAiEmergencyPaused}"/>
+                            Classes="btn-guard-active"
+                            Content="🛑 AI Guard Active" IsVisible="{Binding !IsAiEmergencyPaused}"/>
                     <Button Command="{Binding ToggleEmergencyAiCommand}"
-                            Background="#991B1B" Foreground="#FEF08A" CornerRadius="6" Padding="10,4"
-                            Content="⚠️ AI PAUSED" FontSize="11" FontWeight="Bold" IsVisible="{Binding IsAiEmergencyPaused}"/>
+                            Classes="btn-guard-paused"
+                            Content="⚠️ AI PAUSED" IsVisible="{Binding IsAiEmergencyPaused}"/>
                 </StackPanel>
             </Grid>
         </Border>

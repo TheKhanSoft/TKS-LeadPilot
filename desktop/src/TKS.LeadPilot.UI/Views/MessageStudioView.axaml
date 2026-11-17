@@ -9,9 +9,9 @@
     <Grid RowDefinitions="Auto,*" Margin="24">
         <!-- 1. Top Header -->
         <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
-            <StackPanel Grid.Column="0" Spacing="4">
-                <TextBlock Text="Message Studio &amp; Multi-Channel Outreach" FontSize="22" FontWeight="SemiBold" Foreground="#F8FAFC"/>
-                <TextBlock Text="Compose tailored Email &amp; WhatsApp outreach with dynamic audit tokens, compliance checks, and approval queues." FontSize="13" Foreground="#94A3B8"/>
+            <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,16,0" VerticalAlignment="Center">
+                <TextBlock Text="Message Studio &amp; Multi-Channel Outreach" FontSize="22" FontWeight="SemiBold" Foreground="#F8FAFC" TextTrimming="CharacterEllipsis"/>
+                <TextBlock Text="Compose tailored Email &amp; WhatsApp outreach with dynamic audit tokens, compliance checks, and approval queues." FontSize="13" Foreground="#94A3B8" TextWrapping="Wrap"/>
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
@@ -34,7 +34,7 @@
                             <!-- Select Business -->
                             <StackPanel Grid.Column="0" Margin="0,0,6,0">
                                 <TextBlock Text="Target Business:" FontSize="11" Foreground="#94A3B8" Margin="0,0,0,4"/>
-                                <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding Businesses}" SelectedItem="{Binding SelectedBusiness}" Background="#0B1322" Foreground="#F8FAFC" BorderBrush="#22324A" CornerRadius="7">
+                                <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding Businesses}" SelectedItem="{Binding SelectedBusiness}" IsEnabled="{Binding !IsLoading}" Background="#0B1322" Foreground="#F8FAFC" BorderBrush="#22324A" CornerRadius="7">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="m:Business">
                                             <TextBlock Text="{Binding Name}"/>
@@ -46,7 +46,7 @@
                             <!-- Select Contact -->
                             <StackPanel Grid.Column="1" Margin="6,0,0,0">
                                 <TextBlock Text="Contact Person:" FontSize="11" Foreground="#94A3B8" Margin="0,0,0,4"/>
-                                <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding Contacts}" SelectedItem="{Binding SelectedContact}" Background="#0B1322" Foreground="#F8FAFC" BorderBrush="#22324A" CornerRadius="7">
+                                <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding Contacts}" SelectedItem="{Binding SelectedContact}" IsEnabled="{Binding !IsLoading}" Background="#0B1322" Foreground="#F8FAFC" BorderBrush="#22324A" CornerRadius="7">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="m:BusinessContact">
                                             <TextBlock Text="{Binding FullName}"/>
@@ -62,7 +62,7 @@
                                 <TextBlock Text="Recipient Address / Phone:" FontSize="11" Foreground="#64748B"/>
                                 <TextBlock Text="{Binding RecipientAddress, TargetNullValue='No address specified'}" FontSize="13" Foreground="#38BDF8" FontWeight="SemiBold"/>
                             </StackPanel>
-                            <Button Grid.Column="1" Content="🛑 Suppress (DNC)" Command="{Binding MarkDoNotContactCommand}" Background="#1E293B" Foreground="#F43F5E" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="10,5" FontSize="11" VerticalAlignment="Center"/>
+                            <Button Grid.Column="1" Content="🛑 Suppress (DNC)" Command="{Binding MarkDoNotContactCommand}" Classes="btn-danger-ghost" Padding="10,5" FontSize="11" VerticalAlignment="Center"/>
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -75,7 +75,7 @@
                                 <TextBlock Text="OUTBOX APPROVAL QUEUE" FontSize="11" FontWeight="Bold" Foreground="#64748B" LetterSpacing="0.8"/>
                                 <TextBlock Text="Mandatory queue: Human approval enforced on all dispatches." FontSize="11" Foreground="#94A3B8"/>
                             </StackPanel>
-                            <Button Grid.Column="1" Content="🔄 Refresh" Command="{Binding RefreshQueueCommand}" Background="#1E293B" Foreground="#38BDF8" CornerRadius="6" Padding="8,4" FontSize="11"/>
+                            <Button Grid.Column="1" Content="🔄 Refresh" Command="{Binding RefreshQueueCommand}" Classes="btn-secondary" IsEnabled="{Binding !IsLoading}" Padding="8,4" FontSize="11"/>
                         </Grid>
 
                         <DataGrid Grid.Row="1" ItemsSource="{Binding ApprovalQueue}"
@@ -113,7 +113,7 @@
                             <!-- Template Selector -->
                             <StackPanel Grid.Column="1" Margin="8,0,0,0" Spacing="4">
                                 <TextBlock Text="SELECT TEMPLATE" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
-                                <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding Templates}" SelectedItem="{Binding SelectedTemplate}" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6">
+                                <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding Templates}" SelectedItem="{Binding SelectedTemplate}" IsEnabled="{Binding !IsLoading}" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="m:OutreachTemplate">
                                             <TextBlock Text="{Binding Name}"/>
@@ -162,13 +162,13 @@
                         <!-- Subject Line (Email) -->
                         <StackPanel Spacing="4">
                             <TextBlock Text="SUBJECT LINE:" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
-                            <TextBox Text="{Binding Subject}" PlaceholderText="Enter email subject template..." Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6" Padding="10,6"/>
+                            <TextBox Text="{Binding Subject}" PlaceholderText="Enter email subject template..." IsEnabled="{Binding !IsLoading}" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6" Padding="10,6"/>
                         </StackPanel>
 
                         <!-- Body Template Editor -->
                         <StackPanel Spacing="4">
                             <TextBlock Text="MESSAGE BODY TEMPLATE:" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
-                            <TextBox Text="{Binding BodyTemplate}" AcceptsReturn="True" Height="140" TextWrapping="Wrap" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6" Padding="10"/>
+                            <TextBox Text="{Binding BodyTemplate}" AcceptsReturn="True" Height="140" TextWrapping="Wrap" IsEnabled="{Binding !IsLoading}" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6" Padding="10"/>
                         </StackPanel>
 
                         <!-- Live Rendered Preview -->
@@ -184,14 +184,14 @@
 
                         <!-- Actions Bar -->
                         <Grid ColumnDefinitions="Auto,*">
-                            <Button Grid.Column="0" Content="+ Add to Approval Queue" Command="{Binding CreateDraftCommand}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="16,8" FontWeight="Bold"/>
+                            <Button Grid.Column="0" Content="+ Add to Approval Queue" Command="{Binding CreateDraftCommand}" IsEnabled="{Binding !IsLoading}" Classes="btn-primary" Padding="16,8"/>
 
                             <!-- Quick Dispatch if Selected in Queue -->
                             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                                <Button Content="✓ Approve" Command="{Binding ApproveMessageCommand}" CommandParameter="{Binding SelectedQueueMessage}" IsEnabled="{Binding SelectedQueueMessage, Converter={x:Static ObjectConverters.IsNotNull}}" Background="#059669" Foreground="#FFFFFF" CornerRadius="6" Padding="12,8" FontWeight="SemiBold"/>
-                                <Button Content="✕ Reject" Command="{Binding RejectMessageCommand}" CommandParameter="{Binding SelectedQueueMessage}" IsEnabled="{Binding SelectedQueueMessage, Converter={x:Static ObjectConverters.IsNotNull}}" Background="#991B1B" Foreground="#FFFFFF" CornerRadius="6" Padding="12,8"/>
-                                <Button Content="📧 Open in Email Client" Command="{Binding SendViaEmailCommand}" CommandParameter="{Binding SelectedQueueMessage}" IsEnabled="{Binding SelectedQueueMessage, Converter={x:Static ObjectConverters.IsNotNull}}" Background="#0F766E" Foreground="#FFFFFF" CornerRadius="6" Padding="14,8" FontWeight="Bold"/>
-                                <Button Content="💬 Open in WhatsApp" Command="{Binding SendViaWhatsAppCommand}" CommandParameter="{Binding SelectedQueueMessage}" IsEnabled="{Binding SelectedQueueMessage, Converter={x:Static ObjectConverters.IsNotNull}}" Background="#15803D" Foreground="#FFFFFF" CornerRadius="6" Padding="14,8" FontWeight="Bold"/>
+                                <Button Content="✓ Approve" Command="{Binding ApproveMessageCommand}" CommandParameter="{Binding SelectedQueueMessage}" IsEnabled="{Binding SelectedQueueMessage, Converter={x:Static ObjectConverters.IsNotNull}}" Classes="btn-success" Padding="12,8"/>
+                                <Button Content="✕ Reject" Command="{Binding RejectMessageCommand}" CommandParameter="{Binding SelectedQueueMessage}" IsEnabled="{Binding SelectedQueueMessage, Converter={x:Static ObjectConverters.IsNotNull}}" Classes="btn-danger" Padding="12,8"/>
+                                <Button Content="📧 Open in Email Client" Command="{Binding SendViaEmailCommand}" CommandParameter="{Binding SelectedQueueMessage}" IsEnabled="{Binding SelectedQueueMessage, Converter={x:Static ObjectConverters.IsNotNull}}" Classes="btn-teal" Padding="14,8"/>
+                                <Button Content="💬 Open in WhatsApp" Command="{Binding SendViaWhatsAppCommand}" CommandParameter="{Binding SelectedQueueMessage}" IsEnabled="{Binding SelectedQueueMessage, Converter={x:Static ObjectConverters.IsNotNull}}" Classes="btn-success" Padding="14,8"/>
                             </StackPanel>
                         </Grid>
                     </StackPanel>

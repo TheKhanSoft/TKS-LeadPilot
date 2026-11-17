@@ -305,6 +305,16 @@ public class DatabaseInitializer : IDatabaseInitializer
                     StartingPricePkr = 150000,
                     StartingPriceUsd = 700,
                     PitchTemplate = "We design custom workflow and customer management systems tailored to streamline operations for {{category}} organizations."
+                },
+                new()
+                {
+                    Id = "svc-gmb-local-seo",
+                    Name = "Google Business Profile (GMB) & Local Maps Booster",
+                    Category = "Local SEO & Reputation",
+                    Description = "Google Business Profile verification, local Maps SEO ranking optimization, review acceleration, and local search dominance.",
+                    StartingPricePkr = 35000,
+                    StartingPriceUsd = 150,
+                    PitchTemplate = "We noticed {{business_name}} does not have a verified Google Business Profile on Google Maps. Potential clients searching for {{category}} in {{city}} are discovering competitors instead. We claim, verify, and optimize your Google Maps presence."
                 }
             };
 

@@ -10,9 +10,9 @@
         <Grid RowDefinitions="Auto,Auto,*" Margin="24">
             <!-- 1. Header -->
             <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,14">
-                <StackPanel Grid.Column="0" Spacing="4">
-                    <TextBlock Text="CRM Sales Pipeline &amp; Lead Scoring" FontSize="22" FontWeight="SemiBold" Foreground="#F8FAFC"/>
-                    <TextBlock Text="Deterministic lead scoring, transparent component breakdown, TKS service matching, and sales stage workflow." FontSize="13" Foreground="#94A3B8"/>
+                <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,16,0" VerticalAlignment="Center">
+                    <TextBlock Text="CRM Sales Pipeline &amp; Lead Scoring" FontSize="22" FontWeight="SemiBold" Foreground="#F8FAFC" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Text="Deterministic lead scoring, transparent component breakdown, TKS service matching, and sales stage workflow." FontSize="13" Foreground="#94A3B8" TextWrapping="Wrap"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
@@ -36,8 +36,9 @@
                                 <Button Content="{Binding Name}"
                                         Command="{Binding ((vm:PipelineViewModel)DataContext).MoveToStageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         CommandParameter="{Binding Id}"
-                                        Background="#131D31" Foreground="#F8FAFC" BorderBrush="#22324A" BorderThickness="1"
-                                        CornerRadius="7" Padding="14,7" FontSize="12" FontWeight="Medium"/>
+                                        Classes="btn-secondary"
+                                        IsEnabled="{Binding ((vm:PipelineViewModel)DataContext).IsLoading, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static BoolConverters.Not}}"
+                                        Padding="14,7" FontSize="12"/>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -52,7 +53,7 @@
                         <!-- Stage Selector Filter Dropdown -->
                         <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="14,12,14,10">
                             <TextBlock Grid.Column="0" Text="Filter by Stage:" FontSize="12" Foreground="#64748B" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                            <ComboBox Grid.Column="1" HorizontalAlignment="Stretch" ItemsSource="{Binding Stages}" SelectedItem="{Binding SelectedStage}" Background="#0B1322" Foreground="#F8FAFC" BorderBrush="#22324A" CornerRadius="7">
+                            <ComboBox Grid.Column="1" HorizontalAlignment="Stretch" ItemsSource="{Binding Stages}" SelectedItem="{Binding SelectedStage}" IsEnabled="{Binding !IsLoading}" Background="#0B1322" Foreground="#F8FAFC" BorderBrush="#22324A" CornerRadius="7">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate x:DataType="m:PipelineStage">
                                         <TextBlock Text="{Binding Name}"/>
@@ -101,12 +102,12 @@
                             <StackPanel Spacing="6">
                                 <TextBlock Text="STAGE TRANSITIONS" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
                                 <WrapPanel>
-                                    <Button Content="→ Qualified" Command="{Binding MoveToStageCommand}" CommandParameter="stage-qualified" Background="#1E293B" Foreground="#38BDF8" CornerRadius="4" Padding="10,4" Margin="0,0,6,6"/>
-                                    <Button Content="→ Researching" Command="{Binding MoveToStageCommand}" CommandParameter="stage-researching" Background="#1E293B" Foreground="#60A5FA" CornerRadius="4" Padding="10,4" Margin="0,0,6,6"/>
-                                    <Button Content="→ Proposal Sent" Command="{Binding MoveToStageCommand}" CommandParameter="stage-proposal-sent" Background="#1E293B" Foreground="#EC4899" CornerRadius="4" Padding="10,4" Margin="0,0,6,6"/>
-                                    <Button Content="→ Negotiation" Command="{Binding MoveToStageCommand}" CommandParameter="stage-negotiation" Background="#1E293B" Foreground="#14B8A6" CornerRadius="4" Padding="10,4" Margin="0,0,6,6"/>
-                                    <Button Content="🏆 Won" Command="{Binding MoveToStageCommand}" CommandParameter="stage-won" Background="#064E3B" Foreground="#34D399" CornerRadius="4" Padding="10,4" Margin="0,0,6,6"/>
-                                    <Button Content="✕ Lost" Command="{Binding MoveToStageCommand}" CommandParameter="stage-lost" Background="#4C0519" Foreground="#FB7185" CornerRadius="4" Padding="10,4" Margin="0,0,6,6"/>
+                                    <Button Content="→ Qualified" Command="{Binding MoveToStageCommand}" CommandParameter="stage-qualified" Classes="btn-secondary" Margin="0,0,6,6"/>
+                                    <Button Content="→ Researching" Command="{Binding MoveToStageCommand}" CommandParameter="stage-researching" Classes="btn-secondary" Margin="0,0,6,6"/>
+                                    <Button Content="→ Proposal Sent" Command="{Binding MoveToStageCommand}" CommandParameter="stage-proposal-sent" Classes="btn-secondary" Margin="0,0,6,6"/>
+                                    <Button Content="→ Negotiation" Command="{Binding MoveToStageCommand}" CommandParameter="stage-negotiation" Classes="btn-secondary" Margin="0,0,6,6"/>
+                                    <Button Content="🏆 Won" Command="{Binding MoveToStageCommand}" CommandParameter="stage-won" Classes="btn-success" Margin="0,0,6,6"/>
+                                    <Button Content="✕ Lost" Command="{Binding MoveToStageCommand}" CommandParameter="stage-lost" Classes="btn-danger" Margin="0,0,6,6"/>
                                 </WrapPanel>
                             </StackPanel>
 
@@ -120,8 +121,8 @@
                                             <TextBlock Text="TRANSPARENT LEAD SCORING BREAKDOWN" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
                                             <TextBlock Text="Every score is 100% reproducible and explainable based on audited signals." FontSize="11" Foreground="#94A3B8"/>
                                         </StackPanel>
-                                        <Button Grid.Column="1" Content="🔄 Recalculate" Command="{Binding RecalculateScoreCommand}" Background="#1E293B" Foreground="#38BDF8" CornerRadius="4" Padding="8,4" FontSize="11" Margin="0,0,6,0"/>
-                                        <Button Grid.Column="2" Content="✏️ Override Score" Command="{Binding OpenOverrideModalCommand}" Background="#1E293B" Foreground="#F59E0B" CornerRadius="4" Padding="8,4" FontSize="11"/>
+                                        <Button Grid.Column="1" Content="🔄 Recalculate" Command="{Binding RecalculateScoreCommand}" Classes="btn-secondary" Padding="8,4" FontSize="11" Margin="0,0,6,0"/>
+                                        <Button Grid.Column="2" Content="✏️ Override Score" Command="{Binding OpenOverrideModalCommand}" Classes="btn-accent" Padding="8,4" FontSize="11"/>
                                     </Grid>
 
                                     <!-- Score Components List -->
@@ -182,7 +183,7 @@
                                     <!-- Add Task Input -->
                                     <Grid ColumnDefinitions="*,Auto">
                                         <TextBox Grid.Column="0" Text="{Binding NewTaskTitle}" PlaceholderText="Enter follow-up task..." Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6" Padding="8,6" Margin="0,0,8,0"/>
-                                        <Button Grid.Column="1" Content="+ Add Task" Command="{Binding AddTaskCommand}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="12,6" FontWeight="SemiBold"/>
+                                        <Button Grid.Column="1" Content="+ Add Task" Command="{Binding AddTaskCommand}" Classes="btn-primary" Padding="12,6"/>
                                     </Grid>
 
                                     <!-- Task Items -->
@@ -202,7 +203,7 @@
                                                         <Button Grid.Column="2" Content="✕" 
                                                                 Command="{Binding ((vm:PipelineViewModel)DataContext).DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                                 CommandParameter="{Binding Id}"
-                                                                Background="Transparent" Foreground="#F43F5E" Padding="6,2"/>
+                                                                Classes="btn-danger-ghost" Padding="6,2"/>
                                                     </Grid>
                                                 </Border>
                                             </DataTemplate>
@@ -221,7 +222,7 @@
                                     <!-- Add Note Input -->
                                     <Grid ColumnDefinitions="*,Auto">
                                         <TextBox Grid.Column="0" Text="{Binding NewNoteContent}" PlaceholderText="Log call notes, meeting feedback, or research findings..." Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6" Padding="8,6" Margin="0,0,8,0"/>
-                                        <Button Grid.Column="1" Content="+ Log Note" Command="{Binding AddNoteCommand}" Background="#1E293B" Foreground="#38BDF8" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="12,6"/>
+                                        <Button Grid.Column="1" Content="+ Log Note" Command="{Binding AddNoteCommand}" Classes="btn-secondary" Padding="12,6"/>
                                     </Grid>
 
                                     <!-- Note Items -->
@@ -237,7 +238,7 @@
                                                         <Button Grid.Column="1" Content="✕" 
                                                                 Command="{Binding ((vm:PipelineViewModel)DataContext).DeleteNoteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                                 CommandParameter="{Binding Id}"
-                                                                Background="Transparent" Foreground="#F43F5E" Padding="6,2" VerticalAlignment="Top"/>
+                                                                Classes="btn-danger-ghost" Padding="6,2" VerticalAlignment="Top"/>
                                                     </Grid>
                                                 </Border>
                                             </DataTemplate>
@@ -271,8 +272,8 @@
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
-                        <Button Content="Cancel" Command="{Binding CloseOverrideModalCommand}" Background="#334155" Foreground="#F8FAFC" CornerRadius="6" Padding="14,8"/>
-                        <Button Content="Save Override" Command="{Binding ApplyManualOverrideCommand}" Background="#F59E0B" Foreground="#0F172A" CornerRadius="6" Padding="16,8" FontWeight="Bold"/>
+                        <Button Content="Cancel" Command="{Binding CloseOverrideModalCommand}" Classes="btn-secondary"/>
+                        <Button Content="Save Override" Command="{Binding ApplyManualOverrideCommand}" Classes="btn-accent" Padding="16,8"/>
                     </StackPanel>
                 </StackPanel>
             </Border>

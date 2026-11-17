@@ -98,6 +98,7 @@
                         <Button Content="All Leads" Command="{Binding ClearQuickFilterCommand}" Classes="pill-filter" IsEnabled="{Binding !IsLoading}" Margin="0,0,5,4"/>
                         <Button Content="🔥 Hot Leads (70+)" Command="{Binding ApplyQuickFilterCommand}" CommandParameter="🔥 Hot Leads" Classes="pill-filter" IsEnabled="{Binding !IsLoading}" Margin="0,0,5,4"/>
                         <Button Content="❌ No Website" Command="{Binding ApplyQuickFilterCommand}" CommandParameter="❌ No Website" Classes="pill-filter" IsEnabled="{Binding !IsLoading}" Margin="0,0,5,4"/>
+                        <Button Content="📍 Missing GMB" Command="{Binding ApplyQuickFilterCommand}" CommandParameter="📍 Missing GMB" Classes="pill-filter" IsEnabled="{Binding !IsLoading}" Margin="0,0,5,4"/>
                         <Button Content="✓ Verified Only" Command="{Binding ApplyQuickFilterCommand}" CommandParameter="✓ Verified" Classes="pill-filter" IsEnabled="{Binding !IsLoading}" Margin="0,0,5,4"/>
                         <Button Content="⭐ Top Rated (4.5+)" Command="{Binding ApplyQuickFilterCommand}" CommandParameter="⭐ Top Rated" Classes="pill-filter" IsEnabled="{Binding !IsLoading}" Margin="0,0,5,4"/>
                         <Button Content="🔬 Needs Audit" Command="{Binding ApplyQuickFilterCommand}" CommandParameter="Needs Audit" Classes="pill-filter" IsEnabled="{Binding !IsLoading}" Margin="0,0,5,4"/>

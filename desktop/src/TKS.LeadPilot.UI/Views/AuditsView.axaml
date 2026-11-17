@@ -164,11 +164,11 @@
                         <Grid ColumnDefinitions="2*,Auto,Auto">
                             <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,12,0">
                                 <TextBlock Text="Synthesis Tone &amp; Perspective:" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
-                                <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding AvailableTones}" SelectedItem="{Binding SelectedTone}" Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6"/>
+                                <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding AvailableTones}" SelectedItem="{Binding SelectedTone}" IsEnabled="{Binding !IsGeneratingProposal}" Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6"/>
                             </StackPanel>
 
-                            <Button Grid.Column="1" Content="✨ Synthesize with AI" Command="{Binding GenerateAiProposalCommand}" IsEnabled="{Binding !IsGeneratingProposal}" Background="#7C3AED" Foreground="#FFFFFF" CornerRadius="6" Padding="16,8" FontWeight="SemiBold" VerticalAlignment="Bottom" Margin="0,0,8,0"/>
-                            <Button Grid.Column="2" Content="📋 Offline Template" Command="{Binding GenerateOfflineProposalCommand}" Background="#1E293B" Foreground="#38BDF8" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="14,8" VerticalAlignment="Bottom"/>
+                            <Button Grid.Column="1" Content="✨ Synthesize with AI" Command="{Binding GenerateAiProposalCommand}" IsEnabled="{Binding !IsGeneratingProposal}" Classes="btn-purple" Padding="16,8" VerticalAlignment="Bottom" Margin="0,0,8,0"/>
+                            <Button Grid.Column="2" Content="📋 Offline Template" Command="{Binding GenerateOfflineProposalCommand}" IsEnabled="{Binding !IsGeneratingProposal}" Classes="btn-secondary" Padding="14,8" VerticalAlignment="Bottom"/>
                         </Grid>
                     </Border>
 
@@ -196,8 +196,8 @@
 
                     <!-- Footer Actions -->
                     <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-                        <Button Content="Close" Command="{Binding CloseProposalModalCommand}" Background="#334155" Foreground="#F8FAFC" CornerRadius="6" Padding="14,8"/>
-                        <Button Content="💾 Export Proposal (.md)" Command="{Binding ExportProposalCommand}" Background="#10B981" Foreground="#0F172A" CornerRadius="6" Padding="16,8" FontWeight="Bold"/>
+                        <Button Content="Close" Command="{Binding CloseProposalModalCommand}" Classes="btn-secondary" IsEnabled="{Binding !IsGeneratingProposal}"/>
+                        <Button Content="💾 Export Proposal (.md)" Command="{Binding ExportProposalCommand}" Classes="btn-success" IsEnabled="{Binding !IsGeneratingProposal}" Padding="16,8"/>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -231,7 +231,7 @@
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
                             </StackPanel>
-                            <Button Grid.Column="1" Content="🔄 Recalculate Delta" Command="{Binding ExecuteAuditComparisonCommand}" Background="#1E293B" Foreground="#38BDF8" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="14,8" VerticalAlignment="Bottom" Margin="10,0,0,0"/>
+                            <Button Grid.Column="1" Content="🔄 Recalculate Delta" Command="{Binding ExecuteAuditComparisonCommand}" Classes="btn-secondary" Padding="14,8" VerticalAlignment="Bottom" Margin="10,0,0,0"/>
                         </Grid>
                     </Border>
 
@@ -251,7 +251,7 @@
 
                     <!-- Footer Actions -->
                     <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-                        <Button Content="Close Comparison" Command="{Binding CloseComparisonModalCommand}" Background="#334155" Foreground="#F8FAFC" CornerRadius="6" Padding="16,8" FontWeight="SemiBold"/>
+                        <Button Content="Close Comparison" Command="{Binding CloseComparisonModalCommand}" Classes="btn-secondary" Padding="16,8"/>
                     </StackPanel>
                 </Grid>
             </Border>
