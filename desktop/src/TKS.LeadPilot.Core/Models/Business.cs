@@ -39,6 +39,14 @@ public class Business
     // Provenance & Source
     public string? SourceProvider { get; set; }
     public string? SourceReferenceId { get; set; }
+
+    // Google Places Enrichment (Stage 7)
+    public string? GooglePlaceId { get; set; }
+    public double? GoogleRating { get; set; }
+    public int? GoogleReviewCount { get; set; }
+    public string? BusinessHours { get; set; }
+    public bool IsGoogleVerified { get; set; } = false;
+    public DateTime? LastEnrichedAtUtc { get; set; }
     
     // Sync & Soft Delete
     public bool IsDeleted { get; set; } = false;

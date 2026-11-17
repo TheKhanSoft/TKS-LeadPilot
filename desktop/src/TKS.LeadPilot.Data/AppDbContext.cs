@@ -37,6 +37,7 @@ public class AppDbContext : DbContext
             entity.HasIndex(e => new { e.City, e.Category });
             entity.HasIndex(e => e.LeadScore);
             entity.HasIndex(e => e.PipelineStageId);
+            entity.HasIndex(e => e.GooglePlaceId);
 
             entity.HasOne(e => e.PipelineStage)
                 .WithMany()

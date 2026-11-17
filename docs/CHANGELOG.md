@@ -6,6 +6,24 @@ All notable changes to the TKS LeadPilot project will be documented in this file
 
 ## [Unreleased]
 
+### [0.7.0] — Stage 7: Paid / Official Places Enrichment (Google Places API - Cost-Guarded) — 2026-11-17
+#### Added
+- Google Places Enrichment Domain Models (`GooglePlacesConfig`, `GooglePlacesEnrichmentResult`).
+- Google Places Enrichment Service (`IGooglePlacesEnrichmentService`, `GooglePlacesEnrichmentService`):
+  - Hard daily request ceiling (default 50 requests/day, user-configurable up to 500) resetting at midnight UTC to prevent unexpected billing.
+  - Mandatory disabled-by-default switch requiring explicit user activation before commercial queries are issued.
+  - Windows DPAPI encrypted credential vault storage for the Google Places API key (`GOOGLE_PLACES_API_KEY`).
+  - Strict 30-day SQLite caching check preventing duplicate API queries and accidental spend for recently enriched records ($0 cost on cache hits).
+  - Robust Google Places Text Search JSON response parser extracting `place_id`, `name`, `formatted_address`, `rating`, `user_ratings_total`, geographic coordinates, and weekly operating hours.
+  - Automated business record enrichment, address backfilling, and tag attribution (`Google Verified`, `Rated {X}★`).
+- Desktop UI Settings & Cost Controls:
+  - Added "Google Places API (Cost-Guarded Enrichment)" section in `SettingsView.axaml` and `SettingsViewModel.cs` with enable/disable toggle, DPAPI-secured API key input, and daily request limit slider.
+- Business Database View UI Integration:
+  - Added "✨ Enrich with Google Places" action button in `BusinessesView.axaml` Split Inspector.
+  - Built Cost Guard confirmation modal dialog displaying live daily quota consumption and 30-day cache awareness before executing lookups.
+  - Added Google Places verification scorecard in Inspector pane showing verified badge, star rating, review count, and business hours.
+- 7 new unit tests in `GooglePlacesEnrichmentServiceTests.cs` validating disabled guards, missing API key blocks, 30-day cache hits, daily ceiling limits, JSON parsing, and business record persistence (total 67 passing tests, 0 failures).
+
 ### [0.6.0] — Stage 6: Website Intelligence & Local Lightweight Auditor — 2026-11-17
 #### Added
 - Pre-flight SSRF Guard (`ISsrfValidator`, `SsrfValidator`) strictly validating target URLs, disallowing non-HTTP schemes, internal/loopback IPs, and cloud metadata addresses (169.254.169.254).

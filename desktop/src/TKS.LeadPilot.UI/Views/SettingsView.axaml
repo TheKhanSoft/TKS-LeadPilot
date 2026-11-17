@@ -34,6 +34,39 @@
                 </StackPanel>
             </Border>
 
+            <!-- Google Places API (Paid / Commercial Enrichment) -->
+            <Border Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="20">
+                <StackPanel Spacing="16">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Google Places API (Paid Commercial Enrichment)" FontSize="16" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                        <TextBlock Text="Optional commercial enrichment for ratings, reviews, opening hours, and verified addresses with hard cost controls." FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                    </StackPanel>
+
+                    <!-- Enable / Opt-in Toggle -->
+                    <CheckBox IsChecked="{Binding IsGooglePlacesEnabled}" Content="Enable Google Places Commercial Enrichment" Foreground="#F8FAFC" FontWeight="SemiBold"/>
+
+                    <!-- API Key Input -->
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Google Places API Key" FontSize="12" FontWeight="SemiBold" Foreground="#64748B"/>
+                        <TextBox Text="{Binding GooglePlacesApiKey}" PlaceholderText="AIzaSy..." Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6" Padding="10"/>
+                    </StackPanel>
+
+                    <!-- Daily Ceiling Cost Control -->
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2">
+                            <TextBlock Text="Daily Request Ceiling (Hard Cost Limit)" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                            <TextBlock Text="Enrichment calls will be blocked once this daily count is reached." FontSize="12" Foreground="#64748B"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                            <TextBox Width="80" Text="{Binding GooglePlacesDailyCeiling}" Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6" Padding="6" HorizontalContentAlignment="Center"/>
+                            <TextBlock Text="{Binding GooglePlacesUsedToday, StringFormat='Used Today: {0}'}" FontSize="12" Foreground="#38BDF8" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <Button Content="💾 Save Google Places Settings" Command="{Binding SaveGooglePlacesSettingsCommand}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="16,8"/>
+                </StackPanel>
+            </Border>
+
             <!-- AI Rate Limiter & Zero Billing -->
             <Border Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="20">
                 <StackPanel Spacing="16">

@@ -91,3 +91,11 @@ public interface IAuditRepository
     Task<List<WebsiteAudit>> GetRecentAuditsAsync(int take = 50, CancellationToken ct = default);
     Task<int> GetTotalAuditsCountAsync(CancellationToken ct = default);
 }
+
+public interface IGooglePlacesEnrichmentService
+{
+    Task<GooglePlacesConfig> GetConfigAsync(CancellationToken ct = default);
+    Task SaveConfigAsync(GooglePlacesConfig config, string? apiKey = null, CancellationToken ct = default);
+    Task<GooglePlacesEnrichmentResult> EnrichBusinessAsync(Business business, bool forceRefresh = false, CancellationToken ct = default);
+    Task<int> GetRemainingRequestsTodayAsync(CancellationToken ct = default);
+}

@@ -19,6 +19,7 @@ public partial class BusinessesViewModel : ViewModelBase
     private readonly ICsvImporterService _csvImporterService;
     private readonly IDeduplicationService _deduplicationService;
     private readonly IDiscoveryService _discoveryService;
+    private readonly IGooglePlacesEnrichmentService _placesService;
 
     // Collections
     [ObservableProperty]
@@ -79,6 +80,15 @@ public partial class BusinessesViewModel : ViewModelBase
 
     [ObservableProperty]
     private bool _isDiscoveryModalOpen = false;
+
+    [ObservableProperty]
+    private bool _isEnrichConfirmModalOpen = false;
+
+    [ObservableProperty]
+    private string _enrichConfirmMessage = string.Empty;
+
+    [ObservableProperty]
+    private bool _isEnrichingWithGoogle = false;
 
     // Discovery State (Stage 5)
     [ObservableProperty]
@@ -169,13 +179,15 @@ public partial class BusinessesViewModel : ViewModelBase
         IPipelineStageRepository pipelineStageRepository,
         ICsvImporterService csvImporterService,
         IDeduplicationService deduplicationService,
-        IDiscoveryService discoveryService)
+        IDiscoveryService discoveryService,
+        IGooglePlacesEnrichmentService placesService)
     {
         _businessRepository = businessRepository;
         _pipelineStageRepository = pipelineStageRepository;
         _csvImporterService = csvImporterService;
         _deduplicationService = deduplicationService;
         _discoveryService = discoveryService;
+        _placesService = placesService;
 
         _ = InitializeAsync();
     }
@@ -611,6 +623,91 @@ public partial class BusinessesViewModel : ViewModelBase
         finally
         {
             IsDiscovering = false;
+        }
+    }
+
+    // --- Google Places Enrichment Commands (Stage 7) ---
+    [RelayCommand]
+    public async Task OpenEnrichConfirm()
+    {
+        if (SelectedBusiness == null) return;
+
+        var config = await _placesService.GetConfigAsync();
+        if (!config.IsEnabled)
+        {
+            EnrichConfirmMessage = "Google Places enrichment is currently disabled.\n\nPlease enable it in Settings & Vault and enter an API key to perform commercial lookups.";
+        }
+        else if (SelectedBusiness.IsGoogleVerified && SelectedBusiness.LastEnrichedAtUtc.HasValue && (DateTime.UtcNow - SelectedBusiness.LastEnrichedAtUtc.Value).TotalDays < 30)
+        {
+            EnrichConfirmMessage = $"'{SelectedBusiness.Name}' was already enriched on Google Places within the last 30 days.\n\n" +
+                                   $"Current Rating: ★ {SelectedBusiness.GoogleRating:F1} ({SelectedBusiness.GoogleReviewCount} reviews)\n\n" +
+                                   "Running enrichment now will retrieve cached data at $0 cost without using any API quota.";
+        }
+        else
+        {
+            var remaining = Math.Max(0, config.DailyRequestCeiling - config.DailyRequestsUsed);
+            EnrichConfirmMessage = $"Enrich '{SelectedBusiness.Name}' with verified Google Places data (Rating, Reviews, Address, Hours).\n\n" +
+                                   $"• Daily Ceiling: {config.DailyRequestCeiling} requests/day\n" +
+                                   $"• Used Today: {config.DailyRequestsUsed}\n" +
+                                   $"• Remaining: {remaining}\n\n" +
+                                   "Strict Cost Guard is active to prevent unexpected billing. Do you wish to continue?";
+        }
+
+        IsEnrichConfirmModalOpen = true;
+    }
+
+    [RelayCommand]
+    public void CloseEnrichConfirm()
+    {
+        IsEnrichConfirmModalOpen = false;
+    }
+
+    [RelayCommand]
+    public async Task ExecuteGooglePlacesEnrichment()
+    {
+        if (SelectedBusiness == null) return;
+
+        try
+        {
+            IsEnrichingWithGoogle = true;
+            var result = await _placesService.EnrichBusinessAsync(SelectedBusiness, forceRefresh: false);
+
+            if (result.IsSuccess)
+            {
+                if (result.IsCached)
+                {
+                    StatusMessage = $"Enrichment retrieved from cache: {result.BusinessName} (★ {result.Rating:F1}, {result.UserRatingsTotal} reviews). Quota untouched.";
+                }
+                else
+                {
+                    StatusMessage = $"Enriched '{result.BusinessName}' via Google Places (★ {result.Rating:F1}, {result.UserRatingsTotal} reviews). Daily quota: {result.RequestsUsedToday}/{result.DailyLimit}.";
+                }
+
+                // Refresh business from repository to update all UI properties
+                var updated = await _businessRepository.GetByIdAsync(SelectedBusiness.Id);
+                if (updated != null)
+                {
+                    var index = Businesses.IndexOf(SelectedBusiness);
+                    if (index >= 0)
+                    {
+                        Businesses[index] = updated;
+                        SelectedBusiness = updated;
+                    }
+                }
+                CloseEnrichConfirm();
+            }
+            else
+            {
+                EnrichConfirmMessage = $"Enrichment could not complete:\n\n{result.ErrorMessage}";
+            }
+        }
+        catch (Exception ex)
+        {
+            EnrichConfirmMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            IsEnrichingWithGoogle = false;
         }
     }
 }

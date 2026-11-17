@@ -73,13 +73,14 @@ public partial class App : Application
         services.AddScoped<IAuditRepository, AuditRepository>();
         services.AddScoped<IDatabaseInitializer, DatabaseInitializer>();
 
-        // Core Business Services (Stage 4, 5, 6)
+        // Core Business Services (Stage 4, 5, 6, 7)
         services.AddSingleton(new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(60) });
         services.AddScoped<IDeduplicationService, DeduplicationService>();
         services.AddScoped<ICsvImporterService, CsvImporterService>();
         services.AddScoped<IDiscoveryService, OverpassDiscoveryService>();
         services.AddScoped<ISsrfValidator, SsrfValidator>();
         services.AddScoped<IWebsiteAuditEngine, WebsiteAuditEngine>();
+        services.AddScoped<IGooglePlacesEnrichmentService, GooglePlacesEnrichmentService>();
 
         // Secret Vault
         services.AddSingleton<ISecretVault, DpapiSecretVault>();
