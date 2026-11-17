@@ -10,16 +10,16 @@
         <Grid RowDefinitions="Auto,Auto,Auto,Auto,*" Margin="24">
             <!-- 1. Top Header & Toolbar -->
             <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,14">
-                <StackPanel Grid.Column="0" Spacing="4">
-                    <TextBlock Text="Website Intelligence &amp; Technical Auditor" FontSize="22" FontWeight="SemiBold" Foreground="#F8FAFC"/>
-                    <TextBlock Text="Diagnose SSL encryption, security headers, Core Web Vitals, CMS, and synthesize AI client proposals." FontSize="13" Foreground="#94A3B8"/>
+                <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,16,0" VerticalAlignment="Center">
+                    <TextBlock Text="Website Intelligence &amp; Technical Auditor" FontSize="22" FontWeight="SemiBold" Foreground="#F8FAFC" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Text="Diagnose SSL encryption, security headers, Core Web Vitals, CMS, and synthesize AI client proposals." FontSize="13" Foreground="#94A3B8" TextWrapping="Wrap"/>
                 </StackPanel>
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                    <Button Content="✨ AI Proposal Studio" Command="{Binding OpenProposalModalCommand}" IsEnabled="{Binding CurrentAudit, Converter={x:Static ObjectConverters.IsNotNull}}" Background="#7C3AED" Foreground="#FFFFFF" CornerRadius="6" Padding="14,8" FontWeight="SemiBold"/>
-                    <Button Content="⚖️ Compare Audits" Command="{Binding OpenComparisonModalCommand}" IsEnabled="{Binding CurrentAudit, Converter={x:Static ObjectConverters.IsNotNull}}" Background="#1E293B" Foreground="#10B981" BorderBrush="#26334A" BorderThickness="1" CornerRadius="6" Padding="14,8"/>
-                    <Button Content="📄 Export Markdown" Command="{Binding ExportReportCommand}" IsEnabled="{Binding CurrentAudit, Converter={x:Static ObjectConverters.IsNotNull}}" Background="#1E293B" Foreground="#38BDF8" BorderBrush="#26334A" BorderThickness="1" CornerRadius="6" Padding="14,8"/>
-                </StackPanel>
+                <WrapPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button Content="✨ AI Proposal Studio" Command="{Binding OpenProposalModalCommand}" IsEnabled="{Binding CurrentAudit, Converter={x:Static ObjectConverters.IsNotNull}}" Classes="btn-purple" Margin="0,0,8,0"/>
+                    <Button Content="⚖️ Compare Audits" Command="{Binding OpenComparisonModalCommand}" IsEnabled="{Binding CurrentAudit, Converter={x:Static ObjectConverters.IsNotNull}}" Classes="btn-secondary" Margin="0,0,8,0"/>
+                    <Button Content="📄 Export Markdown" Command="{Binding ExportReportCommand}" IsEnabled="{Binding CurrentAudit, Converter={x:Static ObjectConverters.IsNotNull}}" Classes="btn-secondary"/>
+                </WrapPanel>
             </Grid>
 
             <!-- 2. Target Control Bar -->
@@ -28,7 +28,7 @@
                     <!-- Select Lead Dropdown -->
                     <StackPanel Grid.Column="0" Margin="0,0,10,0">
                         <TextBlock Text="Target Business Lead:" FontSize="11" Foreground="#64748B" Margin="0,0,0,4"/>
-                        <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding BusinessesWithWebsites}" SelectedItem="{Binding SelectedBusiness}" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6">
+                        <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding BusinessesWithWebsites}" SelectedItem="{Binding SelectedBusiness}" IsEnabled="{Binding !IsAuditing}" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate x:DataType="m:Business">
                                     <TextBlock Text="{Binding Name}"/>
@@ -40,11 +40,11 @@
                     <!-- Target URL Input -->
                     <StackPanel Grid.Column="1" Margin="0,0,10,0">
                         <TextBlock Text="Website URL to Audit:" FontSize="11" Foreground="#64748B" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding TargetUrl}" PlaceholderText="https://example.com" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6" Padding="10,6" VerticalContentAlignment="Center"/>
+                        <TextBox Text="{Binding TargetUrl}" PlaceholderText="https://example.com" IsEnabled="{Binding !IsAuditing}" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6" Padding="10,6" VerticalContentAlignment="Center"/>
                     </StackPanel>
 
                     <!-- Run Audit Button -->
-                    <Button Grid.Column="2" Content="🔬 Run Audit" Command="{Binding RunAuditCommand}" IsEnabled="{Binding !IsAuditing}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="20,8" FontWeight="SemiBold" VerticalAlignment="Bottom"/>
+                    <Button Grid.Column="2" Content="🔬 Run Audit" Command="{Binding RunAuditCommand}" IsEnabled="{Binding !IsAuditing}" Classes="btn-primary" Padding="20,8" VerticalAlignment="Bottom"/>
 
                     <!-- Status Feedback -->
                     <TextBlock Grid.Row="1" Grid.ColumnSpan="3" Text="{Binding StatusMessage}" FontSize="12" Foreground="#38BDF8" Margin="0,8,0,0"/>

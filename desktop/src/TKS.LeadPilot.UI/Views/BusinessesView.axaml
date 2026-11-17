@@ -11,22 +11,24 @@
             
             <!-- 1. Top Header & Primary Actions Toolbar -->
             <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,14">
-                <StackPanel Grid.Column="0" Spacing="4">
-                    <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                        <TextBlock Text="Business Intelligence &amp; Global Discovery" FontSize="22" FontWeight="Bold" Foreground="#F8FAFC"/>
-                        <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="12" Padding="10,3" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding TotalCount, StringFormat='{}{0} Leads in Database'}" FontSize="11" FontWeight="SemiBold" Foreground="#38BDF8"/>
+                <!-- Left Title & Breadcrumb (Guaranteed no overflow) -->
+                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+                    <WrapPanel VerticalAlignment="Center" Margin="0,0,0,3">
+                        <TextBlock Text="Business Intelligence &amp; Discovery" FontSize="20" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="12" Padding="8,3" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding TotalCount, StringFormat='{}{0} Leads'}" FontSize="11" FontWeight="SemiBold" Foreground="#38BDF8"/>
                         </Border>
-                    </StackPanel>
-                    <TextBlock Text="Search, segment, audit, and discover enterprise leads across global markets &amp; local proximities." FontSize="13" Foreground="#94A3B8"/>
+                    </WrapPanel>
+                    <TextBlock Text="Search, segment, audit, and discover enterprise leads across global markets &amp; local proximities." FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap"/>
                 </StackPanel>
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                    <Button Content="🛰️ Discover Leads (OSM)" Command="{Binding OpenDiscoveryModalCommand}" Background="#0284C7" Foreground="#FFFFFF" CornerRadius="6" Padding="14,8" FontWeight="SemiBold"/>
-                    <Button Content="+ Add Business" Command="{Binding OpenAddBusinessModalCommand}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="14,8" FontWeight="SemiBold"/>
-                    <Button Content="📥 Import CSV" Click="OnPickCsvFileClick" Background="#1E293B" Foreground="#38BDF8" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="14,8"/>
-                    <Button Content="📤 Export CSV" Command="{Binding ExportCsvCommand}" Background="#1E293B" Foreground="#94A3B8" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="14,8"/>
-                </StackPanel>
+                <!-- Right Action Buttons (Wraps gracefully on smaller windows) -->
+                <WrapPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button Content="🛰️ Discover Leads (OSM)" Command="{Binding OpenDiscoveryModalCommand}" Classes="btn-accent" IsEnabled="{Binding !IsLoading}" Margin="0,0,8,4"/>
+                    <Button Content="+ Add Business" Command="{Binding OpenAddBusinessModalCommand}" Classes="btn-primary" IsEnabled="{Binding !IsLoading}" Margin="0,0,8,4"/>
+                    <Button Content="📥 Import CSV" Click="OnPickCsvFileClick" Classes="btn-secondary" IsEnabled="{Binding !IsLoading}" Margin="0,0,8,4"/>
+                    <Button Content="📤 Export CSV" Command="{Binding ExportCsvCommand}" Classes="btn-secondary" IsEnabled="{Binding !IsLoading}" Margin="0,0,0,4"/>
+                </WrapPanel>
             </Grid>
 
             <!-- 2. Enhanced Filter Ribbon Bar -->
@@ -35,31 +37,31 @@
                     
                     <!-- Row 1: Cascading Geographic Location Hierarchy -->
                     <Grid ColumnDefinitions="Auto,*,Auto">
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                                <TextBlock Text="📍" FontSize="14" VerticalAlignment="Center"/>
+                        <WrapPanel Grid.Column="0" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" Margin="0,0,10,6">
+                                <TextBlock Text="📍" FontSize="13" VerticalAlignment="Center"/>
                                 <TextBlock Text="LOCATION:" FontSize="11" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center"/>
                             </StackPanel>
 
                             <!-- Country Dropdown -->
-                            <ComboBox Width="180" ItemsSource="{Binding Countries}" SelectedItem="{Binding SelectedCountry}" ToolTip.Tip="Filter by Country" Background="#0A101D" Foreground="#F8FAFC" BorderBrush="#223147" CornerRadius="6"/>
+                            <ComboBox Width="180" ItemsSource="{Binding Countries}" SelectedItem="{Binding SelectedCountry}" IsEnabled="{Binding !IsLoading}" ToolTip.Tip="Filter by Country" Margin="0,0,8,6"/>
 
                             <!-- State/Province Dropdown -->
-                            <ComboBox Width="170" ItemsSource="{Binding States}" SelectedItem="{Binding SelectedState}" ToolTip.Tip="Filter by State or Province" Background="#0A101D" Foreground="#F8FAFC" BorderBrush="#223147" CornerRadius="6"/>
+                            <ComboBox Width="180" ItemsSource="{Binding States}" SelectedItem="{Binding SelectedState}" IsEnabled="{Binding !IsLoading}" ToolTip.Tip="Filter by State or Province" Margin="0,0,8,6"/>
 
                             <!-- City Dropdown -->
-                            <ComboBox Width="160" ItemsSource="{Binding Cities}" SelectedItem="{Binding SelectedCity}" ToolTip.Tip="Filter by City" Background="#0A101D" Foreground="#F8FAFC" BorderBrush="#223147" CornerRadius="6"/>
+                            <ComboBox Width="160" ItemsSource="{Binding Cities}" SelectedItem="{Binding SelectedCity}" IsEnabled="{Binding !IsLoading}" ToolTip.Tip="Filter by City" Margin="0,0,8,6"/>
 
                             <!-- Nearby Me Quick Button -->
-                            <Button Content="📍 Nearby Me" Command="{Binding DetectNearbyLocationCommand}" IsEnabled="{Binding !IsDetectingLocation}" Background="#0284C7" Foreground="#FFFFFF" CornerRadius="6" Padding="12,6" FontSize="11" FontWeight="SemiBold" ToolTip.Tip="Detect and filter businesses within proximity radius"/>
-                        </StackPanel>
+                            <Button Content="📍 Nearby Me" Command="{Binding DetectNearbyLocationCommand}" IsEnabled="{Binding !IsLoading}" Classes="btn-accent" Margin="0,0,8,6" ToolTip.Tip="Detect and filter businesses within proximity radius"/>
+                        </WrapPanel>
 
                         <!-- Active Proximity Indicator -->
                         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" IsVisible="{Binding IsNearbyActive}">
                             <Border Background="#064E3B" BorderBrush="#059669" BorderThickness="1" CornerRadius="12" Padding="8,3">
                                 <TextBlock Text="📍 Proximity Active" FontSize="11" FontWeight="Bold" Foreground="#34D399"/>
                             </Border>
-                            <Button Content="✕ Clear" Command="{Binding ClearNearbyCommand}" Background="Transparent" Foreground="#F43F5E" Padding="6,2" FontSize="11"/>
+                            <Button Content="✕ Clear" Command="{Binding ClearNearbyCommand}" Classes="btn-danger-ghost" Padding="6,2" FontSize="11"/>
                         </StackPanel>
                     </Grid>
 
@@ -68,16 +70,16 @@
                     <!-- Row 2: Search, Category, Status & Action Buttons -->
                     <WrapPanel VerticalAlignment="Center">
                         <!-- Free-text Search -->
-                        <TextBox Width="260" Text="{Binding SearchQuery}" PlaceholderText="Search name, phone, email, tags..." Background="#0A101D" Foreground="#F8FAFC" BorderBrush="#223147" CornerRadius="6" Padding="10,6" Margin="0,0,8,6" VerticalContentAlignment="Center"/>
+                        <TextBox Width="260" Text="{Binding SearchQuery}" IsEnabled="{Binding !IsLoading}" PlaceholderText="Search name, phone, email, tags..." Margin="0,0,8,6" VerticalContentAlignment="Center"/>
 
                         <!-- Category Dropdown -->
-                        <ComboBox Width="200" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" ToolTip.Tip="Filter by Business Category" Background="#0A101D" Foreground="#F8FAFC" BorderBrush="#223147" CornerRadius="6" Margin="0,0,8,6"/>
+                        <ComboBox Width="200" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" IsEnabled="{Binding !IsLoading}" ToolTip.Tip="Filter by Business Category" Margin="0,0,8,6"/>
 
                         <!-- Website Filter -->
-                        <ComboBox Width="130" ItemsSource="{Binding WebsiteFilters}" SelectedItem="{Binding SelectedWebsiteFilter}" Background="#0A101D" Foreground="#F8FAFC" BorderBrush="#223147" CornerRadius="6" Margin="0,0,8,6"/>
+                        <ComboBox Width="130" ItemsSource="{Binding WebsiteFilters}" SelectedItem="{Binding SelectedWebsiteFilter}" IsEnabled="{Binding !IsLoading}" Margin="0,0,8,6"/>
 
                         <!-- Pipeline Stage Dropdown -->
-                        <ComboBox Width="150" ItemsSource="{Binding PipelineStages}" SelectedItem="{Binding SelectedStage}" PlaceholderText="All Stages" Background="#0A101D" Foreground="#F8FAFC" BorderBrush="#223147" CornerRadius="6" Margin="0,0,8,6">
+                        <ComboBox Width="150" ItemsSource="{Binding PipelineStages}" SelectedItem="{Binding SelectedStage}" IsEnabled="{Binding !IsLoading}" PlaceholderText="All Stages" Margin="0,0,8,6">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate x:DataType="m:PipelineStage">
                                     <TextBlock Text="{Binding Name}"/>
@@ -86,28 +88,28 @@
                         </ComboBox>
 
                         <!-- Action Buttons -->
-                        <Button Content="Filter" Command="{Binding ApplyFiltersCommand}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="16,6" Margin="0,0,6,6" FontWeight="SemiBold"/>
-                        <Button Content="Reset All" Command="{Binding ResetFiltersCommand}" Background="#1E293B" Foreground="#94A3B8" CornerRadius="6" Padding="12,6" Margin="0,0,6,6"/>
+                        <Button Content="Filter" Command="{Binding ApplyFiltersCommand}" Classes="btn-primary" IsEnabled="{Binding !IsLoading}" Margin="0,0,6,6"/>
+                        <Button Content="Reset All" Command="{Binding ResetFiltersCommand}" Classes="btn-secondary" IsEnabled="{Binding !IsLoading}" Margin="0,0,6,6"/>
                     </WrapPanel>
 
                     <!-- Row 3: Quick Filter Preset Pills -->
-                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                        <TextBlock Text="QUICK FILTERS:" FontSize="10" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                        <Button Content="All Leads" Command="{Binding ClearQuickFilterCommand}" Classes="pill-filter" Margin="0,0,4,0"/>
-                        <Button Content="🔥 Hot Leads (70+)" Command="{Binding ApplyQuickFilterCommand}" CommandParameter="🔥 Hot Leads" Classes="pill-filter" Margin="0,0,4,0"/>
-                        <Button Content="❌ No Website" Command="{Binding ApplyQuickFilterCommand}" CommandParameter="❌ No Website" Classes="pill-filter" Margin="0,0,4,0"/>
-                        <Button Content="✓ Verified Only" Command="{Binding ApplyQuickFilterCommand}" CommandParameter="✓ Verified" Classes="pill-filter" Margin="0,0,4,0"/>
-                        <Button Content="⭐ Top Rated (4.5+)" Command="{Binding ApplyQuickFilterCommand}" CommandParameter="⭐ Top Rated" Classes="pill-filter" Margin="0,0,4,0"/>
-                        <Button Content="🔬 Needs Audit" Command="{Binding ApplyQuickFilterCommand}" CommandParameter="Needs Audit" Classes="pill-filter"/>
-                    </StackPanel>
+                    <WrapPanel VerticalAlignment="Center">
+                        <TextBlock Text="QUICK FILTERS:" FontSize="10" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,8,4"/>
+                        <Button Content="All Leads" Command="{Binding ClearQuickFilterCommand}" Classes="pill-filter" IsEnabled="{Binding !IsLoading}" Margin="0,0,5,4"/>
+                        <Button Content="🔥 Hot Leads (70+)" Command="{Binding ApplyQuickFilterCommand}" CommandParameter="🔥 Hot Leads" Classes="pill-filter" IsEnabled="{Binding !IsLoading}" Margin="0,0,5,4"/>
+                        <Button Content="❌ No Website" Command="{Binding ApplyQuickFilterCommand}" CommandParameter="❌ No Website" Classes="pill-filter" IsEnabled="{Binding !IsLoading}" Margin="0,0,5,4"/>
+                        <Button Content="✓ Verified Only" Command="{Binding ApplyQuickFilterCommand}" CommandParameter="✓ Verified" Classes="pill-filter" IsEnabled="{Binding !IsLoading}" Margin="0,0,5,4"/>
+                        <Button Content="⭐ Top Rated (4.5+)" Command="{Binding ApplyQuickFilterCommand}" CommandParameter="⭐ Top Rated" Classes="pill-filter" IsEnabled="{Binding !IsLoading}" Margin="0,0,5,4"/>
+                        <Button Content="🔬 Needs Audit" Command="{Binding ApplyQuickFilterCommand}" CommandParameter="Needs Audit" Classes="pill-filter" IsEnabled="{Binding !IsLoading}" Margin="0,0,5,4"/>
+                    </WrapPanel>
 
                     <!-- Row 4: Suggested Regional Business Niches -->
-                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" IsVisible="{Binding SuggestedNiches.Count}">
-                        <TextBlock Text="💡 SUGGESTED NICHES:" FontSize="10" FontWeight="Bold" Foreground="#F59E0B" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <WrapPanel VerticalAlignment="Center" IsVisible="{Binding SuggestedNiches.Count}">
+                        <TextBlock Text="💡 SUGGESTED NICHES:" FontSize="10" FontWeight="Bold" Foreground="#F59E0B" VerticalAlignment="Center" Margin="0,0,8,4"/>
                         <ItemsControl ItemsSource="{Binding SuggestedNiches}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Horizontal" Spacing="6"/>
+                                    <WrapPanel/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
@@ -115,16 +117,20 @@
                                     <Button Content="{Binding}" 
                                             Command="{Binding ((vm:BusinessesViewModel)DataContext).SelectSuggestedNicheCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                             CommandParameter="{Binding}"
-                                            Classes="niche-pill"/>
+                                            Classes="niche-pill"
+                                            Margin="0,0,6,4"/>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                    </StackPanel>
+                    </WrapPanel>
+
+                    <!-- Loading Progress Bar -->
+                    <ProgressBar IsIndeterminate="True" Height="2" Background="Transparent" Foreground="#38BDF8" IsVisible="{Binding IsLoading}" Margin="0,-4,0,0"/>
 
                     <!-- Filter Summary & Status Bar -->
-                    <Grid ColumnDefinitions="Auto,*" Margin="0,2,0,0">
-                        <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="12" Foreground="#38BDF8" VerticalAlignment="Center"/>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="14">
+                    <Grid ColumnDefinitions="*,Auto" Margin="0,2,0,0">
+                        <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="12" Foreground="#38BDF8" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="14" Margin="10,0,0,0">
                             <TextBlock Text="{Binding FilteredCount, StringFormat='Showing: {0}'}" FontSize="12" FontWeight="Bold" Foreground="#10B981"/>
                             <TextBlock Text="{Binding HotLeadsCount, StringFormat='🔥 High Opportunity: {0}'}" FontSize="12" Foreground="#F59E0B"/>
                             <TextBlock Text="{Binding VerifiedCount, StringFormat='✓ Google Verified: {0}'}" FontSize="12" Foreground="#38BDF8"/>
@@ -136,60 +142,61 @@
             <!-- 3. Master-Detail Split Grid -->
             <Grid Grid.Row="2" ColumnDefinitions="2*,1*">
                 <!-- Left: DataGrid Pane -->
-                <Border Grid.Column="0" Margin="0,0,8,0" Background="#0E1626" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="10">
+                <Border Grid.Column="0" Margin="0,0,8,0" Background="#111A2C" BorderBrush="#223147" BorderThickness="1" CornerRadius="8">
                     <DataGrid ItemsSource="{Binding Businesses}"
                               SelectedItem="{Binding SelectedBusiness}"
                               AutoGenerateColumns="False"
                               IsReadOnly="True"
+                              IsEnabled="{Binding !IsLoading}"
                               GridLinesVisibility="Horizontal"
                               HorizontalScrollBarVisibility="Auto"
                               VerticalScrollBarVisibility="Auto"
-                              RowBackground="#0E1626"
+                              RowBackground="#111A2C"
                               BorderThickness="0"
-                              CornerRadius="10">
+                              CornerRadius="8">
                         <DataGrid.Columns>
                             <!-- Star Toggle -->
-                            <DataGridTemplateColumn Header="★" Width="40">
+                            <DataGridTemplateColumn Header="★" Width="36">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate x:DataType="m:Business">
                                         <TextBlock Text="{Binding StarDisplay}"
                                                    Foreground="#FBBF24"
-                                                   FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                   FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <DataGridTextColumn Header="Business Name" Binding="{Binding Name}" Width="2*" />
-                            <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="1.5*" />
-                            <DataGridTextColumn Header="City" Binding="{Binding City}" Width="1*" />
-                            <DataGridTextColumn Header="Country" Binding="{Binding Country}" Width="1*" />
-                            <DataGridTextColumn Header="Website" Binding="{Binding WebsiteUrl}" Width="1.5*" />
-                            <DataGridTextColumn Header="Score" Binding="{Binding LeadScore}" Width="0.8*" />
-                            <DataGridTextColumn Header="Stage" Binding="{Binding PipelineStage.Name}" Width="1.2*" />
+                            <DataGridTextColumn Header="Business Name" Binding="{Binding Name}" Width="1.8*" />
+                            <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="1.2*" />
+                            <DataGridTextColumn Header="City" Binding="{Binding City}" Width="95" />
+                            <DataGridTextColumn Header="Country" Binding="{Binding Country}" Width="105" />
+                            <DataGridTextColumn Header="Website" Binding="{Binding WebsiteUrl}" Width="1.2*" />
+                            <DataGridTextColumn Header="Score" Binding="{Binding LeadScore}" Width="65" />
+                            <DataGridTextColumn Header="Stage" Binding="{Binding PipelineStage.Name}" Width="1.1*" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </Border>
 
                 <!-- Right: Split Inspector Pane -->
-                <Border Grid.Column="1" Margin="8,0,0,0" Background="#0E1626" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="10" Padding="18">
+                <Border Grid.Column="1" Margin="8,0,0,0" Background="#111A2C" BorderBrush="#223147" BorderThickness="1" CornerRadius="8" Padding="18">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel Spacing="14" DataContext="{Binding SelectedBusiness}">
                             <!-- Business Header -->
                             <Grid ColumnDefinitions="*,Auto">
                                 <StackPanel Grid.Column="0" Spacing="4">
                                     <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC" TextWrapping="Wrap"/>
-                                    <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <Border Background="#1E293B" CornerRadius="4" Padding="6,2">
+                                    <WrapPanel Margin="0,2,0,0">
+                                        <Border Background="#1E293B" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
                                             <TextBlock Text="{Binding Category}" FontSize="11" Foreground="#38BDF8"/>
                                         </Border>
                                         <Border Background="#064E3B" CornerRadius="4" Padding="6,2" IsVisible="{Binding IsGoogleVerified}">
                                             <TextBlock Text="✓ Google Verified" FontSize="10" FontWeight="Bold" Foreground="#34D399"/>
                                         </Border>
-                                    </StackPanel>
+                                    </WrapPanel>
                                 </StackPanel>
 
                                 <!-- Score Card -->
-                                <Border Grid.Column="1" Background="#10B981" CornerRadius="6" Padding="10,6" VerticalAlignment="Top">
+                                <Border Grid.Column="1" Background="#10B981" CornerRadius="6" Padding="10,6" VerticalAlignment="Top" Margin="8,0,0,0">
                                     <StackPanel HorizontalAlignment="Center">
                                         <TextBlock Text="{Binding LeadScore}" FontSize="16" FontWeight="Bold" Foreground="#0F172A" HorizontalAlignment="Center"/>
                                         <TextBlock Text="SCORE" FontSize="9" FontWeight="Bold" Foreground="#0F172A" HorizontalAlignment="Center"/>
@@ -238,7 +245,7 @@
                                     <TextBlock Grid.Column="0" Text="CONTACTS" FontSize="11" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center"/>
                                     <Button Grid.Column="1" Content="+ Add Contact" 
                                             Command="{Binding ((vm:BusinessesViewModel)DataContext).OpenAddContactModalCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                            Background="#1E293B" Foreground="#38BDF8" CornerRadius="4" Padding="8,4" FontSize="11"/>
+                                            Classes="btn-secondary" Padding="8,4" FontSize="11"/>
                                 </Grid>
 
                                 <ItemsControl ItemsSource="{Binding Contacts}">
@@ -255,7 +262,7 @@
                                                     <Button Grid.Column="1" Content="✕" 
                                                             Command="{Binding ((vm:BusinessesViewModel)DataContext).DeleteContactCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                             CommandParameter="{Binding Id}"
-                                                            Background="Transparent" Foreground="#F43F5E" Padding="6,2" VerticalAlignment="Top"/>
+                                                            Classes="btn-danger-ghost" Padding="6,2" VerticalAlignment="Top"/>
                                                 </Grid>
                                             </Border>
                                         </DataTemplate>
@@ -288,14 +295,14 @@
                                 <TextBlock Text="ACTIONS" FontSize="11" FontWeight="Bold" Foreground="#64748B"/>
                                 <Button Content="✨ Enrich with Google Places" 
                                         Command="{Binding ((vm:BusinessesViewModel)DataContext).OpenEnrichConfirmCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#0D9488" Foreground="#FFFFFF" CornerRadius="6" Padding="10" FontWeight="SemiBold"/>
+                                        HorizontalAlignment="Stretch" Classes="btn-teal"/>
                                 <Button Content="⭐ Toggle Starred"
                                         Command="{Binding ((vm:BusinessesViewModel)DataContext).ToggleStarCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         CommandParameter="{Binding}"
-                                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#1E293B" Foreground="#FBBF24" CornerRadius="6" Padding="10"/>
+                                        HorizontalAlignment="Stretch" Classes="btn-secondary"/>
                                 <Button Content="🗑️ Delete Business" 
                                         Command="{Binding ((vm:BusinessesViewModel)DataContext).DeleteBusinessCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#1E293B" Foreground="#F43F5E" CornerRadius="6" Padding="10"/>
+                                        HorizontalAlignment="Stretch" Classes="btn-danger-ghost"/>
                             </StackPanel>
                         </StackPanel>
                     </ScrollViewer>
@@ -330,8 +337,8 @@
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,8,0,0">
-                        <Button Content="Cancel" Command="{Binding CloseAddBusinessModalCommand}" Background="#334155" Foreground="#F8FAFC" CornerRadius="6" Padding="14,8"/>
-                        <Button Content="Save Business" Command="{Binding SaveNewBusinessCommand}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="16,8" FontWeight="SemiBold"/>
+                        <Button Content="Cancel" Command="{Binding CloseAddBusinessModalCommand}" Classes="btn-secondary"/>
+                        <Button Content="Save Business" Command="{Binding SaveNewBusinessCommand}" Classes="btn-primary"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -353,8 +360,8 @@
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,8,0,0">
-                        <Button Content="Cancel" Command="{Binding CloseAddContactModalCommand}" Background="#334155" Foreground="#F8FAFC" CornerRadius="6" Padding="14,8"/>
-                        <Button Content="Add Contact" Command="{Binding SaveNewContactCommand}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="16,8" FontWeight="SemiBold"/>
+                        <Button Content="Cancel" Command="{Binding CloseAddContactModalCommand}" Classes="btn-secondary"/>
+                        <Button Content="Add Contact" Command="{Binding SaveNewContactCommand}" Classes="btn-primary"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -383,16 +390,16 @@
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
-                        <Button Content="Cancel" Command="{Binding CloseImportModalCommand}" Background="#334155" Foreground="#F8FAFC" CornerRadius="6" Padding="14,8"/>
-                        <Button Content="Execute Import" Command="{Binding ExecuteImportCommand}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="16,8" FontWeight="SemiBold"/>
+                        <Button Content="Cancel" Command="{Binding CloseImportModalCommand}" Classes="btn-secondary" IsEnabled="{Binding !IsImporting}"/>
+                        <Button Content="Execute Import" Command="{Binding ExecuteImportCommand}" Classes="btn-primary" IsEnabled="{Binding !IsImporting}"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
         </Border>
 
-        <!-- Discovery Modal Overlay (Cascading Hierarchies + Nearby Me) -->
+        <!-- Discovery Modal Overlay (Cascading Hierarchies + Full Field Disabling during Scan) -->
         <Border Background="#C0090D16" IsVisible="{Binding IsDiscoveryModalOpen}">
-            <Border Background="#162235" BorderBrush="#2D405D" BorderThickness="1" CornerRadius="12" Width="800" MaxHeight="660" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Border Background="#162235" BorderBrush="#2D405D" BorderThickness="1" CornerRadius="12" Width="820" MaxHeight="680" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Grid RowDefinitions="Auto,Auto,*,Auto">
                     <!-- Header -->
                     <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,14">
@@ -401,28 +408,28 @@
                                 <TextBlock Text="OpenStreetMap Lead Discovery Engine" FontSize="19" FontWeight="Bold" Foreground="#F8FAFC"/>
                                 <TextBlock Text="Scan public OpenStreetMap Overpass servers for businesses, clinics, and enterprises without API fees." FontSize="12" Foreground="#94A3B8"/>
                             </StackPanel>
-                            <Button Grid.Column="1" Content="📍 Use Nearby Location" Command="{Binding SetDiscoveryNearbyCommand}" Background="#0284C7" Foreground="#FFFFFF" CornerRadius="6" Padding="12,6" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <Button Grid.Column="1" Content="📍 Use Nearby Location" Command="{Binding SetDiscoveryNearbyCommand}" Classes="btn-accent" IsEnabled="{Binding !IsDiscovering}" VerticalAlignment="Center"/>
                         </Grid>
                     </StackPanel>
 
-                    <!-- Filter Controls (Cascading Hierarchies) -->
-                    <Border Grid.Row="1" Background="#0C1422" BorderBrush="#1F2F47" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                    <!-- Filter Controls (All fields disabled during scan) -->
+                    <Border Grid.Row="1" Background="#0C1422" BorderBrush="#1F2F47" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,12">
                         <StackPanel Spacing="10">
                             <!-- Location Cascade -->
                             <Grid ColumnDefinitions="*,*,*">
                                 <StackPanel Grid.Column="0" Margin="0,0,6,0">
                                     <TextBlock Text="Target Country:" FontSize="11" FontWeight="SemiBold" Foreground="#64748B" Margin="0,0,0,4"/>
-                                    <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding DiscoveryCountries}" SelectedItem="{Binding SelectedDiscoveryCountry}" Background="#162235" Foreground="#F8FAFC" BorderBrush="#2D405D" CornerRadius="6"/>
+                                    <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding DiscoveryCountries}" SelectedItem="{Binding SelectedDiscoveryCountry}" IsEnabled="{Binding !IsDiscovering}"/>
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="1" Margin="3,0,3,0">
                                     <TextBlock Text="State / Province:" FontSize="11" FontWeight="SemiBold" Foreground="#64748B" Margin="0,0,0,4"/>
-                                    <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding DiscoveryStates}" SelectedItem="{Binding SelectedDiscoveryState}" Background="#162235" Foreground="#F8FAFC" BorderBrush="#2D405D" CornerRadius="6"/>
+                                    <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding DiscoveryStates}" SelectedItem="{Binding SelectedDiscoveryState}" IsEnabled="{Binding !IsDiscovering}"/>
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="2" Margin="6,0,0,0">
                                     <TextBlock Text="Target City:" FontSize="11" FontWeight="SemiBold" Foreground="#64748B" Margin="0,0,0,4"/>
-                                    <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding DiscoveryCities}" SelectedItem="{Binding SelectedDiscoveryCity}" Background="#162235" Foreground="#F8FAFC" BorderBrush="#2D405D" CornerRadius="6"/>
+                                    <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding DiscoveryCities}" SelectedItem="{Binding SelectedDiscoveryCity}" IsEnabled="{Binding !IsDiscovering}"/>
                                 </StackPanel>
                             </Grid>
 
@@ -430,19 +437,19 @@
                             <Grid ColumnDefinitions="*,Auto">
                                 <StackPanel Grid.Column="0" Margin="0,0,10,0">
                                     <TextBlock Text="Business Category Preset:" FontSize="11" FontWeight="SemiBold" Foreground="#64748B" Margin="0,0,0,4"/>
-                                    <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding DiscoveryCategoryPresets}" SelectedItem="{Binding SelectedDiscoveryCategoryPreset}" Background="#162235" Foreground="#F8FAFC" BorderBrush="#2D405D" CornerRadius="6"/>
+                                    <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding DiscoveryCategoryPresets}" SelectedItem="{Binding SelectedDiscoveryCategoryPreset}" IsEnabled="{Binding !IsDiscovering}"/>
                                 </StackPanel>
 
-                                <Button Grid.Column="1" Content="🛰️ Start Overpass Scan" Command="{Binding StartDiscoveryScanCommand}" IsEnabled="{Binding !IsDiscovering}" Background="#0EA5E9" Foreground="#FFFFFF" CornerRadius="6" Padding="18,10" FontWeight="Bold" VerticalAlignment="Bottom"/>
+                                <Button Grid.Column="1" Content="🛰️ Start Overpass Scan" Command="{Binding StartDiscoveryScanCommand}" Classes="btn-accent" IsEnabled="{Binding !IsDiscovering}" Padding="18,10" VerticalAlignment="Bottom"/>
                             </Grid>
 
-                            <!-- Suggested Opportunities Bar -->
-                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" IsVisible="{Binding DiscoverySuggestedNiches.Count}">
-                                <TextBlock Text="💡 SUGGESTED NICHES:" FontSize="10" FontWeight="Bold" Foreground="#F59E0B" VerticalAlignment="Center"/>
+                            <!-- Suggested Opportunities Bar (Disabled during scan) -->
+                            <WrapPanel VerticalAlignment="Center" IsVisible="{Binding DiscoverySuggestedNiches.Count}">
+                                <TextBlock Text="💡 SUGGESTED NICHES:" FontSize="10" FontWeight="Bold" Foreground="#F59E0B" VerticalAlignment="Center" Margin="0,0,8,4"/>
                                 <ItemsControl ItemsSource="{Binding DiscoverySuggestedNiches}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
-                                            <StackPanel Orientation="Horizontal" Spacing="6"/>
+                                            <WrapPanel/>
                                         </ItemsPanelTemplate>
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
@@ -450,41 +457,48 @@
                                             <Button Content="{Binding}" 
                                                     Command="{Binding ((vm:BusinessesViewModel)DataContext).SelectDiscoveryNicheCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                     CommandParameter="{Binding}"
-                                                    Classes="niche-pill"/>
+                                                    Classes="niche-pill"
+                                                    Margin="0,0,6,4"/>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
-                            </StackPanel>
+                            </WrapPanel>
                         </StackPanel>
                     </Border>
 
                     <!-- Results / Status Pane -->
-                    <Grid Grid.Row="2" RowDefinitions="Auto,*" Margin="0,0,0,12">
+                    <Grid Grid.Row="2" RowDefinitions="Auto,Auto,*" Margin="0,0,0,12">
+                        <!-- Scanning Progress Bar -->
+                        <ProgressBar Grid.Row="0" IsIndeterminate="True" Height="3" Background="Transparent" Foreground="#0EA5E9" IsVisible="{Binding IsDiscovering}" Margin="0,0,0,6"/>
+
                         <!-- Stats Bar -->
-                        <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,0,0,8">
-                            <TextBlock Grid.Column="0" Text="{Binding DiscoveryStatus}" FontSize="12" Foreground="#38BDF8" VerticalAlignment="Center"/>
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
+                        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+                            <TextBlock Grid.Column="0" Text="{Binding DiscoveryStatus}" FontSize="12" Foreground="#38BDF8" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="10,0,0,0">
                                 <TextBlock Text="{Binding DiscoveredTotal, StringFormat='Found: {0}'}" FontSize="12" Foreground="#94A3B8"/>
                                 <TextBlock Text="{Binding DiscoveredNew, StringFormat='New Leads: {0}'}" FontSize="12" FontWeight="Bold" Foreground="#10B981"/>
                                 <TextBlock Text="{Binding DiscoveredDuplicates, StringFormat='Duplicates: {0}'}" FontSize="12" Foreground="#F59E0B"/>
                             </StackPanel>
                         </Grid>
 
-                        <!-- Discovered Leads Preview DataGrid -->
-                        <Border Grid.Row="1" Background="#0C1422" BorderBrush="#1F2F47" BorderThickness="1" CornerRadius="6" MinHeight="200">
+                        <!-- Discovered Leads Preview DataGrid (Disabled during scan) -->
+                        <Border Grid.Row="2" Background="#0C1422" BorderBrush="#1F2F47" BorderThickness="1" CornerRadius="6" MinHeight="200">
                             <DataGrid ItemsSource="{Binding DiscoveredLeads}"
                                       AutoGenerateColumns="False"
                                       IsReadOnly="False"
+                                      IsEnabled="{Binding !IsDiscovering}"
                                       GridLinesVisibility="Horizontal"
+                                      HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Auto"
                                       BorderThickness="0"
                                       RowBackground="#0C1422">
                                 <DataGrid.Columns>
-                                    <DataGridCheckBoxColumn Header="Import" Binding="{Binding IsSelectedForImport}" Width="0.6*" />
-                                    <DataGridTextColumn Header="Business Name" Binding="{Binding Business.Name}" IsReadOnly="True" Width="2*" />
-                                    <DataGridTextColumn Header="Category" Binding="{Binding Business.Category}" IsReadOnly="True" Width="1.5*" />
-                                    <DataGridTextColumn Header="City" Binding="{Binding Business.City}" IsReadOnly="True" Width="1*" />
-                                    <DataGridTextColumn Header="Website" Binding="{Binding Business.WebsiteUrl}" IsReadOnly="True" Width="1.5*" />
-                                    <DataGridTextColumn Header="Phone" Binding="{Binding Business.PhonePrimary}" IsReadOnly="True" Width="1.2*" />
+                                    <DataGridCheckBoxColumn Header="Import" Binding="{Binding IsSelectedForImport}" Width="45" />
+                                    <DataGridTextColumn Header="Business Name" Binding="{Binding Business.Name}" IsReadOnly="True" Width="1.8*" />
+                                    <DataGridTextColumn Header="Category" Binding="{Binding Business.Category}" IsReadOnly="True" Width="1.3*" />
+                                    <DataGridTextColumn Header="City" Binding="{Binding Business.City}" IsReadOnly="True" Width="100" />
+                                    <DataGridTextColumn Header="Website" Binding="{Binding Business.WebsiteUrl}" IsReadOnly="True" Width="1.3*" />
+                                    <DataGridTextColumn Header="Phone" Binding="{Binding Business.PhonePrimary}" IsReadOnly="True" Width="120" />
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Border>
@@ -492,8 +506,8 @@
 
                     <!-- Footer Actions -->
                     <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-                        <Button Content="Close" Command="{Binding CloseDiscoveryModalCommand}" Background="#334155" Foreground="#F8FAFC" CornerRadius="6" Padding="14,8"/>
-                        <Button Content="Import Selected Leads" Command="{Binding ExecuteDiscoveryImportCommand}" IsEnabled="{Binding !IsDiscovering}" Background="#10B981" Foreground="#0F172A" CornerRadius="6" Padding="18,8" FontWeight="Bold"/>
+                        <Button Content="Close" Command="{Binding CloseDiscoveryModalCommand}" Classes="btn-secondary" IsEnabled="{Binding !IsDiscovering}"/>
+                        <Button Content="Import Selected Leads" Command="{Binding ExecuteDiscoveryImportCommand}" Classes="btn-success" IsEnabled="{Binding !IsDiscovering}" Padding="18,8"/>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -518,8 +532,8 @@
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,8,0,0">
-                        <Button Content="Cancel" Command="{Binding CloseEnrichConfirmCommand}" Background="#334155" Foreground="#F8FAFC" CornerRadius="6" Padding="14,8"/>
-                        <Button Content="Confirm &amp; Enrich" Command="{Binding ExecuteGooglePlacesEnrichmentCommand}" IsEnabled="{Binding !IsEnrichingWithGoogle}" Background="#0D9488" Foreground="#FFFFFF" CornerRadius="6" Padding="16,8" FontWeight="Bold"/>
+                        <Button Content="Cancel" Command="{Binding CloseEnrichConfirmCommand}" Classes="btn-secondary" IsEnabled="{Binding !IsEnrichingWithGoogle}"/>
+                        <Button Content="Confirm &amp; Enrich" Command="{Binding ExecuteGooglePlacesEnrichmentCommand}" Classes="btn-teal" IsEnabled="{Binding !IsEnrichingWithGoogle}" Padding="16,8"/>
                     </StackPanel>
                 </StackPanel>
             </Border>

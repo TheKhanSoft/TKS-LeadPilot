@@ -13,23 +13,237 @@
         <FluentTheme />
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
 
-        <!-- Global Modern Theme Enhancements -->
+        <!-- ================================================================= -->
+        <!-- GLOBAL BUTTON BASE STYLES & BEHAVIOR                              -->
+        <!-- ================================================================= -->
         <Style Selector="Button">
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="14,7"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Transitions">
                 <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.15"/>
-                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.12"/>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.12"/>
                 </Transitions>
             </Setter>
         </Style>
+
+        <!-- Base Button: Pointerover & Disabled (Prevents button from disappearing/hiding) -->
         <Style Selector="Button:pointerover">
-            <Setter Property="Opacity" Value="0.94"/>
+            <Setter Property="Opacity" Value="0.92"/>
+        </Style>
+        <Style Selector="Button:pressed">
+            <Setter Property="Opacity" Value="0.75"/>
+        </Style>
+        <Style Selector="Button:disabled">
+            <Setter Property="Opacity" Value="0.4"/>
+            <Setter Property="Cursor" Value="Arrow"/>
         </Style>
 
-        <!-- Modern DataGrid Styling -->
+        <!-- ================================================================= -->
+        <!-- BUTTON VARIANTS (With high-contrast hover & active states)         -->
+        <!-- ================================================================= -->
+
+        <!-- 1. Primary Action Button (Royal Blue) -->
+        <Style Selector="Button.btn-primary">
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="Button.btn-primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#1D4ED8"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+        </Style>
+        <Style Selector="Button.btn-primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#1E40AF"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+        </Style>
+        <Style Selector="Button.btn-primary:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#1E293B"/>
+            <Setter Property="Foreground" Value="#64748B"/>
+        </Style>
+
+        <!-- 2. Accent Action Button (Sky Blue / Discovery) -->
+        <Style Selector="Button.btn-accent">
+            <Setter Property="Background" Value="#0284C7"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="Button.btn-accent:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#0369A1"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+        </Style>
+        <Style Selector="Button.btn-accent:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#075985"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+        </Style>
+        <Style Selector="Button.btn-accent:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#1E293B"/>
+            <Setter Property="Foreground" Value="#64748B"/>
+        </Style>
+
+        <!-- 3. Success Button (Emerald Green / Import) -->
+        <Style Selector="Button.btn-success">
+            <Setter Property="Background" Value="#059669"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style Selector="Button.btn-success:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#047857"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+        </Style>
+        <Style Selector="Button.btn-success:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#065F46"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+        </Style>
+        <Style Selector="Button.btn-success:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#1E293B"/>
+            <Setter Property="Foreground" Value="#64748B"/>
+        </Style>
+
+        <!-- 4. Secondary Neutral Button (Slate Navy) -->
+        <Style Selector="Button.btn-secondary">
+            <Setter Property="Background" Value="#1E293B"/>
+            <Setter Property="Foreground" Value="#E2E8F0"/>
+            <Setter Property="BorderBrush" Value="#334155"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="Button.btn-secondary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#2D3F58"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#475569"/>
+        </Style>
+        <Style Selector="Button.btn-secondary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#152132"/>
+            <Setter Property="Foreground" Value="#94A3B8"/>
+        </Style>
+        <Style Selector="Button.btn-secondary:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#0F172A"/>
+            <Setter Property="Foreground" Value="#475569"/>
+            <Setter Property="BorderBrush" Value="#1E293B"/>
+        </Style>
+
+        <!-- 5. Teal Button (Google Places Enrichment) -->
+        <Style Selector="Button.btn-teal">
+            <Setter Property="Background" Value="#0D9488"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="Button.btn-teal:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#0F766E"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+        </Style>
+        <Style Selector="Button.btn-teal:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#115E59"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+        </Style>
+        <Style Selector="Button.btn-teal:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#1E293B"/>
+            <Setter Property="Foreground" Value="#64748B"/>
+        </Style>
+
+        <!-- 6. Purple Button (AI Synthesis) -->
+        <Style Selector="Button.btn-purple">
+            <Setter Property="Background" Value="#7C3AED"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="Button.btn-purple:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#6D28D9"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+        </Style>
+        <Style Selector="Button.btn-purple:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#5B21B6"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+        </Style>
+        <Style Selector="Button.btn-purple:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#1E293B"/>
+            <Setter Property="Foreground" Value="#64748B"/>
+        </Style>
+
+        <!-- 7. Danger Button (Delete / Critical) -->
+        <Style Selector="Button.btn-danger">
+            <Setter Property="Background" Value="#DC2626"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="Button.btn-danger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#B91C1C"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+        </Style>
+        <Style Selector="Button.btn-danger:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#991B1B"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+        </Style>
+
+        <!-- 8. Danger Ghost Button (Delete icon / link) -->
+        <Style Selector="Button.btn-danger-ghost">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#F43F5E"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="Button.btn-danger-ghost:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#3F121E"/>
+            <Setter Property="Foreground" Value="#FB7185"/>
+        </Style>
+        <Style Selector="Button.btn-danger-ghost:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#2A0B14"/>
+            <Setter Property="Foreground" Value="#F43F5E"/>
+        </Style>
+
+        <!-- 9. Quick Filter Pill Buttons -->
+        <Style Selector="Button.pill-filter">
+            <Setter Property="Background" Value="#152033"/>
+            <Setter Property="Foreground" Value="#94A3B8"/>
+            <Setter Property="BorderBrush" Value="#263750"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="14"/>
+            <Setter Property="Padding" Value="12,5"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+        <Style Selector="Button.pill-filter:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#223554"/>
+            <Setter Property="Foreground" Value="#F8FAFC"/>
+            <Setter Property="BorderBrush" Value="#38BDF8"/>
+        </Style>
+        <Style Selector="Button.pill-filter:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#1E2E48"/>
+            <Setter Property="Foreground" Value="#38BDF8"/>
+        </Style>
+        <Style Selector="Button.pill-filter:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Opacity" Value="0.35"/>
+        </Style>
+
+        <!-- 10. Suggested Niche Pills -->
+        <Style Selector="Button.niche-pill">
+            <Setter Property="Background" Value="#0A223B"/>
+            <Setter Property="Foreground" Value="#38BDF8"/>
+            <Setter Property="BorderBrush" Value="#17446F"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+        <Style Selector="Button.niche-pill:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#17446F"/>
+            <Setter Property="Foreground" Value="#BAE6FD"/>
+            <Setter Property="BorderBrush" Value="#38BDF8"/>
+        </Style>
+        <Style Selector="Button.niche-pill:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#0B2D4F"/>
+            <Setter Property="Foreground" Value="#7DD3FC"/>
+        </Style>
+        <Style Selector="Button.niche-pill:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Opacity" Value="0.35"/>
+        </Style>
+
+        <!-- ================================================================= -->
+        <!-- MODERN DATAGRID STYLING                                           -->
+        <!-- ================================================================= -->
         <Style Selector="DataGrid">
             <Setter Property="Background" Value="#0D1524"/>
             <Setter Property="BorderBrush" Value="#1E293B"/>
@@ -41,7 +255,7 @@
             <Setter Property="Foreground" Value="#94A3B8"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="FontSize" Value="11"/>
-            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="Padding" Value="12,10"/>
         </Style>
         <Style Selector="DataGridRow">
             <Setter Property="Height" Value="42"/>
@@ -59,22 +273,24 @@
         </Style>
         <Style Selector="DataGridCell">
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Padding" Value="10,8"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 
-        <!-- Modern Input Controls Styling -->
+        <!-- ================================================================= -->
+        <!-- MODERN INPUT CONTROLS STYLING                                     -->
+        <!-- ================================================================= -->
         <Style Selector="TextBox">
-            <Setter Property="CornerRadius" Value="7"/>
+            <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="BorderBrush" Value="#22324A"/>
             <Setter Property="Background" Value="#0B1322"/>
             <Setter Property="Foreground" Value="#F8FAFC"/>
-            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="Transitions">
                 <Transitions>
-                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15"/>
-                    <BrushTransition Property="Background" Duration="0:0:0.15"/>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.12"/>
                 </Transitions>
             </Setter>
         </Style>
@@ -82,120 +298,35 @@
             <Setter Property="BorderBrush" Value="#38BDF8"/>
             <Setter Property="Background" Value="#0F1A2E"/>
         </Style>
+        <Style Selector="TextBox:disabled">
+            <Setter Property="Opacity" Value="0.45"/>
+            <Setter Property="Background" Value="#080C14"/>
+        </Style>
+
         <Style Selector="ComboBox">
-            <Setter Property="CornerRadius" Value="7"/>
+            <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="BorderBrush" Value="#22324A"/>
             <Setter Property="Background" Value="#0B1322"/>
             <Setter Property="Foreground" Value="#F8FAFC"/>
-            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.12"/>
+                </Transitions>
+            </Setter>
         </Style>
         <Style Selector="ComboBox:focus">
             <Setter Property="BorderBrush" Value="#38BDF8"/>
         </Style>
+        <Style Selector="ComboBox:disabled">
+            <Setter Property="Opacity" Value="0.45"/>
+            <Setter Property="Background" Value="#080C14"/>
+        </Style>
         <Style Selector="ComboBoxItem">
-            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Padding" Value="10,7"/>
             <Setter Property="FontSize" Value="12"/>
-        </Style>
-
-        <!-- Modern Elevation Cards -->
-        <Style Selector="Border.card-panel">
-            <Setter Property="Background" Value="#0F172A"/>
-            <Setter Property="BorderBrush" Value="#1E293B"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="10"/>
-        </Style>
-        <Style Selector="Border.card-panel-elevated">
-            <Setter Property="Background" Value="#131D31"/>
-            <Setter Property="BorderBrush" Value="#22324A"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="10"/>
-        </Style>
-
-        <!-- Button Variants -->
-        <Style Selector="Button.btn-primary">
-            <Setter Property="Background" Value="#2563EB"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="CornerRadius" Value="7"/>
-            <Setter Property="Padding" Value="16,8"/>
-        </Style>
-        <Style Selector="Button.btn-primary:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#1D4ED8"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
-        </Style>
-
-        <Style Selector="Button.btn-secondary">
-            <Setter Property="Background" Value="#1E293B"/>
-            <Setter Property="Foreground" Value="#E2E8F0"/>
-            <Setter Property="BorderBrush" Value="#334155"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="7"/>
-            <Setter Property="Padding" Value="14,8"/>
-        </Style>
-        <Style Selector="Button.btn-secondary:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#2A3B52"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
-        </Style>
-
-        <Style Selector="Button.btn-accent">
-            <Setter Property="Background" Value="#0284C7"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="CornerRadius" Value="7"/>
-            <Setter Property="Padding" Value="16,8"/>
-        </Style>
-        <Style Selector="Button.btn-accent:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#0369A1"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
-        </Style>
-
-        <Style Selector="Button.btn-purple">
-            <Setter Property="Background" Value="#7C3AED"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="CornerRadius" Value="7"/>
-            <Setter Property="Padding" Value="16,8"/>
-        </Style>
-        <Style Selector="Button.btn-purple:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#6D28D9"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
-        </Style>
-
-        <!-- Quick Filter Pill Buttons -->
-        <Style Selector="Button.pill-filter">
-            <Setter Property="Background" Value="#152033"/>
-            <Setter Property="Foreground" Value="#94A3B8"/>
-            <Setter Property="BorderBrush" Value="#263750"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="14"/>
-            <Setter Property="Padding" Value="12,5"/>
-            <Setter Property="FontSize" Value="11"/>
-        </Style>
-        <Style Selector="Button.pill-filter:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#1E2E48"/>
-            <Setter Property="Foreground" Value="#F8FAFC"/>
-        </Style>
-        <Style Selector="Button.pill-active">
-            <Setter Property="Background" Value="#2563EB"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
-            <Setter Property="BorderBrush" Value="#3B82F6"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-        </Style>
-
-        <!-- Suggested Niche Pills -->
-        <Style Selector="Button.niche-pill">
-            <Setter Property="Background" Value="#0A223B"/>
-            <Setter Property="Foreground" Value="#38BDF8"/>
-            <Setter Property="BorderBrush" Value="#17446F"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="10,4"/>
-            <Setter Property="FontSize" Value="11"/>
-        </Style>
-        <Style Selector="Button.niche-pill:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#133C64"/>
-            <Setter Property="Foreground" Value="#7DD3FC"/>
         </Style>
     </Application.Styles>
 </Application>
