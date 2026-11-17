@@ -18,6 +18,7 @@ public partial class BusinessesViewModel : ViewModelBase
     private readonly IPipelineStageRepository _pipelineStageRepository;
     private readonly ICsvImporterService _csvImporterService;
     private readonly IDeduplicationService _deduplicationService;
+    private readonly IDiscoveryService _discoveryService;
 
     // Collections
     [ObservableProperty]
@@ -76,6 +77,43 @@ public partial class BusinessesViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isAddContactModalOpen = false;
 
+    [ObservableProperty]
+    private bool _isDiscoveryModalOpen = false;
+
+    // Discovery State (Stage 5)
+    [ObservableProperty]
+    private ObservableCollection<string> _discoveryCities = ["Karachi", "Lahore", "Islamabad", "Rawalpindi", "Faisalabad", "Peshawar", "Multan"];
+
+    [ObservableProperty]
+    private string _selectedDiscoveryCity = "Karachi";
+
+    [ObservableProperty]
+    private ObservableCollection<string> _discoveryCategoryPresets = ["Healthcare & Dental", "Restaurants & Food", "Hotels & Lodging", "Retail & Shopping", "Automotive & Repair", "Education & Training"];
+
+    [ObservableProperty]
+    private string _selectedDiscoveryCategoryPreset = "Healthcare & Dental";
+
+    [ObservableProperty]
+    private ObservableCollection<DiscoveredLead> _discoveredLeads = [];
+
+    [ObservableProperty]
+    private bool _isDiscovering = false;
+
+    [ObservableProperty]
+    private string _discoveryStatus = "Ready to discover leads from OpenStreetMap.";
+
+    [ObservableProperty]
+    private int _discoveredTotal = 0;
+
+    [ObservableProperty]
+    private int _discoveredNew = 0;
+
+    [ObservableProperty]
+    private int _discoveredDuplicates = 0;
+
+    [ObservableProperty]
+    private DeduplicationStrategy _discoveryDedupStrategy = DeduplicationStrategy.Skip;
+
     // CSV Import State
     [ObservableProperty]
     private ImportPreviewResult? _importPreview;
@@ -130,12 +168,14 @@ public partial class BusinessesViewModel : ViewModelBase
         IBusinessRepository businessRepository,
         IPipelineStageRepository pipelineStageRepository,
         ICsvImporterService csvImporterService,
-        IDeduplicationService deduplicationService)
+        IDeduplicationService deduplicationService,
+        IDiscoveryService discoveryService)
     {
         _businessRepository = businessRepository;
         _pipelineStageRepository = pipelineStageRepository;
         _csvImporterService = csvImporterService;
         _deduplicationService = deduplicationService;
+        _discoveryService = discoveryService;
 
         _ = InitializeAsync();
     }
@@ -476,6 +516,101 @@ public partial class BusinessesViewModel : ViewModelBase
         catch (Exception ex)
         {
             StatusMessage = $"Delete Business Error: {ex.Message}";
+        }
+    }
+
+    // --- Discovery Commands (Stage 5) ---
+    [RelayCommand]
+    public void OpenDiscoveryModal()
+    {
+        DiscoveredLeads.Clear();
+        DiscoveredTotal = 0;
+        DiscoveredNew = 0;
+        DiscoveredDuplicates = 0;
+        DiscoveryStatus = "Select target city and category preset to begin scan.";
+        IsDiscoveryModalOpen = true;
+    }
+
+    [RelayCommand]
+    public void CloseDiscoveryModal()
+    {
+        IsDiscoveryModalOpen = false;
+    }
+
+    [RelayCommand]
+    public async Task StartDiscoveryScan()
+    {
+        try
+        {
+            IsDiscovering = true;
+            DiscoveryStatus = $"Querying OpenStreetMap Overpass servers for {SelectedDiscoveryCategoryPreset} in {SelectedDiscoveryCity}...";
+
+            var presets = _discoveryService.GetPresetCategories();
+            List<string> targetAmenities = ["clinic", "dentist", "pharmacy"];
+            if (presets.TryGetValue(SelectedDiscoveryCategoryPreset, out var list))
+            {
+                targetAmenities = list;
+            }
+
+            var query = new DiscoveryQuery
+            {
+                City = SelectedDiscoveryCity,
+                TargetAmenities = targetAmenities,
+                Limit = 150,
+                TimeoutSeconds = 30
+            };
+
+            var result = await _discoveryService.DiscoverLeadsAsync(query);
+
+            if (result.HasError)
+            {
+                DiscoveryStatus = $"Discovery failed: {result.ErrorMessage}";
+                return;
+            }
+
+            DiscoveredLeads = new ObservableCollection<DiscoveredLead>(result.Leads);
+            DiscoveredTotal = result.TotalFetched;
+            DiscoveredNew = result.NewCount;
+            DiscoveredDuplicates = result.DuplicateCount;
+
+            DiscoveryStatus = $"Discovery scan complete in {result.ExecutionDuration.TotalSeconds:F1}s: {DiscoveredTotal} found ({DiscoveredNew} new, {DiscoveredDuplicates} duplicates).";
+        }
+        catch (Exception ex)
+        {
+            DiscoveryStatus = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            IsDiscovering = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task ExecuteDiscoveryImport()
+    {
+        if (DiscoveredLeads.Count == 0) return;
+
+        try
+        {
+            IsDiscovering = true;
+            DiscoveryStatus = "Importing selected leads into local SQLite database...";
+
+            var result = await _discoveryService.ImportDiscoveredLeadsAsync(
+                DiscoveredLeads,
+                DiscoveryDedupStrategy);
+
+            StatusMessage = $"Discovery Import: {result.CreatedCount} created, {result.UpdatedCount} merged, {result.SkippedCount} skipped";
+            CloseDiscoveryModal();
+            await RefreshFilterOptionsAsync();
+            await ApplyFiltersAsync();
+        }
+        catch (Exception ex)
+        {
+            DiscoveryStatus = $"Import Error: {ex.Message}";
+        }
+        finally
+        {
+            IsDiscovering = false;
         }
     }
 }

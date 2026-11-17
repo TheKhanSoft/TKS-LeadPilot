@@ -68,3 +68,11 @@ public interface ICsvImporterService
     Task<ImportExecutionResult> ExecuteImportAsync(Stream stream, CsvColumnMapping? mapping = null, DeduplicationStrategy strategy = DeduplicationStrategy.Skip, DeduplicationOptions? dedupOptions = null, CancellationToken ct = default);
     Task<byte[]> ExportToCsvAsync(IEnumerable<Business> businesses, CancellationToken ct = default);
 }
+
+public interface IDiscoveryService
+{
+    Task<DiscoveryResult> DiscoverLeadsAsync(DiscoveryQuery query, CancellationToken ct = default);
+    Task<ImportExecutionResult> ImportDiscoveredLeadsAsync(IEnumerable<DiscoveredLead> selectedLeads, DeduplicationStrategy strategy = DeduplicationStrategy.Skip, CancellationToken ct = default);
+    IReadOnlyList<string> GetSupportedCities();
+    IReadOnlyDictionary<string, List<string>> GetPresetCategories();
+}

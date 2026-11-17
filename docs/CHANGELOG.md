@@ -6,6 +6,21 @@ All notable changes to the TKS LeadPilot project will be documented in this file
 
 ## [Unreleased]
 
+### [0.5.0] — Stage 5: Free Discovery Pipeline (OpenStreetMap Overpass Engine) — 2026-11-17
+#### Added
+- OpenStreetMap Overpass discovery domain models (`DiscoveryQuery`, `DiscoveredLead`, `DiscoveryResult`, `BoundingBox`).
+- `OverpassQueryBuilder` generating high-performance Overpass QL with preset metropolitan coordinates for Karachi, Lahore, Islamabad, Rawalpindi, Faisalabad, Peshawar, and Multan, plus business sector amenity presets.
+- `OverpassResultMapper` converting raw OSM node and way elements into standardized `Business` models with automatic tag normalizations, address concatenation, coordinate capture, and website status detection.
+- `OverpassDiscoveryService` (`IDiscoveryService`):
+  - Strict compliance with Overpass Acceptable Use Policy (minimum 2,000ms inter-query delay rate limiter, identification User-Agent).
+  - Multi-endpoint resilience with automatic failover across 3 global public Overpass mirror servers.
+  - Automated deduplication evaluation against local SQLite database on discovery.
+  - Batch import of discovered leads with configurable `Skip` or `Merge` strategies.
+- Avalonia Desktop Discovery UI:
+  - Top action bar "🛰️ Discover Leads (OSM)" button.
+  - Discovery modal overlay with city selector, category preset picker, live scan progress, and preview DataGrid with checkbox lead selection.
+- 9 new unit tests covering query generation, JSON mapping, rate limiting, and discovery deduplication (total 36 passing tests, 0 failures).
+
 ### [0.4.0] — Stage 4: Core Business Database, Search & Deduplication — 2026-11-16
 #### Added
 - Custom project brand icon and logo assets: `leadpilot-icon.ico` (multi-res 16px to 256px) and `leadpilot-logo.png` featuring supersonic navigation delta, radar sweep discovery rings, and growth beacon.
