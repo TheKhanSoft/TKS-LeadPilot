@@ -45,5 +45,6 @@ public class NearbyLocationResult
     public double RadiusKm { get; set; } = 15.0;
     public BoundingBox BoundingBox { get; set; } = new(31.40, 74.15, 31.65, 74.45);
     public bool IsDetectedFromIp { get; set; } = false;
+    public bool Success { get; set; } = true;
     public string Message { get; set; } = string.Empty;
 }

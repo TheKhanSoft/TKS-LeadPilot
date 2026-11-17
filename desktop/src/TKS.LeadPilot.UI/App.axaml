@@ -33,13 +33,18 @@
 
         <!-- Base Button: Pointerover & Disabled (Prevents button from disappearing/hiding) -->
         <Style Selector="Button:pointerover">
-            <Setter Property="Opacity" Value="0.92"/>
+            <Setter Property="Opacity" Value="1.0"/>
+        </Style>
+        <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#2A384C"/>
+            <Setter Property="Foreground" Value="#F8FAFC"/>
+            <Setter Property="BorderBrush" Value="#475569"/>
         </Style>
         <Style Selector="Button:pressed">
-            <Setter Property="Opacity" Value="0.75"/>
+            <Setter Property="Opacity" Value="0.85"/>
         </Style>
         <Style Selector="Button:disabled">
-            <Setter Property="Opacity" Value="0.4"/>
+            <Setter Property="Opacity" Value="0.45"/>
             <Setter Property="Cursor" Value="Arrow"/>
         </Style>
 

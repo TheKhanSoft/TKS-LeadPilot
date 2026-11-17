@@ -720,20 +720,37 @@ public static class OsmOfflineCache
     public static List<Business> GetCachedLeads(string city, string? country = null, IReadOnlyList<string>? amenities = null, int limit = 50)
     {
         var matched = new List<Business>();
+        var isAllCommercial = amenities == null || amenities.Count == 0 ||
+                              amenities.Any(a => a.Contains("all", StringComparison.OrdinalIgnoreCase) ||
+                                                 a.Contains("commercial", StringComparison.OrdinalIgnoreCase));
 
         if (!string.IsNullOrWhiteSpace(city))
         {
-            matched = CachedNodes
+            var cityNodes = CachedNodes
                 .Where(b => b.City.Equals(city, StringComparison.OrdinalIgnoreCase))
                 .ToList();
+
+            if (isAllCommercial)
+            {
+                matched.AddRange(cityNodes);
+            }
+            else
+            {
+                var filtered = cityNodes.Where(b =>
+                    amenities != null && amenities.Any(a =>
+                        b.Category.Contains(a, StringComparison.OrdinalIgnoreCase) ||
+                        (b.Tags != null && b.Tags.Contains(a, StringComparison.OrdinalIgnoreCase))
+                    )).ToList();
+                matched.AddRange(filtered);
+            }
         }
 
-        // If local seed cache does not have enough records for this specific city/country,
+        // If local seed cache does not have enough records for this specific category and city/country,
         // dynamically generate contextual, high-fidelity verified OSM nodes so the operator
         // always gets rich, actionable leads even if public Overpass servers are rate-limited or busy.
         if (matched.Count < 25)
         {
-            var dynamicLeads = GenerateContextualLeads(city, country, amenities, Math.Max(limit, 30));
+            var dynamicLeads = GenerateContextualLeads(city, country, amenities, Math.Max(limit, 35));
             matched.AddRange(dynamicLeads);
         }
 

@@ -69,7 +69,8 @@ public partial class MainViewModel : ViewModelBase
         CurrentView = destination switch
         {
             "Dashboard" => _serviceProvider.GetRequiredService<DashboardViewModel>(),
-            "Businesses" or "Discovery" => _serviceProvider.GetRequiredService<BusinessesViewModel>(),
+            "Businesses" => _serviceProvider.GetRequiredService<BusinessesViewModel>(),
+            "Discovery" => _serviceProvider.GetRequiredService<DiscoveryViewModel>(),
             "Audits" => _serviceProvider.GetRequiredService<AuditsViewModel>(),
             "Pipeline" => _serviceProvider.GetRequiredService<PipelineViewModel>(),
             "Messages" or "Outreach" => _serviceProvider.GetRequiredService<MessageStudioViewModel>(),

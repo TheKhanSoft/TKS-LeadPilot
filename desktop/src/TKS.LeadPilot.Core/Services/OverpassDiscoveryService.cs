@@ -181,6 +181,12 @@ public class OverpassDiscoveryService : IDiscoveryService
         foreach (var candidate in combinedBusinesses)
         {
             if (string.IsNullOrWhiteSpace(candidate.Name)) continue;
+
+            // Apply pre-scan filter constraints if requested
+            if (query.RequirePhone && string.IsNullOrWhiteSpace(candidate.PhonePrimary)) continue;
+            if (query.TargetMissingWebsiteOnly && !string.IsNullOrWhiteSpace(candidate.WebsiteUrl)) continue;
+            if (query.TargetMissingGmbOnly && (candidate.IsGoogleVerified || !string.IsNullOrWhiteSpace(candidate.GooglePlaceId))) continue;
+
             var dupCheck = _dedupService.CheckDuplicate(candidate, deduplicatedLeads);
             if (!dupCheck.IsDuplicate)
             {
@@ -232,11 +238,28 @@ public class OverpassDiscoveryService : IDiscoveryService
         }
         else if (isAllCommercial)
         {
-            searchKeywords.AddRange(["hospital", "hotel", "bank", "restaurant"]);
+            searchKeywords.AddRange(["hospital", "hotel", "bank", "restaurant", "clinic", "company"]);
+        }
+        else if (query.CategoryPreset != null && OverpassQueryBuilder.CategoryPresets.TryGetValue(query.CategoryPreset, out var presetKeywords))
+        {
+            var cleanKeywords = presetKeywords
+                .Where(k => !k.Equals("all_commercial", StringComparison.OrdinalIgnoreCase) && !k.Equals("all", StringComparison.OrdinalIgnoreCase))
+                .Select(k => k.Replace("_", " "))
+                .Take(4)
+                .ToList();
+
+            if (cleanKeywords.Count > 0)
+            {
+                searchKeywords.AddRange(cleanKeywords);
+            }
+            else
+            {
+                searchKeywords.Add(query.CategoryPreset.Replace("&", "and").Trim());
+            }
         }
         else
         {
-            var cleanPreset = query.CategoryPreset!.Replace("&", "and").Trim();
+            var cleanPreset = query.CategoryPreset?.Replace("&", "and").Trim() ?? "commercial business";
             searchKeywords.Add(cleanPreset);
         }
 

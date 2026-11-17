@@ -470,6 +470,30 @@ public class BusinessRepository : IBusinessRepository
             query = query.Where(b => b.LeadScore <= criteria.MaxScore.Value);
         }
 
+        if (criteria.HasPhone.HasValue)
+        {
+            if (criteria.HasPhone.Value)
+            {
+                query = query.Where(b => !string.IsNullOrWhiteSpace(b.PhonePrimary));
+            }
+            else
+            {
+                query = query.Where(b => string.IsNullOrWhiteSpace(b.PhonePrimary));
+            }
+        }
+
+        if (criteria.HasEmail.HasValue)
+        {
+            if (criteria.HasEmail.Value)
+            {
+                query = query.Where(b => !string.IsNullOrWhiteSpace(b.EmailPrimary));
+            }
+            else
+            {
+                query = query.Where(b => string.IsNullOrWhiteSpace(b.EmailPrimary));
+            }
+        }
+
         if (criteria.IsStarred.HasValue)
         {
             query = query.Where(b => b.IsStarred == criteria.IsStarred.Value);
@@ -501,6 +525,15 @@ public class BusinessRepository : IBusinessRepository
                 break;
             case QuickFilterType.MissingGmb:
                 query = query.Where(b => !b.IsGoogleVerified && (b.GooglePlaceId == null || b.GooglePlaceId == ""));
+                break;
+            case QuickFilterType.StarredOnly:
+                query = query.Where(b => b.IsStarred);
+                break;
+            case QuickFilterType.HasPhone:
+                query = query.Where(b => !string.IsNullOrWhiteSpace(b.PhonePrimary));
+                break;
+            case QuickFilterType.MissingContact:
+                query = query.Where(b => string.IsNullOrWhiteSpace(b.PhonePrimary) && string.IsNullOrWhiteSpace(b.EmailPrimary));
                 break;
         }
 

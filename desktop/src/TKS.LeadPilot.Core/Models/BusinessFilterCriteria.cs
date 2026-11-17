@@ -18,7 +18,10 @@ public enum QuickFilterType
     GoogleVerified = 3,    // IsGoogleVerified == true
     TopRated = 4,          // GoogleRating >= 4.5
     NeedsAudit = 5,        // Audits is empty and has website
-    MissingGmb = 6         // No Google My Business account (IsGoogleVerified == false && GooglePlaceId is null/empty)
+    MissingGmb = 6,        // No Google My Business account (IsGoogleVerified == false && GooglePlaceId is null/empty)
+    StarredOnly = 7,       // IsStarred == true
+    HasPhone = 8,          // PhonePrimary is not empty
+    MissingContact = 9     // PhonePrimary and EmailPrimary are both empty
 }
 
 public class BusinessFilterCriteria
@@ -30,6 +33,8 @@ public class BusinessFilterCriteria
     public string? Category { get; set; }
     public string? PipelineStageId { get; set; }
     public bool? HasWebsite { get; set; }
+    public bool? HasPhone { get; set; }
+    public bool? HasEmail { get; set; }
     public bool? IsGoogleVerified { get; set; }
     public double? MinRating { get; set; }
     public int? MinScore { get; set; }

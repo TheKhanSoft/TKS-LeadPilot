@@ -115,9 +115,9 @@
                                 <Border Grid.Column="0" Background="#4C0519" BorderBrush="#9F1239" BorderThickness="1" CornerRadius="8" Padding="10,6" VerticalAlignment="Center" Margin="0,0,12,0">
                                     <TextBlock Text="🚨 CRITICAL" FontSize="10" FontWeight="ExtraBold" Foreground="#FB7185"/>
                                 </Border>
-                                <StackPanel Grid.Column="1" Spacing="2" Margin="0,0,16,0" VerticalAlignment="Center" ClipToBounds="True">
-                                    <TextBlock Text="Apex Dental &amp; Implant Care — Missing HTTPS Encryption" FontWeight="Bold" FontSize="13" Foreground="#F8FAFC" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"/>
-                                    <TextBlock Text="Lahore • Lead Score: 88 • Recommend: TKS Website Security &amp; SSL Retainer" FontSize="12" Foreground="#94A3B8" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"/>
+                                <StackPanel Grid.Column="1" MinWidth="0" Spacing="2" Margin="0,0,16,0" VerticalAlignment="Center" ClipToBounds="True">
+                                    <TextBlock Text="Apex Dental &amp; Implant Care — Missing HTTPS Encryption" FontWeight="Bold" FontSize="13" Foreground="#F8FAFC" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" MinWidth="0"/>
+                                    <TextBlock Text="Lahore • Lead Score: 88 • Recommend: TKS Website Security &amp; SSL Retainer" FontSize="12" Foreground="#94A3B8" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" MinWidth="0"/>
                                 </StackPanel>
                                 <Button Grid.Column="2"
                                         Content="View Audit ➔"
@@ -132,9 +132,9 @@
                                 <Border Grid.Column="0" Background="#451A03" BorderBrush="#92400E" BorderThickness="1" CornerRadius="8" Padding="10,6" VerticalAlignment="Center" Margin="0,0,12,0">
                                     <TextBlock Text="⚡ NEW WEB" FontSize="10" FontWeight="ExtraBold" Foreground="#FBBF24"/>
                                 </Border>
-                                <StackPanel Grid.Column="1" Spacing="2" Margin="0,0,16,0" VerticalAlignment="Center" ClipToBounds="True">
-                                    <TextBlock Text="Careway Pharmacy &amp; Diagnostic — No Website Detected" FontWeight="Bold" FontSize="13" Foreground="#F8FAFC" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"/>
-                                    <TextBlock Text="Karachi • Lead Score: 78 • Recommend: Modern Medical Practice Web Portal" FontSize="12" Foreground="#94A3B8" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"/>
+                                <StackPanel Grid.Column="1" MinWidth="0" Spacing="2" Margin="0,0,16,0" VerticalAlignment="Center" ClipToBounds="True">
+                                    <TextBlock Text="Careway Pharmacy &amp; Diagnostic — No Website Detected" FontWeight="Bold" FontSize="13" Foreground="#F8FAFC" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" MinWidth="0"/>
+                                    <TextBlock Text="Karachi • Lead Score: 78 • Recommend: Modern Medical Practice Web Portal" FontSize="12" Foreground="#94A3B8" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" MinWidth="0"/>
                                 </StackPanel>
                                 <Button Grid.Column="2"
                                         Content="Draft Pitch ➔"

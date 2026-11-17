@@ -100,6 +100,7 @@ public partial class App : Application
         services.AddTransient<MainViewModel>();
         services.AddTransient<DashboardViewModel>();
         services.AddTransient<BusinessesViewModel>();
+        services.AddTransient<DiscoveryViewModel>();
         services.AddTransient<AuditsViewModel>();
         services.AddTransient<PipelineViewModel>();
         services.AddTransient<MessageStudioViewModel>();

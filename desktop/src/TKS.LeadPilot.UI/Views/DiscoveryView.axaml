@@ -1,0 +1,320 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TKS.LeadPilot.UI.ViewModels"
+             xmlns:m="using:TKS.LeadPilot.Core.Models"
+             x:Class="TKS.LeadPilot.UI.Views.DiscoveryView"
+             x:DataType="vm:DiscoveryViewModel">
+
+    <Grid Margin="24">
+        <Grid RowDefinitions="Auto,Auto,*,Auto">
+            
+            <!-- 1. Header & Live Telemetry Bar -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+                <!-- Left Title & Subtitle -->
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,0,4">
+                        <TextBlock Text="⚡ Lead Discovery Station" FontSize="22" FontWeight="ExtraBold" Foreground="#F8FAFC" VerticalAlignment="Center"/>
+                        <Border Background="#064E3B" BorderBrush="#059669" BorderThickness="1" CornerRadius="12" Padding="8,3" VerticalAlignment="Center">
+                            <TextBlock Text="GLOBAL MULTI-ENGINE" FontSize="10" FontWeight="Bold" Foreground="#34D399"/>
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="Multi-Source Enterprise Gathering: OpenStreetMap • Nominatim • Google Places • Gemini AI • Regional Vault" FontSize="12" Foreground="#94A3B8"/>
+                </StackPanel>
+
+                <!-- Right Live Status & Metric Strip -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Border Background="#111827" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="12,6">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <Ellipse Width="8" Height="8" Fill="#10B981" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding SelectedEngine}" FontSize="11" Foreground="#38BDF8" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+
+            <!-- 2. Discovery Control Console Ribbon -->
+            <Border Grid.Row="1" Background="#111A2C" BorderBrush="#223147" BorderThickness="1" CornerRadius="10" Padding="16" Margin="0,0,0,16">
+                <StackPanel Spacing="12">
+                    
+                    <!-- Row 1: Cascading Geographic Location Hierarchy & Proximity -->
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <WrapPanel Grid.Column="0" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" Margin="0,0,10,6">
+                                <TextBlock Text="📍" FontSize="13" VerticalAlignment="Center"/>
+                                <TextBlock Text="LOCATION:" FontSize="11" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <!-- Country Dropdown -->
+                            <ComboBox Width="180" ItemsSource="{Binding Countries}" SelectedItem="{Binding SelectedCountry}" IsEnabled="{Binding !IsScanning}" ToolTip.Tip="Filter by Country" Margin="0,0,8,6"/>
+
+                            <!-- State/Province Dropdown -->
+                            <ComboBox Width="180" ItemsSource="{Binding States}" SelectedItem="{Binding SelectedState}" IsEnabled="{Binding !IsScanning}" ToolTip.Tip="Filter by State or Province" Margin="0,0,8,6"/>
+
+                            <!-- City Dropdown -->
+                            <ComboBox Width="160" ItemsSource="{Binding Cities}" SelectedItem="{Binding SelectedCity}" IsEnabled="{Binding !IsScanning}" ToolTip.Tip="Filter by City" Margin="0,0,8,6"/>
+
+                            <!-- Nearby Me Quick Button -->
+                            <Button Content="📍 Nearby Me" Command="{Binding DetectNearbyLocationCommand}" IsEnabled="{Binding !IsScanning}" Classes="btn-accent" Margin="0,0,8,6" ToolTip.Tip="Detect live GPS/IP location and select closest commercial hub"/>
+
+                            <!-- Nearby Radius Selector -->
+                            <ComboBox Width="100" ItemsSource="{Binding AvailableRadii}" SelectedItem="{Binding NearbyRadiusKm}" IsEnabled="{Binding !IsScanning}" ToolTip.Tip="Proximity radius (km)" Margin="0,0,8,6">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="x:Double">
+                                        <TextBlock Text="{Binding StringFormat='{}{0} km'}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </WrapPanel>
+
+                        <!-- Active Proximity Indicator -->
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" IsVisible="{Binding IsNearbyActive}">
+                            <Border Background="#064E3B" BorderBrush="#059669" BorderThickness="1" CornerRadius="12" Padding="8,3">
+                                <TextBlock Text="📍 Proximity Active" FontSize="11" FontWeight="Bold" Foreground="#34D399"/>
+                            </Border>
+                            <Button Content="✕ Clear" Command="{Binding ClearNearbyCommand}" Classes="btn-danger-ghost" Padding="6,2" FontSize="11"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <Separator Background="#1D2A3D"/>
+
+                    <!-- Row 2: Search Engine, Business Category, Keyword & Scan Action -->
+                    <WrapPanel VerticalAlignment="Center">
+                        <!-- Multi-Source Engine Selector -->
+                        <StackPanel Margin="0,0,10,6">
+                            <TextBlock Text="SEARCH ENGINE" FontSize="10" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,3"/>
+                            <ComboBox Width="240" ItemsSource="{Binding AvailableEngines}" SelectedItem="{Binding SelectedEngine}" IsEnabled="{Binding !IsScanning}"/>
+                        </StackPanel>
+
+                        <!-- Business Category Preset -->
+                        <StackPanel Margin="0,0,10,6">
+                            <TextBlock Text="CATEGORY PRESET" FontSize="10" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,3"/>
+                            <ComboBox Width="260" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" IsEnabled="{Binding !IsScanning}"/>
+                        </StackPanel>
+
+                        <!-- Custom Keyword Search -->
+                        <StackPanel Margin="0,0,12,6">
+                            <TextBlock Text="CUSTOM KEYWORD / NICHE" FontSize="10" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,3"/>
+                            <TextBox Width="220" Text="{Binding CustomSearchKeyword}" IsEnabled="{Binding !IsScanning}" PlaceholderText="e.g. dentist, solar, law..." VerticalContentAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- Scan & Cancel Buttons -->
+                        <StackPanel VerticalAlignment="Bottom" Margin="0,0,0,6">
+                            <Button Content="🚀 Start Discovery Scan" 
+                                    Command="{Binding StartScanCommand}" 
+                                    Classes="btn-accent" 
+                                    IsVisible="{Binding !IsScanning}"
+                                    FontWeight="Bold"
+                                    Padding="18,9"
+                                    ToolTip.Tip="Launch multi-source query across selected geographic territory"/>
+                            <Button Content="🛑 Cancel Scan" 
+                                    Command="{Binding CancelScanCommand}" 
+                                    Classes="btn-danger" 
+                                    IsVisible="{Binding IsScanning}"
+                                    FontWeight="Bold"
+                                    Padding="18,9"/>
+                        </StackPanel>
+                    </WrapPanel>
+
+                    <!-- Row 3: Pre-Scan Constraint Filters -->
+                    <WrapPanel VerticalAlignment="Center">
+                        <TextBlock Text="TARGET CONSTRAINTS:" FontSize="10" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,12,4"/>
+                        <CheckBox Content="Target Missing Website Only" IsChecked="{Binding TargetMissingWebsite}" IsEnabled="{Binding !IsScanning}" Margin="0,0,16,4" FontSize="12" Foreground="#CBD5E1"/>
+                        <CheckBox Content="Target Missing GMB Only" IsChecked="{Binding TargetMissingGmb}" IsEnabled="{Binding !IsScanning}" Margin="0,0,16,4" FontSize="12" Foreground="#CBD5E1"/>
+                        <CheckBox Content="Require Verified Phone" IsChecked="{Binding RequirePhone}" IsEnabled="{Binding !IsScanning}" Margin="0,0,16,4" FontSize="12" Foreground="#CBD5E1"/>
+                    </WrapPanel>
+
+                    <!-- Row 4: Suggested Regional Business Niches -->
+                    <WrapPanel VerticalAlignment="Center" IsVisible="{Binding SuggestedNiches.Count}">
+                        <TextBlock Text="💡 REGIONAL NICHES:" FontSize="10" FontWeight="Bold" Foreground="#F59E0B" VerticalAlignment="Center" Margin="0,0,8,4"/>
+                        <ItemsControl ItemsSource="{Binding SuggestedNiches}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <Button Content="{Binding}" 
+                                            Command="{Binding ((vm:DiscoveryViewModel)DataContext).SelectSuggestedNicheCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}"
+                                            IsEnabled="{Binding !((vm:DiscoveryViewModel)DataContext).IsScanning, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            Classes="niche-pill"
+                                            Margin="0,0,6,4"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </WrapPanel>
+
+                    <!-- Scanning Progress Bar Indicator -->
+                    <ProgressBar IsIndeterminate="True" Height="3" Background="#1E293B" Foreground="#38BDF8" IsVisible="{Binding IsScanning}" Margin="0,2,0,0"/>
+
+                    <!-- Filter Summary & Status Bar -->
+                    <Grid ColumnDefinitions="*,Auto" Margin="0,2,0,0">
+                        <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="12" Foreground="#38BDF8" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
+                            <TextBlock Text="{Binding TotalFoundCount, StringFormat='Found: {0}'}" FontSize="12" FontWeight="Bold" Foreground="#F8FAFC"/>
+                            <TextBlock Text="{Binding NewLeadsCount, StringFormat='⭐ New: {0}'}" FontSize="12" FontWeight="Bold" Foreground="#10B981"/>
+                            <TextBlock Text="{Binding DuplicateLeadsCount, StringFormat='⚠️ In Database: {0}'}" FontSize="12" Foreground="#F59E0B"/>
+                            <TextBlock Text="{Binding SelectedForImportCount, StringFormat='✓ Selected: {0}'}" FontSize="12" FontWeight="Bold" Foreground="#38BDF8"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 3. Discovered Leads Results Table -->
+            <Border Grid.Row="2" Background="#111A2C" BorderBrush="#223147" BorderThickness="1" CornerRadius="10" Padding="0">
+                <Grid RowDefinitions="Auto,*">
+                    <!-- Batch Selection Action Bar -->
+                    <Border Grid.Row="0" Background="#0C1322" BorderBrush="#1E293B" BorderThickness="0,0,0,1" Padding="14,10">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="BATCH SELECTION:" FontSize="10" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                <Button Content="Select All" Command="{Binding SelectAllCommand}" Classes="btn-secondary" Padding="10,5" FontSize="11" IsEnabled="{Binding !IsScanning}"/>
+                                <Button Content="Unselect All" Command="{Binding UnselectAllCommand}" Classes="btn-secondary" Padding="10,5" FontSize="11" IsEnabled="{Binding !IsScanning}"/>
+                                <Button Content="⭐ Select Only New" Command="{Binding SelectOnlyNewCommand}" Classes="btn-secondary" Padding="10,5" FontSize="11" IsEnabled="{Binding !IsScanning}"/>
+                            </StackPanel>
+
+                            <!-- Direct Import Button in Header Strip -->
+                            <Button Grid.Column="2" 
+                                    Content="{Binding SelectedForImportCount, StringFormat='📥 Import Selected Leads ({0})'}" 
+                                    Command="{Binding ImportSelectedLeadsCommand}" 
+                                    Classes="btn-success" 
+                                    IsEnabled="{Binding !IsImporting}"
+                                    Padding="16,6"
+                                    FontWeight="Bold"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Leads DataGrid -->
+                    <DataGrid Grid.Row="1"
+                              ItemsSource="{Binding DiscoveredLeads}"
+                              SelectedItem="{Binding SelectedLead}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              GridLinesVisibility="Horizontal"
+                              HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Auto"
+                              RowBackground="#111A2C"
+                              BorderThickness="0">
+                        <DataGrid.Columns>
+                            
+                            <!-- Selection Checkbox Column -->
+                            <DataGridTemplateColumn Header="Import" Width="60">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate x:DataType="m:DiscoveredLead">
+                                        <CheckBox IsChecked="{Binding IsSelectedForImport}" 
+                                                  HorizontalAlignment="Center" 
+                                                  VerticalAlignment="Center"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Business Name -->
+                            <DataGridTextColumn Header="Business Name" Binding="{Binding Business.Name}" Width="220" />
+
+                            <!-- Category -->
+                            <DataGridTextColumn Header="Category" Binding="{Binding Business.Category}" Width="160" />
+
+                            <!-- City -->
+                            <DataGridTextColumn Header="City" Binding="{Binding Business.City}" Width="120" />
+
+                            <!-- Country -->
+                            <DataGridTextColumn Header="Country" Binding="{Binding Business.Country}" Width="110" />
+
+                            <!-- Source Engine Provider -->
+                            <DataGridTextColumn Header="Source Engine" Binding="{Binding Business.SourceProvider}" Width="160" />
+
+                            <!-- Website -->
+                            <DataGridTemplateColumn Header="Website Status" Width="180">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate x:DataType="m:DiscoveredLead">
+                                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                            <Border Background="#064E3B" CornerRadius="4" Padding="5,2" IsVisible="{Binding Business.WebsiteUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                                <TextBlock Text="{Binding Business.WebsiteUrl}" FontSize="11" Foreground="#34D399" TextTrimming="CharacterEllipsis" MaxWidth="150"/>
+                                            </Border>
+                                            <Border Background="#450A0A" CornerRadius="4" Padding="5,2" IsVisible="{Binding Business.WebsiteUrl, Converter={x:Static StringConverters.IsNullOrEmpty}}">
+                                                <TextBlock Text="❌ No Website" FontSize="10" FontWeight="Bold" Foreground="#FCA5A5"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Primary Phone -->
+                            <DataGridTextColumn Header="Phone" Binding="{Binding Business.PhonePrimary}" Width="130" />
+
+                            <!-- Duplicate / Database Status -->
+                            <DataGridTemplateColumn Header="Status" Width="110">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate x:DataType="m:DiscoveredLead">
+                                        <StackPanel VerticalAlignment="Center">
+                                            <Border Background="#064E3B" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" IsVisible="{Binding !IsDuplicate}">
+                                                <TextBlock Text="⭐ NEW" FontSize="10" FontWeight="Bold" Foreground="#34D399"/>
+                                            </Border>
+                                            <Border Background="#451A03" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" IsVisible="{Binding IsDuplicate}">
+                                                <TextBlock Text="⚠️ IN DATABASE" FontSize="9" FontWeight="Bold" Foreground="#FBBF24"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Quick Action Buttons -->
+                            <DataGridTemplateColumn Header="Actions" Width="140">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate x:DataType="m:DiscoveredLead">
+                                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                            <Button Content="📋 Pitch" 
+                                                    Command="{Binding ((vm:DiscoveryViewModel)DataContext).CopyPitchCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Classes="btn-secondary"
+                                                    Padding="6,3"
+                                                    FontSize="10"
+                                                    ToolTip.Tip="Copy targeted cold outreach proposal"/>
+                                            <Button Content="📞" 
+                                                    Command="{Binding ((vm:DiscoveryViewModel)DataContext).CopyPhoneCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Classes="btn-secondary"
+                                                    Padding="6,3"
+                                                    FontSize="10"
+                                                    ToolTip.Tip="Copy phone number"/>
+                                            <Button Content="🌐" 
+                                                    Command="{Binding ((vm:DiscoveryViewModel)DataContext).OpenWebsiteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Classes="btn-secondary"
+                                                    Padding="6,3"
+                                                    FontSize="10"
+                                                    IsVisible="{Binding Business.WebsiteUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                                    ToolTip.Tip="Launch website in browser"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+
+            <!-- 4. Sticky Bottom Action Strip -->
+            <Border Grid.Row="3" Background="#0C1322" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="16,12" Margin="0,12,0,0">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
+                        <TextBlock Text="Ready to persist selected leads into local SQLite database for CRM pipelining, audits, and outreach." FontSize="12" Foreground="#94A3B8"/>
+                        <TextBlock Text="Duplicates are automatically skipped to prevent data collisions." FontSize="11" Foreground="#64748B"/>
+                    </StackPanel>
+
+                    <Button Grid.Column="1" 
+                            Content="{Binding SelectedForImportCount, StringFormat='📥 Import Selected Leads ({0})'}" 
+                            Command="{Binding ImportSelectedLeadsCommand}" 
+                            Classes="btn-success" 
+                            IsEnabled="{Binding !IsImporting}"
+                            Padding="22,10"
+                            FontSize="13"
+                            FontWeight="Bold"/>
+                </Grid>
+            </Border>
+
+        </Grid>
+    </Grid>
+</UserControl>

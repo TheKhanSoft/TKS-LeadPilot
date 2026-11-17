@@ -35,6 +35,9 @@ public class DiscoveryQuery
     public string SearchEngine { get; set; } = "All Sources (Unified Aggregator)";
     public string? CategoryPreset { get; set; }
     public string? CustomSearchTerm { get; set; }
+    public bool RequirePhone { get; set; } = false;
+    public bool TargetMissingWebsiteOnly { get; set; } = false;
+    public bool TargetMissingGmbOnly { get; set; } = false;
 }
 
 public class DiscoveredLead : System.ComponentModel.INotifyPropertyChanged

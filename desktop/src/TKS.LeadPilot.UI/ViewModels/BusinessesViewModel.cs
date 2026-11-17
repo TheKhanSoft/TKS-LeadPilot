@@ -90,6 +90,32 @@ public partial class BusinessesViewModel : ViewModelBase
     [ObservableProperty]
     private string _selectedWebsiteFilter = "All Sites";
 
+    // Opportunity Score Filter
+    [ObservableProperty]
+    private ObservableCollection<string> _scoreFilters =
+    [
+        "All Scores (0–100)",
+        "🔥 High Opportunity (70–100)",
+        "⚡ Medium Opportunity (40–69)",
+        "🌱 Low Opportunity (0–39)"
+    ];
+
+    [ObservableProperty]
+    private string _selectedScoreFilter = "All Scores (0–100)";
+
+    // Contact Availability Filter
+    [ObservableProperty]
+    private ObservableCollection<string> _contactFilters =
+    [
+        "All Contacts",
+        "📞 Has Phone",
+        "✉️ Has Email",
+        "❌ Missing Contact"
+    ];
+
+    [ObservableProperty]
+    private string _selectedContactFilter = "All Contacts";
+
     // Sorting & Ordering
     [ObservableProperty]
     private ObservableCollection<string> _sortOptions =
@@ -135,6 +161,17 @@ public partial class BusinessesViewModel : ViewModelBase
 
     [ObservableProperty]
     private int _verifiedCount = 0;
+
+    [ObservableProperty]
+    private int _missingGmbCount = 0;
+
+    [ObservableProperty]
+    private int _noWebsiteCount = 0;
+
+    public string ShowingSummaryText => $"Showing: {FilteredCount} of {TotalCount}";
+
+    partial void OnFilteredCountChanged(int value) => OnPropertyChanged(nameof(ShowingSummaryText));
+    partial void OnTotalCountChanged(int value) => OnPropertyChanged(nameof(ShowingSummaryText));
 
     [ObservableProperty]
     private string _statusMessage = string.Empty;
@@ -230,6 +267,28 @@ public partial class BusinessesViewModel : ViewModelBase
 
     [ObservableProperty]
     private DeduplicationStrategy _discoveryDedupStrategy = DeduplicationStrategy.Skip;
+
+    // Advanced Discovery Scan Controls & Scope
+    [ObservableProperty]
+    private ObservableCollection<string> _discoveryBatchLimits =
+    [
+        "25 Leads (Fast)",
+        "50 Leads (Standard)",
+        "100 Leads (Comprehensive)",
+        "200 Leads (Deep Extraction)"
+    ];
+
+    [ObservableProperty]
+    private string _selectedDiscoveryBatchLimit = "50 Leads (Standard)";
+
+    [ObservableProperty]
+    private bool _discoveryRequirePhone = false;
+
+    [ObservableProperty]
+    private bool _discoveryTargetMissingWebsite = false;
+
+    [ObservableProperty]
+    private bool _discoveryTargetMissingGmb = false;
 
     // CSV Import State
     [ObservableProperty]
@@ -481,12 +540,15 @@ public partial class BusinessesViewModel : ViewModelBase
         ActiveQuickFilterName = filterName;
         SelectedQuickFilter = filterName switch
         {
-            "🔥 Hot Leads" => QuickFilterType.HotLeads,
-            "❌ No Website" => QuickFilterType.NoWebsite,
+            "🔥 Hot Leads" or "🔥 Hot Leads (70+)" or "Hot Leads" => QuickFilterType.HotLeads,
+            "❌ No Website" or "No Website" => QuickFilterType.NoWebsite,
             "📍 Missing GMB" or "Missing GMB" => QuickFilterType.MissingGmb,
-            "✓ Verified" => QuickFilterType.GoogleVerified,
-            "⭐ Top Rated" => QuickFilterType.TopRated,
-            "Needs Audit" => QuickFilterType.NeedsAudit,
+            "✓ Verified" or "✓ Verified Only" or "Verified" => QuickFilterType.GoogleVerified,
+            "⭐ Top Rated" or "⭐ Top Rated (4.5+)" or "Top Rated" => QuickFilterType.TopRated,
+            "🔬 Needs Audit" or "Needs Audit" => QuickFilterType.NeedsAudit,
+            "⭐ Starred" or "⭐ Starred Leads" or "Starred" => QuickFilterType.StarredOnly,
+            "📞 Has Phone" or "Has Phone" => QuickFilterType.HasPhone,
+            "❌ Missing Contact" => QuickFilterType.MissingContact,
             _ => QuickFilterType.All
         };
 
@@ -618,6 +680,38 @@ public partial class BusinessesViewModel : ViewModelBase
             IsLoading = true;
             var rawCountry = ExtractCountryName(SelectedCountry);
 
+            int? minScore = null;
+            int? maxScore = null;
+            if (SelectedScoreFilter.Contains("High Opportunity"))
+            {
+                minScore = 70;
+            }
+            else if (SelectedScoreFilter.Contains("Medium Opportunity"))
+            {
+                minScore = 40;
+                maxScore = 69;
+            }
+            else if (SelectedScoreFilter.Contains("Low Opportunity"))
+            {
+                maxScore = 39;
+            }
+
+            bool? hasPhone = null;
+            bool? hasEmail = null;
+            if (SelectedContactFilter.Contains("Has Phone"))
+            {
+                hasPhone = true;
+            }
+            else if (SelectedContactFilter.Contains("Has Email"))
+            {
+                hasEmail = true;
+            }
+            else if (SelectedContactFilter.Contains("Missing Contact") || SelectedContactFilter.Contains("No Contact"))
+            {
+                hasPhone = false;
+                hasEmail = false;
+            }
+
             var criteria = new BusinessFilterCriteria
             {
                 SearchQuery = string.IsNullOrWhiteSpace(SearchQuery) ? null : SearchQuery,
@@ -627,11 +721,16 @@ public partial class BusinessesViewModel : ViewModelBase
                 Category = SelectedCategory != "All Categories" ? SelectedCategory : null,
                 PipelineStageId = SelectedStage?.Id,
                 HasWebsite = SelectedWebsiteFilter == "Has Website" ? true : SelectedWebsiteFilter == "No Website" ? false : null,
+                HasPhone = hasPhone,
+                HasEmail = hasEmail,
+                MinScore = minScore,
+                MaxScore = maxScore,
                 QuickFilter = SelectedQuickFilter,
                 SortBy = SelectedSortOption switch
                 {
                     "Score: High to Low" => BusinessSortOption.ScoreDescending,
                     "Score: Low to High" => BusinessSortOption.ScoreAscending,
+                    "Rating: 5★ Top Rated" or "Rating: Top Rated" => BusinessSortOption.ScoreDescending,
                     "Name: A to Z" => BusinessSortOption.NameAscending,
                     "Name: Z to A" => BusinessSortOption.NameDescending,
                     "Newest Discovered" => BusinessSortOption.CreatedDescending,
@@ -646,9 +745,27 @@ public partial class BusinessesViewModel : ViewModelBase
             TotalCount = await _businessRepository.GetTotalCountAsync();
             HotLeadsCount = await _businessRepository.GetHighOpportunityCountAsync(70);
             VerifiedCount = Businesses.Count(b => b.IsGoogleVerified);
+            MissingGmbCount = Businesses.Count(b => !b.IsGoogleVerified && string.IsNullOrWhiteSpace(b.GooglePlaceId));
+            NoWebsiteCount = Businesses.Count(b => string.IsNullOrWhiteSpace(b.WebsiteUrl));
 
             SelectedBusiness = Businesses.FirstOrDefault();
-            StatusMessage = $"Showing {FilteredCount} of {TotalCount} leads • {HotLeadsCount} High Opportunity • {VerifiedCount} Google Verified";
+
+            if (SelectedQuickFilter != QuickFilterType.All)
+            {
+                StatusMessage = $"Active Filter: {ActiveQuickFilterName} ({FilteredCount} matches)";
+            }
+            else if (!string.IsNullOrWhiteSpace(SearchQuery))
+            {
+                StatusMessage = $"Search: \"{SearchQuery}\" ({FilteredCount} matches)";
+            }
+            else if (rawCountry != "All Countries" || SelectedCity != "All Cities" || SelectedCategory != "All Categories")
+            {
+                StatusMessage = $"Filtered by: {SelectedCountry} • {SelectedCity} • {SelectedCategory} ({FilteredCount} leads)";
+            }
+            else
+            {
+                StatusMessage = $"Database view active • {TotalCount} total registered businesses";
+            }
         }
         catch (Exception ex)
         {
@@ -668,6 +785,8 @@ public partial class BusinessesViewModel : ViewModelBase
         SelectedState = "All States/Provinces";
         SelectedCity = "All Cities";
         SelectedCategory = "All Categories";
+        SelectedScoreFilter = "All Scores (0–100)";
+        SelectedContactFilter = "All Contacts";
         SelectedStage = null;
         SelectedWebsiteFilter = "All Sites";
         SelectedQuickFilter = QuickFilterType.All;
@@ -1132,6 +1251,24 @@ public partial class BusinessesViewModel : ViewModelBase
         }
     }
 
+    [RelayCommand]
+    public void SelectDiscoveredWithPhoneOnly()
+    {
+        foreach (var lead in DiscoveredLeads)
+        {
+            lead.IsSelectedForImport = !lead.IsDuplicate && !string.IsNullOrWhiteSpace(lead.Business?.PhonePrimary);
+        }
+    }
+
+    [RelayCommand]
+    public void SelectDiscoveredNoWebsiteOnly()
+    {
+        foreach (var lead in DiscoveredLeads)
+        {
+            lead.IsSelectedForImport = !lead.IsDuplicate && string.IsNullOrWhiteSpace(lead.Business?.WebsiteUrl);
+        }
+    }
+
     public string MapNicheToCategoryPreset(string niche)
     {
         if (string.IsNullOrWhiteSpace(niche)) return "⭐ All Commercial Businesses";
@@ -1266,6 +1403,12 @@ public partial class BusinessesViewModel : ViewModelBase
                 }
             }
 
+            int batchLimit = 50;
+            if (SelectedDiscoveryBatchLimit.StartsWith("25")) batchLimit = 25;
+            else if (SelectedDiscoveryBatchLimit.StartsWith("50")) batchLimit = 50;
+            else if (SelectedDiscoveryBatchLimit.StartsWith("100")) batchLimit = 100;
+            else if (SelectedDiscoveryBatchLimit.StartsWith("200")) batchLimit = 200;
+
             var query = new DiscoveryQuery
             {
                 Country = SelectedDiscoveryCountry,
@@ -1273,11 +1416,14 @@ public partial class BusinessesViewModel : ViewModelBase
                 City = SelectedDiscoveryCity,
                 TargetAmenities = targetAmenities,
                 BBox = bbox,
-                Limit = 150,
-                TimeoutSeconds = 30,
+                Limit = batchLimit,
+                TimeoutSeconds = 45,
                 SearchEngine = SelectedDiscoveryEngine,
                 CategoryPreset = SelectedDiscoveryCategoryPreset,
-                CustomSearchTerm = DiscoveryCustomKeyword
+                CustomSearchTerm = DiscoveryCustomKeyword,
+                RequirePhone = DiscoveryRequirePhone,
+                TargetMissingWebsiteOnly = DiscoveryTargetMissingWebsite,
+                TargetMissingGmbOnly = DiscoveryTargetMissingGmb
             };
 
             var result = await _discoveryService.DiscoverLeadsAsync(query);
