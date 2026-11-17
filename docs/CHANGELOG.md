@@ -6,6 +6,36 @@ All notable changes to the TKS LeadPilot project will be documented in this file
 
 ## [Unreleased]
 
+### [0.10.0] — Stage 10: Message Studio & Multi-Channel Outreach Engine + Premium UI/UX Polish — 2026-11-17
+#### Added
+- Outreach Domain Entities & Enums:
+  - `OutreachMessage` entity (`Id`, `BusinessId`, `ContactId`, `TemplateId`, `Channel`, `RecipientAddress`, `Subject`, `RenderedBody`, `ApprovalStatus`, `DispatchedAtUtc`, `ExternalMessageId`, `ErrorMessage`).
+  - `OutreachTemplate` entity (`Id`, `Name`, `Channel`, `Category`, `SubjectTemplate`, `BodyTemplate`, `CreatedAtUtc`, `UpdatedAtUtc`).
+  - `OutreachChannel` (`Email`, `WhatsApp`) and `OutreachApprovalStatus` (`Draft`, `PendingApproval`, `Approved`, `Rejected`, `Dispatched`, `Failed`).
+- Multi-Channel Outreach Service (`IOutreachService`, `OutreachService`):
+  - Robust token substitution supporting 11 dynamic context variables: `{{business_name}}`, `{{contact_name}}`, `{{city}}`, `{{category}}`, `{{website_url}}`, `{{lead_score}}`, `{{suggested_service}}`, `{{top_audit_issue}}`, `{{ttfb_ms}}`, `{{ssl_status}}`, and `{{sender_name}}`.
+  - Automatic fallback value resolution for missing or uninspected metrics without corrupting copy.
+  - Strict Compliance & Do-Not-Contact guard (`InvalidOperationException` thrown if business lead is marked `DoNotContact` or tagged `Suppressed`).
+  - Native sanitized OS dispatch handlers:
+    - RFC 6068 URL-encoded `BuildMailtoUri` for default email client integration.
+    - URL-encoded `BuildWhatsAppUri` (`https://wa.me/{clean_phone}?text={encoded}`) for direct WhatsApp messaging.
+    - Direct zero-cost OS launching via `Process.Start` with protocol sanitization.
+  - Full Draft Approval Queue lifecycle (`CreateDraftAsync`, `ApproveDraftAsync`, `RejectDraftAsync`, `DispatchApprovedAsync`, `GetOutboxQueueAsync`).
+- Default Outbox & Discovery Templates Seeder (`DatabaseInitializer`):
+  - Seeded 4 ready-to-use business outreach templates covering Technical Audits, Speed Optimization, Quick Diagnostics, and Missing Website offers across Email and WhatsApp channels.
+- Modern & Premium UI/UX Polish:
+  - Created dedicated `MessageStudioView.axaml` and `MessageStudioViewModel.cs` with dual-column layout:
+    - Left pane: Recipient lead picker, contact selector, template catalog, multi-channel toggle pills, and dynamic token quick-insert badges.
+    - Right pane: Live WYSIWYG rendered message preview, Human-in-the-Loop compliance approval notice, and direct dispatch buttons ("Approve & Launch Outlook/Thunderbird" / "Approve & Open WhatsApp Web").
+    - Outbox Approval Queue tab with status pills and instant review workflow.
+  - Elevated app-wide styling in `App.axaml`:
+    - Premium button transitions and hover elevation.
+    - Modern dark theme DataGrid styling with obsidian headers (`#080D16`), deep rows (`#0B111D`), and active row highlighting (`#1C2E4A`).
+    - Rounded input controls and subtle slate border strokes.
+  - Enhanced `DashboardView.axaml` with 2px accent gradient top borders on metric cards and quick action chips.
+  - Enhanced `MainWindow.axaml` navigation bar with active route indicators, glowing brand badge, and zero-cost status indicator.
+- 5 new unit tests in `OutreachServiceTests.cs` validating token substitution, recipient resolution, Do-Not-Contact suppression guards, approval transitions, and URL encoding for Mailto and WhatsApp links (total 90 passing tests, 0 failures).
+
 ### [0.9.0] — Stage 9: Transparent Lead Scoring & CRM Sales Pipeline — 2026-11-17
 #### Added
 - Transparent & Explainable Lead Scoring Engine (`ILeadScoringEngine`, `LeadScoringEngine`):
