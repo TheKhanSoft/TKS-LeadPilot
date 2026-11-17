@@ -13,16 +13,16 @@
             </StackPanel>
 
             <!-- Gemini API Key Card -->
-            <Border Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="20">
+            <Border Background="#0E1626" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="10" Padding="20">
                 <StackPanel Spacing="16">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="Google Gemini Developer API (Free Tier)" FontSize="16" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                        <TextBlock Text="Google Gemini Developer API (Free Tier)" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC"/>
                         <TextBlock Text="Saved securely in Windows DPAPI vault (CurrentUser scope). Never stored in plain text or exported." FontSize="12" Foreground="#94A3B8"/>
                     </StackPanel>
 
                     <StackPanel Spacing="8">
                         <TextBlock Text="Gemini API Key (from Google AI Studio)" FontSize="12" FontWeight="SemiBold" Foreground="#64748B"/>
-                        <TextBox Text="{Binding GeminiApiKey}" PlaceholderText="AIzaSy..." Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6" Padding="10"/>
+                        <TextBox Text="{Binding GeminiApiKey}" PlaceholderText="AIzaSy..." Background="#0B1322" Foreground="#F8FAFC" BorderBrush="#22324A" CornerRadius="7" Padding="12,8"/>
                     </StackPanel>
 
                     <!-- Gemini Free Tier Controls (Stage 8) -->
@@ -31,7 +31,7 @@
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="4">
                             <TextBlock Text="Gemini Free Tier Model" FontSize="12" FontWeight="SemiBold" Foreground="#64748B"/>
-                            <TextBox Text="{Binding SelectedGeminiModel}" Width="220" HorizontalAlignment="Left" Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6" Padding="8,4"/>
+                            <TextBox Text="{Binding SelectedGeminiModel}" Width="220" HorizontalAlignment="Left" Background="#0B1322" Foreground="#F8FAFC" BorderBrush="#22324A" CornerRadius="7" Padding="10,6"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Spacing="2">
                             <TextBlock Text="{Binding DailyAiUsedToday, StringFormat='Requests Used Today: {0}'}" FontSize="12" Foreground="#38BDF8" HorizontalAlignment="Right"/>
@@ -40,8 +40,8 @@
                     </Grid>
 
                     <StackPanel Orientation="Horizontal" Spacing="12">
-                        <Button Content="💾 Save to DPAPI Vault" Command="{Binding SaveApiKeyCommand}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="16,8"/>
-                        <Button Content="🔍 Test Vault Key" Command="{Binding TestAiConnectionCommand}" Background="#1E293B" Foreground="#38BDF8" CornerRadius="6" Padding="16,8"/>
+                        <Button Content="💾 Save to DPAPI Vault" Command="{Binding SaveApiKeyCommand}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="7" Padding="16,8" FontWeight="SemiBold"/>
+                        <Button Content="🔍 Test Vault Key" Command="{Binding TestAiConnectionCommand}" Background="#1E293B" Foreground="#38BDF8" CornerRadius="7" Padding="16,8"/>
                     </StackPanel>
 
                     <TextBlock Text="{Binding StatusMessage}" Foreground="#10B981" FontWeight="SemiBold" FontSize="12" IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
@@ -49,10 +49,10 @@
             </Border>
 
             <!-- Google Places API (Paid / Commercial Enrichment) -->
-            <Border Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="20">
+            <Border Background="#0E1626" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="10" Padding="20">
                 <StackPanel Spacing="16">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="Google Places API (Paid Commercial Enrichment)" FontSize="16" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                        <TextBlock Text="Google Places API (Paid Commercial Enrichment)" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC"/>
                         <TextBlock Text="Optional commercial enrichment for ratings, reviews, opening hours, and verified addresses with hard cost controls." FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap"/>
                     </StackPanel>
 
@@ -62,7 +62,7 @@
                     <!-- API Key Input -->
                     <StackPanel Spacing="6">
                         <TextBlock Text="Google Places API Key" FontSize="12" FontWeight="SemiBold" Foreground="#64748B"/>
-                        <TextBox Text="{Binding GooglePlacesApiKey}" PlaceholderText="AIzaSy..." Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6" Padding="10"/>
+                        <TextBox Text="{Binding GooglePlacesApiKey}" PlaceholderText="AIzaSy..." Background="#0B1322" Foreground="#F8FAFC" BorderBrush="#22324A" CornerRadius="7" Padding="12,8"/>
                     </StackPanel>
 
                     <!-- Daily Ceiling Cost Control -->
@@ -72,17 +72,17 @@
                             <TextBlock Text="Enrichment calls will be blocked once this daily count is reached." FontSize="12" Foreground="#64748B"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                            <TextBox Width="80" Text="{Binding GooglePlacesDailyCeiling}" Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6" Padding="6" HorizontalContentAlignment="Center"/>
+                            <TextBox Width="80" Text="{Binding GooglePlacesDailyCeiling}" Background="#0B1322" Foreground="#F8FAFC" BorderBrush="#22324A" CornerRadius="7" Padding="8,6" HorizontalContentAlignment="Center"/>
                             <TextBlock Text="{Binding GooglePlacesUsedToday, StringFormat='Used Today: {0}'}" FontSize="12" Foreground="#38BDF8" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Grid>
 
-                    <Button Content="💾 Save Google Places Settings" Command="{Binding SaveGooglePlacesSettingsCommand}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="16,8"/>
+                    <Button Content="💾 Save Google Places Settings" Command="{Binding SaveGooglePlacesSettingsCommand}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="7" Padding="16,8" FontWeight="SemiBold"/>
                 </StackPanel>
             </Border>
 
             <!-- Central Laravel Headless API Synchronization (Stage 11) -->
-            <Border Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="20">
+            <Border Background="#0E1626" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="10" Padding="20">
                 <StackPanel Spacing="16">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="4">
@@ -97,24 +97,24 @@
                     <!-- API Base URL -->
                     <StackPanel Spacing="6">
                         <TextBlock Text="Central API Endpoint URL" FontSize="12" FontWeight="SemiBold" Foreground="#64748B"/>
-                        <TextBox Text="{Binding SyncApiBaseUrl}" PlaceholderText="http://127.0.0.1:8000/api/v1" Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6" Padding="10"/>
+                        <TextBox Text="{Binding SyncApiBaseUrl}" PlaceholderText="http://127.0.0.1:8000/api/v1" Background="#0B1322" Foreground="#F8FAFC" BorderBrush="#22324A" CornerRadius="7" Padding="12,8"/>
                     </StackPanel>
 
                     <!-- Sanctum API Token -->
                     <StackPanel Spacing="6">
                         <TextBlock Text="Sanctum Bearer Token (Optional for dev-sync)" FontSize="12" FontWeight="SemiBold" Foreground="#64748B"/>
-                        <TextBox Text="{Binding SyncApiToken}" PlaceholderText="1|sanctum_token..." PasswordChar="●" Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6" Padding="10"/>
+                        <TextBox Text="{Binding SyncApiToken}" PlaceholderText="1|sanctum_token..." PasswordChar="●" Background="#0B1322" Foreground="#F8FAFC" BorderBrush="#22324A" CornerRadius="7" Padding="12,8"/>
                     </StackPanel>
 
                     <!-- Device Information -->
                     <Grid ColumnDefinitions="*,*">
                         <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,8,0">
                             <TextBlock Text="Device Name" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
-                            <TextBox Text="{Binding SyncDeviceName}" Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6" Padding="8,6"/>
+                            <TextBox Text="{Binding SyncDeviceName}" Background="#0B1322" Foreground="#F8FAFC" BorderBrush="#22324A" CornerRadius="7" Padding="10,6"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Spacing="4" Margin="8,0,0,0">
                             <TextBlock Text="Universal Device UUID" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
-                            <TextBox Text="{Binding SyncDeviceId}" IsReadOnly="True" Background="#0F172A" Foreground="#94A3B8" BorderBrush="#26334A" CornerRadius="6" Padding="8,6"/>
+                            <TextBox Text="{Binding SyncDeviceId}" IsReadOnly="True" Background="#080C14" Foreground="#94A3B8" BorderBrush="#22324A" CornerRadius="7" Padding="10,6"/>
                         </StackPanel>
                     </Grid>
 
@@ -126,17 +126,17 @@
 
                     <!-- Actions -->
                     <StackPanel Orientation="Horizontal" Spacing="10">
-                        <Button Content="💾 Save Settings" Command="{Binding SaveSyncSettingsCommand}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="14,8"/>
-                        <Button Content="📡 Test API Health" Command="{Binding CheckSyncHealthCommand}" Background="#1E293B" Foreground="#38BDF8" BorderBrush="#26334A" BorderThickness="1" CornerRadius="6" Padding="14,8"/>
-                        <Button Content="🔄 Sync Now" Command="{Binding TriggerSyncNowCommand}" IsEnabled="{Binding !IsSyncing}" Background="#059669" Foreground="#FFFFFF" CornerRadius="6" Padding="16,8" FontWeight="SemiBold"/>
+                        <Button Content="💾 Save Settings" Command="{Binding SaveSyncSettingsCommand}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="7" Padding="14,8" FontWeight="SemiBold"/>
+                        <Button Content="📡 Test API Health" Command="{Binding CheckSyncHealthCommand}" Background="#1E293B" Foreground="#38BDF8" BorderBrush="#26334A" BorderThickness="1" CornerRadius="7" Padding="14,8"/>
+                        <Button Content="🔄 Sync Now" Command="{Binding TriggerSyncNowCommand}" IsEnabled="{Binding !IsSyncing}" Background="#059669" Foreground="#FFFFFF" CornerRadius="7" Padding="16,8" FontWeight="SemiBold"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
 
             <!-- AI Rate Limiter & Zero Billing -->
-            <Border Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="20">
+            <Border Background="#0E1626" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="10" Padding="20">
                 <StackPanel Spacing="16">
-                    <TextBlock Text="Zero-Unexpected-Billing Policy Enforcement" FontSize="16" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                    <TextBlock Text="Zero-Unexpected-Billing Policy Enforcement" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC"/>
                     <TextBlock Text="The hard spending limit is locked to $0.00. Automatic fallback to paid models or paid tiers is architecturally forbidden." FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap"/>
                     
                     <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
@@ -158,11 +158,11 @@
             </Border>
 
             <!-- Local Database Maintenance -->
-            <Border Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="20">
+            <Border Background="#0E1626" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="10" Padding="20">
                 <StackPanel Spacing="12">
-                    <TextBlock Text="Local Storage (SQLite)" FontSize="16" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                    <TextBlock Text="Local Storage (SQLite Engine)" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC"/>
                     <TextBlock Text="Database location: %LOCALAPPDATA%\TKS.LeadPilot\tks_leadpilot.db" FontSize="12" Foreground="#94A3B8"/>
-                    <TextBlock Text="Engine: SQLite 3 with Entity Framework Core 9.0" FontSize="12" Foreground="#64748B"/>
+                    <TextBlock Text="Engine: SQLite 3 with Entity Framework Core 10.0 • Offline-First Universal UUIDv4" FontSize="12" Foreground="#64748B"/>
                 </StackPanel>
             </Border>
         </StackPanel>

@@ -136,7 +136,7 @@
             <!-- 3. Master-Detail Split Grid -->
             <Grid Grid.Row="2" ColumnDefinitions="2*,1*">
                 <!-- Left: DataGrid Pane -->
-                <Border Grid.Column="0" Margin="0,0,8,0" Background="#111A2C" BorderBrush="#223147" BorderThickness="1" CornerRadius="8">
+                <Border Grid.Column="0" Margin="0,0,8,0" Background="#0E1626" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="10">
                     <DataGrid ItemsSource="{Binding Businesses}"
                               SelectedItem="{Binding SelectedBusiness}"
                               AutoGenerateColumns="False"
@@ -144,9 +144,9 @@
                               GridLinesVisibility="Horizontal"
                               HorizontalScrollBarVisibility="Auto"
                               VerticalScrollBarVisibility="Auto"
-                              RowBackground="#111A2C"
+                              RowBackground="#0E1626"
                               BorderThickness="0"
-                              CornerRadius="8">
+                              CornerRadius="10">
                         <DataGrid.Columns>
                             <!-- Star Toggle -->
                             <DataGridTemplateColumn Header="★" Width="40">
@@ -171,7 +171,7 @@
                 </Border>
 
                 <!-- Right: Split Inspector Pane -->
-                <Border Grid.Column="1" Margin="8,0,0,0" Background="#111A2C" BorderBrush="#223147" BorderThickness="1" CornerRadius="8" Padding="18">
+                <Border Grid.Column="1" Margin="8,0,0,0" Background="#0E1626" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="10" Padding="18">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel Spacing="14" DataContext="{Binding SelectedBusiness}">
                             <!-- Business Header -->

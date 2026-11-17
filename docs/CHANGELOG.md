@@ -6,6 +6,27 @@ All notable changes to the TKS LeadPilot project will be documented in this file
 
 ## [Unreleased]
 
+### [1.0.0] — Stage 15: Final Hardening, Release Packaging, Advanced UI/UX Overhaul & Operator Documentation — 2026-11-17
+#### Added
+- Comprehensive Operator Manual & User Guide (`docs/OPERATOR_MANUAL.md`):
+  - End-to-end operator procedures for lead discovery, technical auditing, proposal synthesis, CRM management, multi-channel outreach, and mobile companion usage.
+  - Architectural overview, zero-unexpected-billing policy ($0.00 hard limit), and security vault documentation.
+  - Troubleshooting guides, crash diagnostics, and emergency procedures.
+- Advanced UI/UX Overhaul Across All Views:
+  - Deep Obsidian & Cyber Cyan Visual Hierarchy (`#080C14` background, `#0E1626` cards, `#1C283F` borders).
+  - Modernized `MainWindow`: Glowing accent header, live sync status indicator, operator status card with version badge.
+  - Enhanced `DashboardView`: KPI cards with colored top indicator strips, territory coverage breakdown across Pakistani commercial hubs, high-priority action cards, and Gemini Free Tier quota meter.
+  - Refined `AuditsView`: 4 elevated metric scorecard tiles with color-coded diagnostic badges, modern tech stack chips, and structured audit findings table.
+  - Upgraded `PipelineView`: Sleek stage transition ribbon, transparent explainable scoring breakdown, and interactive task management.
+  - Polished `MessageStudioView`: Outbox approval queue, dynamic token badges, live target lead preview, and 1-click WhatsApp / Email dispatches.
+  - Professional `SettingsView`: DPAPI security indicators, Gemini Free Tier rate limit dials, and local SQLite engine maintenance.
+- Production Release Packaging:
+  - Rebuilt and verified `desktop/dist/` Windows x64 release binaries.
+  - Verified 1-click desktop launcher `run-desktop.bat`.
+#### Verified
+- All 16 Development Stages (Stage 0 through Stage 15) successfully completed and signed off.
+- 156 automated tests passing across Desktop (.NET 10), Backend (Laravel 13), and Mobile (Flutter).
+
 ### [0.14.0] — Stage 14: Automated Multi-Platform Test Verification & Security Hardening — 2026-11-17
 #### Added
 - Comprehensive Security Hardening & Fuzzing Test Suite (`SecurityHardeningTests.cs`):

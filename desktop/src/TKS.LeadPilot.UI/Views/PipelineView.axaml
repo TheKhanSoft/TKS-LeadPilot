@@ -23,7 +23,7 @@
             </Grid>
 
             <!-- 2. Stage Ribbon Bar -->
-            <Border Grid.Row="1" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,0,16">
+            <Border Grid.Row="1" Background="#0E1626" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="10" Padding="10" Margin="0,0,0,16">
                 <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
                     <ItemsControl ItemsSource="{Binding Stages}">
                         <ItemsControl.ItemsPanel>
@@ -36,8 +36,8 @@
                                 <Button Content="{Binding Name}"
                                         Command="{Binding ((vm:PipelineViewModel)DataContext).MoveToStageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         CommandParameter="{Binding Id}"
-                                        Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#334155" BorderThickness="1"
-                                        CornerRadius="6" Padding="12,6" FontSize="12"/>
+                                        Background="#131D31" Foreground="#F8FAFC" BorderBrush="#22324A" BorderThickness="1"
+                                        CornerRadius="7" Padding="14,7" FontSize="12" FontWeight="Medium"/>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -47,12 +47,12 @@
             <!-- 3. Split Pipeline Master-Detail -->
             <Grid Grid.Row="2" ColumnDefinitions="1.2*,1.8*">
                 <!-- Left: Stage Leads DataGrid -->
-                <Border Grid.Column="0" Margin="0,0,8,0" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8">
+                <Border Grid.Column="0" Margin="0,0,8,0" Background="#0E1626" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="10">
                     <Grid RowDefinitions="Auto,*">
                         <!-- Stage Selector Filter Dropdown -->
                         <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="14,12,14,10">
-                            <TextBlock Grid.Column="0" Text="Filter by Stage:" FontSize="12" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                            <ComboBox Grid.Column="1" HorizontalAlignment="Stretch" ItemsSource="{Binding Stages}" SelectedItem="{Binding SelectedStage}" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6">
+                            <TextBlock Grid.Column="0" Text="Filter by Stage:" FontSize="12" Foreground="#64748B" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <ComboBox Grid.Column="1" HorizontalAlignment="Stretch" ItemsSource="{Binding Stages}" SelectedItem="{Binding SelectedStage}" Background="#0B1322" Foreground="#F8FAFC" BorderBrush="#22324A" CornerRadius="7">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate x:DataType="m:PipelineStage">
                                         <TextBlock Text="{Binding Name}"/>
@@ -66,7 +66,7 @@
                                   AutoGenerateColumns="False"
                                   IsReadOnly="True"
                                   GridLinesVisibility="Horizontal"
-                                  RowBackground="#151E2E"
+                                  RowBackground="#0E1626"
                                   BorderThickness="0">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Lead Name" Binding="{Binding Name}" Width="2*" />
@@ -79,7 +79,7 @@
                 </Border>
 
                 <!-- Right: Detailed CRM Inspector & Explainable Score -->
-                <Border Grid.Column="1" Margin="8,0,0,0" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="18">
+                <Border Grid.Column="1" Margin="8,0,0,0" Background="#0E1626" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="10" Padding="18">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel Spacing="16" IsVisible="{Binding SelectedBusiness, Converter={x:Static ObjectConverters.IsNotNull}}">
                             <!-- Lead Header & Quick Stage Transition -->

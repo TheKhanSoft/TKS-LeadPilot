@@ -23,98 +23,144 @@
             <!-- KPI Metric Cards Grid with Modern Gradient Top Accents -->
             <Grid ColumnDefinitions="*,*,*,*" Margin="0,4,0,0">
                 <!-- Total Discovered -->
-                <Border Grid.Column="0" Margin="0,0,8,0" Background="#111827" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="10" Padding="20">
+                <Border Grid.Column="0" Margin="0,0,8,0" Background="#0E1626" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="12" Padding="20">
                     <Grid RowDefinitions="Auto,*,Auto">
                         <Border Grid.Row="0" Background="#3B82F6" Height="3" CornerRadius="2" Margin="0,0,0,14"/>
                         <StackPanel Grid.Row="1" Spacing="4">
-                            <TextBlock Text="TOTAL DISCOVERED" FontSize="11" FontWeight="Bold" Foreground="#64748B" LetterSpacing="0.5"/>
-                            <TextBlock Text="{Binding TotalBusinesses}" FontSize="34" FontWeight="ExtraBold" Foreground="#F8FAFC"/>
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="🌐" FontSize="12" VerticalAlignment="Center"/>
+                                <TextBlock Text="TOTAL DISCOVERED" FontSize="11" FontWeight="Bold" Foreground="#64748B" LetterSpacing="0.8"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding TotalBusinesses}" FontSize="36" FontWeight="ExtraBold" Foreground="#F8FAFC"/>
                         </StackPanel>
-                        <TextBlock Grid.Row="2" Text="Stored in local SQLite" FontSize="12" Foreground="#10B981" Margin="0,8,0,0"/>
+                        <Border Grid.Row="2" Background="#064E3B" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left" Margin="0,10,0,0">
+                            <TextBlock Text="● Local SQLite Stored" FontSize="11" FontWeight="Bold" Foreground="#34D399"/>
+                        </Border>
                     </Grid>
                 </Border>
 
                 <!-- Businesses With Website -->
-                <Border Grid.Column="1" Margin="4,0,4,0" Background="#111827" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="10" Padding="20">
+                <Border Grid.Column="1" Margin="4,0,4,0" Background="#0E1626" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="12" Padding="20">
                     <Grid RowDefinitions="Auto,*,Auto">
                         <Border Grid.Row="0" Background="#0EA5E9" Height="3" CornerRadius="2" Margin="0,0,0,14"/>
                         <StackPanel Grid.Row="1" Spacing="4">
-                            <TextBlock Text="WITH WEBSITE" FontSize="11" FontWeight="Bold" Foreground="#64748B" LetterSpacing="0.5"/>
-                            <TextBlock Text="{Binding WithWebsiteCount}" FontSize="34" FontWeight="ExtraBold" Foreground="#38BDF8"/>
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="🔗" FontSize="12" VerticalAlignment="Center"/>
+                                <TextBlock Text="WITH WEBSITE" FontSize="11" FontWeight="Bold" Foreground="#64748B" LetterSpacing="0.8"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding WithWebsiteCount}" FontSize="36" FontWeight="ExtraBold" Foreground="#38BDF8"/>
                         </StackPanel>
-                        <TextBlock Grid.Row="2" Text="Active digital presence" FontSize="12" Foreground="#94A3B8" Margin="0,8,0,0"/>
+                        <Border Grid.Row="2" Background="#0C4A6E" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left" Margin="0,10,0,0">
+                            <TextBlock Text="● Active Digital Presence" FontSize="11" FontWeight="Bold" Foreground="#7DD3FC"/>
+                        </Border>
                     </Grid>
                 </Border>
 
                 <!-- Businesses Missing Website -->
-                <Border Grid.Column="2" Margin="4,0,4,0" Background="#111827" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="10" Padding="20">
+                <Border Grid.Column="2" Margin="4,0,4,0" Background="#0E1626" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="12" Padding="20">
                     <Grid RowDefinitions="Auto,*,Auto">
                         <Border Grid.Row="0" Background="#F59E0B" Height="3" CornerRadius="2" Margin="0,0,0,14"/>
                         <StackPanel Grid.Row="1" Spacing="4">
-                            <TextBlock Text="MISSING WEBSITE (HOT LEADS)" FontSize="11" FontWeight="Bold" Foreground="#64748B" LetterSpacing="0.5"/>
-                            <TextBlock Text="{Binding NoWebsiteCount}" FontSize="34" FontWeight="ExtraBold" Foreground="#FBBF24"/>
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="🔥" FontSize="12" VerticalAlignment="Center"/>
+                                <TextBlock Text="NO WEBSITE (PRIME)" FontSize="11" FontWeight="Bold" Foreground="#64748B" LetterSpacing="0.8"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding NoWebsiteCount}" FontSize="36" FontWeight="ExtraBold" Foreground="#FBBF24"/>
                         </StackPanel>
-                        <TextBlock Grid.Row="2" Text="Prime web development targets" FontSize="12" Foreground="#F59E0B" Margin="0,8,0,0"/>
+                        <Border Grid.Row="2" Background="#451A03" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left" Margin="0,10,0,0">
+                            <TextBlock Text="● High-Ticket Build Target" FontSize="11" FontWeight="Bold" Foreground="#FCD34D"/>
+                        </Border>
                     </Grid>
                 </Border>
 
                 <!-- High Opportunity Score -->
-                <Border Grid.Column="3" Margin="8,0,0,0" Background="#111827" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="10" Padding="20">
+                <Border Grid.Column="3" Margin="8,0,0,0" Background="#0E1626" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="12" Padding="20">
                     <Grid RowDefinitions="Auto,*,Auto">
                         <Border Grid.Row="0" Background="#10B981" Height="3" CornerRadius="2" Margin="0,0,0,14"/>
                         <StackPanel Grid.Row="1" Spacing="4">
-                            <TextBlock Text="HIGH OPPORTUNITY (70+)" FontSize="11" FontWeight="Bold" Foreground="#64748B" LetterSpacing="0.5"/>
-                            <TextBlock Text="{Binding HighOpportunityCount}" FontSize="34" FontWeight="ExtraBold" Foreground="#34D399"/>
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="🎯" FontSize="12" VerticalAlignment="Center"/>
+                                <TextBlock Text="HOT OPPORTUNITY (70+)" FontSize="11" FontWeight="Bold" Foreground="#64748B" LetterSpacing="0.8"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding HighOpportunityCount}" FontSize="36" FontWeight="ExtraBold" Foreground="#34D399"/>
                         </StackPanel>
-                        <TextBlock Grid.Row="2" Text="Priority outreach targets" FontSize="12" Foreground="#10B981" Margin="0,8,0,0"/>
+                        <Border Grid.Row="2" Background="#064E3B" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left" Margin="0,10,0,0">
+                            <TextBlock Text="● Ready for Outreach" FontSize="11" FontWeight="Bold" Foreground="#6EE7B7"/>
+                        </Border>
                     </Grid>
                 </Border>
             </Grid>
 
-            <!-- Highlights Section -->
+            <!-- Territory Coverage & High-Priority Actions Grid -->
             <Grid ColumnDefinitions="2*,1*" Margin="0,4,0,0">
-                <!-- Activity & Opportunities -->
-                <Border Grid.Column="0" Margin="0,0,8,0" Background="#111827" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="10" Padding="22">
+                <!-- Immediate High-Priority Actions -->
+                <Border Grid.Column="0" Margin="0,0,8,0" Background="#0E1626" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="12" Padding="22">
                     <StackPanel Spacing="16">
-                        <TextBlock Text="Immediate High-Priority Actions" FontSize="16" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="Immediate High-Priority Actions" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC"/>
+                                <TextBlock Text="High-probability opportunities requiring operator action or proposal dispatch." FontSize="12" Foreground="#94A3B8"/>
+                            </StackPanel>
+                            <Border Grid.Column="1" Background="#1E293B" CornerRadius="6" Padding="8,4" VerticalAlignment="Center">
+                                <TextBlock Text="2 PENDING" FontSize="10" FontWeight="Bold" Foreground="#F59E0B"/>
+                            </Border>
+                        </Grid>
                         
-                        <Border Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="14">
+                        <Border Background="#131D31" BorderBrush="#22324A" BorderThickness="1" CornerRadius="10" Padding="14">
                             <Grid ColumnDefinitions="Auto,*,Auto">
-                                <Border Grid.Column="0" Background="#4C0519" CornerRadius="6" Padding="8,4" VerticalAlignment="Center" Margin="0,0,12,0">
-                                    <TextBlock Text="🔴 CRITICAL" FontSize="10" FontWeight="Bold" Foreground="#FB7185"/>
+                                <Border Grid.Column="0" Background="#4C0519" BorderBrush="#9F1239" BorderThickness="1" CornerRadius="8" Padding="10,6" VerticalAlignment="Center" Margin="0,0,12,0">
+                                    <TextBlock Text="🚨 CRITICAL" FontSize="10" FontWeight="ExtraBold" Foreground="#FB7185"/>
                                 </Border>
                                 <StackPanel Grid.Column="1" Spacing="2">
-                                    <TextBlock Text="Apex Dental &amp; Implant Care — Missing HTTPS Encryption" FontWeight="SemiBold" Foreground="#F8FAFC"/>
-                                    <TextBlock Text="Lahore • Lead Score: 88 • Recommend: TKS Website Security Retainer" FontSize="12" Foreground="#94A3B8"/>
+                                    <TextBlock Text="Apex Dental &amp; Implant Care — Missing HTTPS Encryption" FontWeight="Bold" FontSize="13" Foreground="#F8FAFC"/>
+                                    <TextBlock Text="Lahore • Lead Score: 88 • Recommend: TKS Website Security &amp; SSL Retainer" FontSize="12" Foreground="#94A3B8"/>
                                 </StackPanel>
-                                <Button Grid.Column="2" Content="View Audit" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="12,6" FontWeight="SemiBold"/>
+                                <Button Grid.Column="2" Content="View Audit ➔" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="12,6" FontWeight="SemiBold"/>
                             </Grid>
                         </Border>
 
-                        <Border Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="14">
+                        <Border Background="#131D31" BorderBrush="#22324A" BorderThickness="1" CornerRadius="10" Padding="14">
                             <Grid ColumnDefinitions="Auto,*,Auto">
-                                <Border Grid.Column="0" Background="#451A03" CornerRadius="6" Padding="8,4" VerticalAlignment="Center" Margin="0,0,12,0">
-                                    <TextBlock Text="🟡 NO SITE" FontSize="10" FontWeight="Bold" Foreground="#FBBF24"/>
+                                <Border Grid.Column="0" Background="#451A03" BorderBrush="#92400E" BorderThickness="1" CornerRadius="8" Padding="10,6" VerticalAlignment="Center" Margin="0,0,12,0">
+                                    <TextBlock Text="⚡ NEW WEB" FontSize="10" FontWeight="ExtraBold" Foreground="#FBBF24"/>
                                 </Border>
                                 <StackPanel Grid.Column="1" Spacing="2">
-                                    <TextBlock Text="Careway Pharmacy &amp; Diagnostic — No Website Detected" FontWeight="SemiBold" Foreground="#F8FAFC"/>
-                                    <TextBlock Text="Karachi • Lead Score: 78 • Recommend: Modern Business Website" FontSize="12" Foreground="#94A3B8"/>
+                                    <TextBlock Text="Careway Pharmacy &amp; Diagnostic — No Website Detected" FontWeight="Bold" FontSize="13" Foreground="#F8FAFC"/>
+                                    <TextBlock Text="Karachi • Lead Score: 78 • Recommend: Modern Medical Practice Web Portal" FontSize="12" Foreground="#94A3B8"/>
                                 </StackPanel>
-                                <Button Grid.Column="2" Content="Draft Pitch" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="12,6" FontWeight="SemiBold"/>
+                                <Button Grid.Column="2" Content="Draft Pitch ➔" Background="#0284C7" Foreground="#FFFFFF" CornerRadius="6" Padding="12,6" FontWeight="SemiBold"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Territory Presence Summary Strip -->
+                        <Border Background="#0B1322" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,4,0,0">
+                            <Grid ColumnDefinitions="Auto,*">
+                                <TextBlock Grid.Column="0" Text="📍 Active Commercial Hubs:" FontSize="11" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                <WrapPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <Border Background="#1E293B" CornerRadius="4" Padding="6,2" Margin="0,0,6,0"><TextBlock Text="Lahore (3)" FontSize="10" Foreground="#38BDF8"/></Border>
+                                    <Border Background="#1E293B" CornerRadius="4" Padding="6,2" Margin="0,0,6,0"><TextBlock Text="Karachi (3)" FontSize="10" Foreground="#38BDF8"/></Border>
+                                    <Border Background="#1E293B" CornerRadius="4" Padding="6,2" Margin="0,0,6,0"><TextBlock Text="Islamabad (2)" FontSize="10" Foreground="#38BDF8"/></Border>
+                                    <Border Background="#1E293B" CornerRadius="4" Padding="6,2" Margin="0,0,6,0"><TextBlock Text="Rawalpindi (1)" FontSize="10" Foreground="#38BDF8"/></Border>
+                                    <Border Background="#1E293B" CornerRadius="4" Padding="6,2" Margin="0,0,6,0"><TextBlock Text="Faisalabad (1)" FontSize="10" Foreground="#38BDF8"/></Border>
+                                    <Border Background="#1E293B" CornerRadius="4" Padding="6,2"><TextBlock Text="Multan (1)" FontSize="10" Foreground="#38BDF8"/></Border>
+                                </WrapPanel>
                             </Grid>
                         </Border>
                     </StackPanel>
                 </Border>
 
                 <!-- Quota & System Health -->
-                <Border Grid.Column="1" Margin="8,0,0,0" Background="#111827" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="10" Padding="22">
+                <Border Grid.Column="1" Margin="8,0,0,0" Background="#0E1626" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="12" Padding="22">
                     <StackPanel Spacing="16">
-                        <TextBlock Text="System &amp; Quota Health" FontSize="16" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="System &amp; Quota Health" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC"/>
+                            <TextBlock Text="Strict spending guards &amp; limits." FontSize="12" Foreground="#94A3B8"/>
+                        </StackPanel>
                         
                         <StackPanel Spacing="6">
                             <Grid ColumnDefinitions="*,Auto">
                                 <TextBlock Grid.Column="0" Text="Gemini Free Tier API" FontSize="12" Foreground="#94A3B8"/>
-                                <TextBlock Grid.Column="1" Text="12 / 1200 RPD" FontSize="12" FontWeight="SemiBold" Foreground="#10B981"/>
+                                <TextBlock Grid.Column="1" Text="12 / 1,200 RPD" FontSize="12" FontWeight="SemiBold" Foreground="#10B981"/>
                             </Grid>
                             <ProgressBar Value="12" Maximum="1200" Height="6" Foreground="#10B981" Background="#1E293B" CornerRadius="3"/>
                         </StackPanel>
@@ -127,10 +173,23 @@
                             <ProgressBar Value="0" Maximum="50" Height="6" Foreground="#38BDF8" Background="#1E293B" CornerRadius="3"/>
                         </StackPanel>
 
-                        <Border Background="#0C121E" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,6,0,0">
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="🔒 Zero-Cost Billing Enforced" FontWeight="Bold" FontSize="12" Foreground="#10B981"/>
-                                <TextBlock Text="Hard ceiling of $0.00 is active. Commercial fallback is disabled." FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                        <Border Background="#064E3B" BorderBrush="#059669" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,4,0,0">
+                            <StackPanel Spacing="3">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="🛡️" FontSize="12"/>
+                                    <TextBlock Text="Zero-Cost Billing Active" FontWeight="Bold" FontSize="11" Foreground="#34D399"/>
+                                </StackPanel>
+                                <TextBlock Text="Hard ceiling: $0.00. Free Tier rate limiter active." FontSize="10" Foreground="#A7F3D0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Background="#0C121E" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="12">
+                            <StackPanel Spacing="3">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="⚡" FontSize="12"/>
+                                    <TextBlock Text="OpenStreetMap Resilience" FontWeight="Bold" FontSize="11" Foreground="#38BDF8"/>
+                                </StackPanel>
+                                <TextBlock Text="8s fail-safe timeout + verified offline cache across 7 cities." FontSize="10" Foreground="#94A3B8" TextWrapping="Wrap"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>

@@ -93,28 +93,46 @@
 
         <!-- Left Navigation Sidebar -->
         <Border Grid.Row="1" Grid.Column="0" Background="#0C121E" BorderBrush="#1E293B" BorderThickness="0,0,1,0" Padding="12,16">
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel Spacing="4">
-                    <TextBlock Text="CORE DISCOVERY" FontSize="10" FontWeight="Bold" Foreground="#475569" Margin="10,4,0,6" LetterSpacing="0.5"/>
-                    
-                    <Button Classes="nav" Content="📊 Executive Dashboard" Command="{Binding NavigateCommand}" CommandParameter="Dashboard"/>
-                    <Button Classes="nav" Content="🏢 Business Database" Command="{Binding NavigateCommand}" CommandParameter="Businesses"/>
-                    <Button Classes="nav" Content="🛰️ Free Discovery (OSM)" Command="{Binding NavigateCommand}" CommandParameter="Businesses"/>
+            <Grid RowDefinitions="*,Auto">
+                <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="CORE DISCOVERY" FontSize="10" FontWeight="Bold" Foreground="#475569" Margin="10,4,0,6" LetterSpacing="0.8"/>
+                        
+                        <Button Classes="nav" Content="📊 Executive Dashboard" Command="{Binding NavigateCommand}" CommandParameter="Dashboard"/>
+                        <Button Classes="nav" Content="🏢 Business Database" Command="{Binding NavigateCommand}" CommandParameter="Businesses"/>
+                        <Button Classes="nav" Content="🛰️ Free Discovery (OSM)" Command="{Binding NavigateCommand}" CommandParameter="Businesses"/>
 
-                    <TextBlock Text="INTELLIGENCE &amp; CRM" FontSize="10" FontWeight="Bold" Foreground="#475569" Margin="10,14,0,6" LetterSpacing="0.5"/>
+                        <TextBlock Text="INTELLIGENCE &amp; CRM" FontSize="10" FontWeight="Bold" Foreground="#475569" Margin="10,16,0,6" LetterSpacing="0.8"/>
 
-                    <Button Classes="nav" Content="🔬 Website Audits" Command="{Binding NavigateCommand}" CommandParameter="Audits"/>
-                    <Button Classes="nav" Content="📈 CRM Sales Pipeline" Command="{Binding NavigateCommand}" CommandParameter="Pipeline"/>
+                        <Button Classes="nav" Content="🔬 Website Audits" Command="{Binding NavigateCommand}" CommandParameter="Audits"/>
+                        <Button Classes="nav" Content="📈 CRM Sales Pipeline" Command="{Binding NavigateCommand}" CommandParameter="Pipeline"/>
 
-                    <TextBlock Text="OUTREACH &amp; CAMPAIGNS" FontSize="10" FontWeight="Bold" Foreground="#475569" Margin="10,14,0,6" LetterSpacing="0.5"/>
+                        <TextBlock Text="OUTREACH &amp; CAMPAIGNS" FontSize="10" FontWeight="Bold" Foreground="#475569" Margin="10,16,0,6" LetterSpacing="0.8"/>
 
-                    <Button Classes="nav" Content="✉️ Message Studio" Command="{Binding NavigateCommand}" CommandParameter="Messages"/>
+                        <Button Classes="nav" Content="✉️ Message Studio" Command="{Binding NavigateCommand}" CommandParameter="Messages"/>
 
-                    <TextBlock Text="CONFIGURATION" FontSize="10" FontWeight="Bold" Foreground="#475569" Margin="10,14,0,6" LetterSpacing="0.5"/>
+                        <TextBlock Text="CONFIGURATION" FontSize="10" FontWeight="Bold" Foreground="#475569" Margin="10,16,0,6" LetterSpacing="0.8"/>
 
-                    <Button Classes="nav" Content="⚙️ Settings &amp; Vault" Command="{Binding NavigateCommand}" CommandParameter="Settings"/>
-                </StackPanel>
-            </ScrollViewer>
+                        <Button Classes="nav" Content="⚙️ Settings &amp; Vault" Command="{Binding NavigateCommand}" CommandParameter="Settings"/>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Sidebar Operator Card & Version Stamp -->
+                <Border Grid.Row="1" Background="#0F1728" BorderBrush="#1E2B42" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,12,0,0">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Border Grid.Column="0" Background="#1E2B44" BorderBrush="#3B82F6" BorderThickness="1" CornerRadius="15" Width="30" Height="30" Margin="0,0,8,0">
+                            <TextBlock Text="TK" FontSize="11" FontWeight="Bold" Foreground="#38BDF8" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="TheKhanSoft Station" FontSize="11" FontWeight="Bold" Foreground="#F8FAFC"/>
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <Ellipse Width="6" Height="6" Fill="#10B981" VerticalAlignment="Center"/>
+                                <TextBlock Text="v1.0.0 • SQLite Hybrid" FontSize="10" Foreground="#64748B"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
         </Border>
 
         <!-- Main Content Area -->
