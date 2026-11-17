@@ -6,6 +6,34 @@ All notable changes to the TKS LeadPilot project will be documented in this file
 
 ## [Unreleased]
 
+### [0.12.0] — Stage 12: Mobile Companion App (Flutter Android) & Desktop Launcher Polish — 2026-11-17
+#### Added
+- Mobile Companion Application (`mobile/` - Flutter 3.47+ / Dart 3.13+):
+  - Created native Flutter Android mobile companion under package `com.thekhansoft.leadpilot`.
+  - Luxury Material 3 Obsidian dark theme matching desktop aesthetic (`AppTheme`: `#080C14` background, `#0E1726` surface, `#2563EB` primary, `#06B6D4` accent).
+  - Offline-first local storage service (`StorageService`) with persistent JSON/SharedPreferences caching for leads, contacts, tasks, and notes.
+  - Universal UUIDv4 identity generator for all mobile-created leads and tasks without collisions.
+  - Initial out-of-the-box sample leads and contacts for instant offline evaluation.
+- Mobile Views & Field Workflows:
+  - `LeadsScreen`: Real-time multi-field search, horizontal city filter chips (Lahore, Karachi, Islamabad, Peshawar), opportunity score badges, pull-to-refresh sync, and quick lead creation modal.
+  - `LeadDetailScreen`: Full business profile, technical diagnostics overview, contact cards, activity notes logger, and 1-tap quick action bar:
+    - 📞 One-tap Phone Dialing (`tel:{phone}`).
+    - 💬 One-tap WhatsApp Cold Outreach (`https://wa.me/{clean_phone}`).
+    - ✉️ One-tap Email Client Launch (`mailto:{email}`).
+    - 🌐 In-app / external website browser launch.
+  - `TasksScreen`: Sales follow-up to-do checklist with instant task toggle, due dates, and quick task creation.
+  - `SyncScreen`: Central API endpoint URL configuration, device UUID display, live server health check indicator, and manual bidirectional sync trigger.
+- Mobile Delta Sync Service (`MobileSyncService`):
+  - Bi-directional sync with central Laravel API (`/api/v1/sync/push`, `/api/v1/sync/pull`).
+  - Pull-to-refresh delta synchronization with cursor management.
+- Desktop App Launcher & Distribution:
+  - Created 1-click Windows launcher script [`run-desktop.bat`](file:///D:/Projects/TKS-LeadPilot/run-desktop.bat) in the project root.
+  - Published standalone Release executable in [`desktop/dist/TKS.LeadPilot.UI.exe`](file:///D:/Projects/TKS-LeadPilot/desktop/dist/TKS.LeadPilot.UI.exe).
+  - Updated `README.md` with comprehensive Quick Launch instructions for Desktop, Backend, and Mobile.
+- Automated Tests:
+  - 6 Flutter unit and widget tests passing (100% pass rate) in `widget_test.dart` and `storage_sync_test.dart`.
+  - Static analysis passing with 0 warnings (`flutter analyze`).
+
 ### [0.11.0] — Stage 11: Central Headless Laravel API & Delta Synchronization Protocol — 2026-11-17
 #### Added
 - Central Headless Laravel 13 API Backend (`backend/`):
