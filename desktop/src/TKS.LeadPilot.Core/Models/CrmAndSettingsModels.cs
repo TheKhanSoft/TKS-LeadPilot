@@ -37,6 +37,14 @@ public class TksService
     public bool IsActive { get; set; } = true;
 }
 
+public class TksServiceMatch
+{
+    public TksService Service { get; set; } = new();
+    public int MatchConfidence { get; set; } // 0-100%
+    public string MatchReason { get; set; } = string.Empty;
+    public string GeneratedPitch { get; set; } = string.Empty;
+}
+
 public class SalesTask
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();

@@ -113,3 +113,35 @@ public interface IAuditComparisonService
 {
     AuditComparisonResult CompareAudits(WebsiteAudit baseline, WebsiteAudit target);
 }
+
+public interface ILeadScoringEngine
+{
+    Task<LeadScore> CalculateScoreAsync(Business business, WebsiteAudit? latestAudit = null, CancellationToken ct = default);
+    Task<LeadScore> SaveScoreAsync(LeadScore score, CancellationToken ct = default);
+    Task<LeadScore?> GetLatestScoreForBusinessAsync(string businessId, CancellationToken ct = default);
+    Task<LeadScore> ApplyManualOverrideAsync(string businessId, int overriddenScore, string reason, CancellationToken ct = default);
+}
+
+public interface ITksServiceMatcher
+{
+    Task<List<TksServiceMatch>> MatchServicesAsync(Business business, WebsiteAudit? audit, LeadScore? score, CancellationToken ct = default);
+}
+
+public interface ICrmService
+{
+    Task<List<PipelineStage>> GetPipelineStagesAsync(CancellationToken ct = default);
+    Task<Dictionary<string, List<Business>>> GetPipelineBoardAsync(CancellationToken ct = default);
+    Task<bool> MoveLeadStageAsync(string businessId, string targetStageId, CancellationToken ct = default);
+    
+    // Tasks
+    Task<List<SalesTask>> GetTasksForBusinessAsync(string businessId, CancellationToken ct = default);
+    Task<List<SalesTask>> GetPendingTasksAsync(CancellationToken ct = default);
+    Task<SalesTask> CreateTaskAsync(SalesTask task, CancellationToken ct = default);
+    Task<bool> CompleteTaskAsync(string taskId, CancellationToken ct = default);
+    Task<bool> DeleteTaskAsync(string taskId, CancellationToken ct = default);
+    
+    // Notes
+    Task<List<SalesNote>> GetNotesForBusinessAsync(string businessId, CancellationToken ct = default);
+    Task<SalesNote> AddNoteAsync(SalesNote note, CancellationToken ct = default);
+    Task<bool> DeleteNoteAsync(string noteId, CancellationToken ct = default);
+}

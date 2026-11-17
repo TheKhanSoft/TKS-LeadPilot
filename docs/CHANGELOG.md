@@ -6,6 +6,37 @@ All notable changes to the TKS LeadPilot project will be documented in this file
 
 ## [Unreleased]
 
+### [0.9.0] — Stage 9: Transparent Lead Scoring & CRM Sales Pipeline — 2026-11-17
+#### Added
+- Transparent & Explainable Lead Scoring Engine (`ILeadScoringEngine`, `LeadScoringEngine`):
+  - Deterministic 0–100 opportunity score calculated across 5 clear, explainable components:
+    - *Website Presence & Condition* (Max 35 pts): +35 pts for absence of website, +25 pts for parked/inactive domain, +20 pts for critical site health issues.
+    - *Performance & Server Latency* (Max 25 pts): +25 pts for TTFB > 1,500ms, +15 pts for TTFB > 800ms.
+    - *Security & Trust Hygiene* (Max 15 pts): +15 pts for missing SSL or HTTP-to-HTTPS redirect failure, +8 pts for missing security headers.
+    - *Search Visibility & SEO Hygiene* (Max 10 pts): +10 pts for missing crawler files (robots/sitemap) and meta tags.
+    - *Google Places Commercial Authority* (Max 15 pts): +12 pts for unverified Google Maps presence, +8 pts for sub-4-star rating or low review volume.
+  - Granular `LeadScoreComponent` entities detailing points awarded, max points, and human-readable explanation per component.
+  - Manual score override capability with mandatory audit logging (`ApplyManualOverrideAsync`).
+  - Uninspected metrics are never penalized.
+- Evidence-Based TKS Service Matcher (`ITksServiceMatcher`, `TksServiceMatcher`):
+  - Rule-based matching engine pairing business diagnostic signals to the 4 core TheKhanSoft service offerings.
+  - Generates tailored outreach pitches with token substitution (`{{business_name}}`, `{{website_url}}`, `{{city}}`, `{{ttfb_ms}}`).
+- CRM Sales Pipeline Service (`ICrmService`, `CrmService`):
+  - Full board status queries across all 14 configured stages.
+  - Stage transitions with automatic system audit notes.
+  - Full sales task lifecycle management (create, complete, delete).
+  - Activity notes and chronological timeline management.
+- Desktop UI CRM & Pipeline View:
+  - Created dedicated `PipelineView.axaml` and `PipelineViewModel.cs`.
+  - Stage filtering ribbon with quick transition buttons.
+  - Explainable scoring breakdown card showing points and explanations per component.
+  - Evidence-based service recommendations card with match confidence percentages.
+  - Interactive tasks to-do list with completion checkboxes.
+  - Activity notes and timeline logger.
+  - Manual Score Override modal dialog.
+  - Linked navigation in sidebar via `MainViewModel` and `MainWindow.axaml`.
+- 11 new unit tests across `LeadScoringEngineTests.cs`, `TksServiceMatcherTests.cs`, and `CrmServiceTests.cs` (total 85 passing tests, 0 failures).
+
 ### [0.8.0] — Stage 8: AI-Assisted Website Audit Report Synthesizer & Audit Comparison — 2026-11-17
 #### Added
 - Gemini AI Proposal Synthesis Domain Models (`AiTone`, `GeminiConfig`, `AuditProposalSynthesisRequest`, `AuditProposalSynthesisResult`, `AuditComparisonResult`).

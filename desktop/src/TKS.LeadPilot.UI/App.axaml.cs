@@ -10,6 +10,7 @@ using TKS.LeadPilot.Core.Interfaces;
 using TKS.LeadPilot.Core.Services;
 using TKS.LeadPilot.Data;
 using TKS.LeadPilot.Data.Repositories;
+using TKS.LeadPilot.Data.Services;
 using TKS.LeadPilot.UI.Services;
 using TKS.LeadPilot.UI.ViewModels;
 using TKS.LeadPilot.UI.Views;
@@ -83,6 +84,10 @@ public partial class App : Application
         services.AddScoped<IGooglePlacesEnrichmentService, GooglePlacesEnrichmentService>();
         services.AddScoped<IAiProposalSynthesizer, AiProposalSynthesizer>();
         services.AddScoped<IAuditComparisonService, AuditComparisonService>();
+        services.AddScoped<ILeadScoringEngine, LeadScoringEngine>();
+        services.AddScoped<LeadScoringEngine.ILeadScoreStore, EfLeadScoreStore>();
+        services.AddScoped<ITksServiceMatcher, TksServiceMatcher>();
+        services.AddScoped<ICrmService, CrmService>();
 
         // Secret Vault
         services.AddSingleton<ISecretVault, DpapiSecretVault>();
@@ -92,6 +97,7 @@ public partial class App : Application
         services.AddTransient<DashboardViewModel>();
         services.AddTransient<BusinessesViewModel>();
         services.AddTransient<AuditsViewModel>();
+        services.AddTransient<PipelineViewModel>();
         services.AddTransient<SettingsViewModel>();
     }
 }
