@@ -73,7 +73,7 @@
                             HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="12,10" CornerRadius="6"
                             Background="Transparent" Foreground="#94A3B8"/>
 
-                    <Button Content="🔬 Website Audits" Command="{Binding NavigateCommand}" CommandParameter="Businesses"
+                    <Button Content="🔬 Website Audits" Command="{Binding NavigateCommand}" CommandParameter="Audits"
                             HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="12,10" CornerRadius="6"
                             Background="Transparent" Foreground="#94A3B8"/>
 

@@ -70,13 +70,16 @@ public partial class App : Application
         // Repositories & Initializer
         services.AddScoped<IBusinessRepository, BusinessRepository>();
         services.AddScoped<IPipelineStageRepository, PipelineStageRepository>();
+        services.AddScoped<IAuditRepository, AuditRepository>();
         services.AddScoped<IDatabaseInitializer, DatabaseInitializer>();
 
-        // Core Business Services (Stage 4 & 5)
+        // Core Business Services (Stage 4, 5, 6)
         services.AddSingleton(new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(60) });
         services.AddScoped<IDeduplicationService, DeduplicationService>();
         services.AddScoped<ICsvImporterService, CsvImporterService>();
         services.AddScoped<IDiscoveryService, OverpassDiscoveryService>();
+        services.AddScoped<ISsrfValidator, SsrfValidator>();
+        services.AddScoped<IWebsiteAuditEngine, WebsiteAuditEngine>();
 
         // Secret Vault
         services.AddSingleton<ISecretVault, DpapiSecretVault>();
@@ -85,6 +88,7 @@ public partial class App : Application
         services.AddTransient<MainViewModel>();
         services.AddTransient<DashboardViewModel>();
         services.AddTransient<BusinessesViewModel>();
+        services.AddTransient<AuditsViewModel>();
         services.AddTransient<SettingsViewModel>();
     }
 }

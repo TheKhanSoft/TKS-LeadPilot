@@ -76,3 +76,18 @@ public interface IDiscoveryService
     IReadOnlyList<string> GetSupportedCities();
     IReadOnlyDictionary<string, List<string>> GetPresetCategories();
 }
+
+public interface IWebsiteAuditEngine
+{
+    Task<WebsiteAudit> RunAuditAsync(string businessId, string targetUrl, CancellationToken ct = default);
+    Task<List<WebsiteAudit>> GetAuditsForBusinessAsync(string businessId, CancellationToken ct = default);
+}
+
+public interface IAuditRepository
+{
+    Task<WebsiteAudit> SaveAuditAsync(WebsiteAudit audit, CancellationToken ct = default);
+    Task<WebsiteAudit?> GetLatestAuditForBusinessAsync(string businessId, CancellationToken ct = default);
+    Task<List<WebsiteAudit>> GetAllAuditsForBusinessAsync(string businessId, CancellationToken ct = default);
+    Task<List<WebsiteAudit>> GetRecentAuditsAsync(int take = 50, CancellationToken ct = default);
+    Task<int> GetTotalAuditsCountAsync(CancellationToken ct = default);
+}

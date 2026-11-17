@@ -6,6 +6,29 @@ All notable changes to the TKS LeadPilot project will be documented in this file
 
 ## [Unreleased]
 
+### [0.6.0] — Stage 6: Website Intelligence & Local Lightweight Auditor — 2026-11-17
+#### Added
+- Pre-flight SSRF Guard (`ISsrfValidator`, `SsrfValidator`) strictly validating target URLs, disallowing non-HTTP schemes, internal/loopback IPs, and cloud metadata addresses (169.254.169.254).
+- Technology Stack and CMS Detector (`TechStackDetector`):
+  - Signature detection for WordPress, WooCommerce, Shopify, Wix, Webflow, Squarespace, Laravel, Next.js, React, and Vue.
+  - Analytics and tag detectors for Google Analytics (GA4), Google Tag Manager, and Meta Pixel.
+  - Server and infrastructure detection (Cloudflare CDN, Nginx, Apache, LiteSpeed, IIS).
+- Comprehensive Local Website Audit Engine (`IWebsiteAuditEngine`, `WebsiteAuditEngine`):
+  - HTTP to HTTPS redirection probe.
+  - TLS/SSL certificate analyzer (certificate issuer, expiration dates, days remaining).
+  - Security headers analyzer (Strict-Transport-Security, Content-Security-Policy, X-Frame-Options, X-Content-Type-Options).
+  - SEO hygiene inspection (Title tag length, meta description, mobile viewport tag, H1 headings).
+  - Crawlability verification (probe for robots.txt and sitemap.xml presence).
+  - Lightweight performance profiling (Time to First Byte - TTFB, HTML page size).
+  - Domain scoring algorithms (Performance, Security, SEO, and composite Overall Score).
+  - Structured issue generation (`WebsiteAuditFinding`) with severity ratings, recommended fixes, and mapped TKS service offerings.
+- Audit data repository (`IAuditRepository`, `AuditRepository`) persisting audit history and automatically updating linked business opportunity lead scores in SQLite.
+- Desktop UI integration:
+  - Added dedicated `AuditsView.axaml` and `AuditsViewModel.cs` with target lead picker, scorecards (Overall, Security, Performance, SEO), tech stack badges, and findings DataGrid.
+  - Sidebar navigation entry for "🔬 Website Audits".
+  - One-click Markdown audit report exporter.
+- 24 new unit tests across `TKS.LeadPilot.Core.Tests` and `TKS.LeadPilot.Data.Tests` (total 60 passing tests, 0 failures).
+
 ### [0.5.0] — Stage 5: Free Discovery Pipeline (OpenStreetMap Overpass Engine) — 2026-11-17
 #### Added
 - OpenStreetMap Overpass discovery domain models (`DiscoveryQuery`, `DiscoveredLead`, `DiscoveryResult`, `BoundingBox`).
