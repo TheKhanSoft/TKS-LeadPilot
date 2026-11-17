@@ -319,7 +319,8 @@ public class GeoLocationService : IGeoLocationService
                         [
                             new() { Name = "Los Angeles", Latitude = 34.0522, Longitude = -118.2437, BoundingBox = new(33.90, -118.50, 34.20, -118.15), SuggestedNiches = ["Entertainment & Media Studios", "Aesthetic Clinics & Plastic Surgery", "E-Commerce Brands", "Tech Startups"] },
                             new() { Name = "San Francisco", Latitude = 37.7749, Longitude = -122.4194, BoundingBox = new(37.70, -122.52, 37.83, -122.35), SuggestedNiches = ["B2B SaaS & AI Startups", "Venture Capital & Advisory", "Specialty Coffee Roasters"] },
-                            new() { Name = "San Diego", Latitude = 32.7157, Longitude = -117.1611, BoundingBox = new(32.60, -117.28, 32.85, -117.05), SuggestedNiches = ["Biotech & Life Sciences", "Craft Breweries", "Tourism & Lodging"] }
+                            new() { Name = "San Diego", Latitude = 32.7157, Longitude = -117.1611, BoundingBox = new(32.60, -117.28, 32.85, -117.05), SuggestedNiches = ["Biotech & Life Sciences", "Craft Breweries", "Tourism & Lodging"] },
+                            new() { Name = "San Jose", Latitude = 37.3382, Longitude = -121.8863, BoundingBox = new(37.25, -122.00, 37.45, -121.75), SuggestedNiches = ["Semiconductors", "Hardware Engineering", "Cloud Infrastructure"] }
                         ]
                     },
                     new()
@@ -340,7 +341,8 @@ public class GeoLocationService : IGeoLocationService
                         [
                             new() { Name = "Houston", Latitude = 29.7604, Longitude = -95.3698, BoundingBox = new(29.60, -95.55, 29.90, -95.20), SuggestedNiches = ["Energy & Cleantech Services", "Medical Centers & Specialists", "Industrial Logistics & Freight"] },
                             new() { Name = "Austin", Latitude = 30.2672, Longitude = -97.7431, BoundingBox = new(30.15, -97.88, 30.40, -97.62), SuggestedNiches = ["Tech Software Agencies", "Music & Creative Agencies", "Real Estate Developers"] },
-                            new() { Name = "Dallas", Latitude = 32.7767, Longitude = -96.7970, BoundingBox = new(32.65, -96.95, 32.90, -96.65), SuggestedNiches = ["Financial Services & Wealth Management", "Telecom & Data Solutions", "Corporate HQ Services"] }
+                            new() { Name = "Dallas", Latitude = 32.7767, Longitude = -96.7970, BoundingBox = new(32.65, -96.95, 32.90, -96.65), SuggestedNiches = ["Financial Services & Wealth Management", "Telecom & Data Solutions", "Corporate HQ Services"] },
+                            new() { Name = "San Antonio", Latitude = 29.4241, Longitude = -98.4936, BoundingBox = new(29.30, -98.65, 29.55, -98.35), SuggestedNiches = ["Cybersecurity & Defense", "Healthcare Networks", "Hospitality & Heritage"] }
                         ]
                     },
                     new()
@@ -349,7 +351,9 @@ public class GeoLocationService : IGeoLocationService
                         Code = "FL",
                         Cities =
                         [
-                            new() { Name = "Miami", Latitude = 25.7617, Longitude = -80.1918, BoundingBox = new(25.68, -80.30, 25.88, -80.12), SuggestedNiches = ["Luxury Real Estate", "Aesthetic Clinics & Wellness", "Hospitality & Yachting"] }
+                            new() { Name = "Miami", Latitude = 25.7617, Longitude = -80.1918, BoundingBox = new(25.68, -80.30, 25.88, -80.12), SuggestedNiches = ["Luxury Real Estate", "Aesthetic Clinics & Wellness", "Hospitality & Yachting"] },
+                            new() { Name = "Orlando", Latitude = 28.5383, Longitude = -81.3792, BoundingBox = new(28.40, -81.50, 28.65, -81.25), SuggestedNiches = ["Tourism & Entertainment", "Aviation & Simulation", "Digital Media"] },
+                            new() { Name = "Tampa", Latitude = 27.9506, Longitude = -82.4572, BoundingBox = new(27.85, -82.58, 28.08, -82.35), SuggestedNiches = ["Marine Shipping", "Financial Services", "Specialty Healthcare"] }
                         ]
                     },
                     new()
@@ -359,6 +363,51 @@ public class GeoLocationService : IGeoLocationService
                         Cities =
                         [
                             new() { Name = "Chicago", Latitude = 41.8781, Longitude = -87.6298, BoundingBox = new(41.70, -87.80, 42.02, -87.55), SuggestedNiches = ["Logistics & Warehousing", "Commercial Law Practices", "Financial Trading & FinTech"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Washington",
+                        Code = "WA",
+                        Cities =
+                        [
+                            new() { Name = "Seattle", Latitude = 47.6062, Longitude = -122.3321, BoundingBox = new(47.50, -122.45, 47.72, -122.22), SuggestedNiches = ["Cloud Computing & Big Data", "E-Commerce Infrastructure", "Biotechnology"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Massachusetts",
+                        Code = "MA",
+                        Cities =
+                        [
+                            new() { Name = "Boston", Latitude = 42.3601, Longitude = -71.0589, BoundingBox = new(42.28, -71.18, 42.42, -70.95), SuggestedNiches = ["Biopharma & Therapeutics", "Higher Education Tech", "Financial Advisory"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Georgia",
+                        Code = "GA",
+                        Cities =
+                        [
+                            new() { Name = "Atlanta", Latitude = 33.7490, Longitude = -84.3880, BoundingBox = new(33.65, -84.50, 33.88, -84.28), SuggestedNiches = ["FinTech & Payment Processing", "Logistics & Supply Chain", "Film Production"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Colorado",
+                        Code = "CO",
+                        Cities =
+                        [
+                            new() { Name = "Denver", Latitude = 39.7392, Longitude = -104.9903, BoundingBox = new(39.62, -105.10, 39.85, -104.85), SuggestedNiches = ["Aerospace & Defense", "Outdoor & Fitness Brands", "Clean Energy"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Nevada",
+                        Code = "NV",
+                        Cities =
+                        [
+                            new() { Name = "Las Vegas", Latitude = 36.1699, Longitude = -115.1398, BoundingBox = new(36.05, -115.30, 36.28, -115.05), SuggestedNiches = ["Hospitality & Gaming", "Convention & Event Services", "Entertainment Tech"] }
                         ]
                     }
                 ]
@@ -380,7 +429,11 @@ public class GeoLocationService : IGeoLocationService
                         [
                             new() { Name = "London", Latitude = 51.5074, Longitude = -0.1278, BoundingBox = new(51.40, -0.30, 51.62, 0.05), SuggestedNiches = ["FinTech & Wealth Management", "Boutique Law Practices", "Specialty Dental Clinics", "Luxury D2C Brands"] },
                             new() { Name = "Manchester", Latitude = 53.4808, Longitude = -2.2426, BoundingBox = new(53.42, -2.32, 53.54, -2.16), SuggestedNiches = ["Digital Marketing Agencies", "E-Commerce Warehousing", "Sports & Fitness Brands"] },
-                            new() { Name = "Birmingham", Latitude = 52.4862, Longitude = -1.8904, BoundingBox = new(52.40, -2.00, 52.55, -1.78), SuggestedNiches = ["Jewellery & Precious Metals", "Automotive Engineering", "Healthcare Services"] }
+                            new() { Name = "Birmingham", Latitude = 52.4862, Longitude = -1.8904, BoundingBox = new(52.40, -2.00, 52.55, -1.78), SuggestedNiches = ["Jewellery & Precious Metals", "Automotive Engineering", "Healthcare Services"] },
+                            new() { Name = "Leeds", Latitude = 53.8008, Longitude = -1.5491, BoundingBox = new(53.72, -1.65, 53.88, -1.45), SuggestedNiches = ["Legal Services", "Financial Technology", "HealthTech & Diagnostics"] },
+                            new() { Name = "Liverpool", Latitude = 53.4084, Longitude = -2.9916, BoundingBox = new(53.35, -3.05, 53.48, -2.90), SuggestedNiches = ["Maritime Trade", "Life Sciences", "Creative Industries"] },
+                            new() { Name = "Bristol", Latitude = 51.4545, Longitude = -2.5879, BoundingBox = new(51.40, -2.68, 51.52, -2.50), SuggestedNiches = ["Aerospace Engineering", "Creative & Media Hub", "Environmental Tech"] },
+                            new() { Name = "Newcastle", Latitude = 54.9783, Longitude = -1.6178, BoundingBox = new(54.92, -1.72, 55.05, -1.52), SuggestedNiches = ["Digital Software", "Offshore Energy", "Healthcare Science"] }
                         ]
                     },
                     new()
@@ -389,7 +442,26 @@ public class GeoLocationService : IGeoLocationService
                         Code = "SCT",
                         Cities =
                         [
-                            new() { Name = "Edinburgh", Latitude = 55.9533, Longitude = -3.1883, BoundingBox = new(55.88, -3.30, 56.00, -3.10), SuggestedNiches = ["Financial & Asset Management", "Tourism & Heritage Lodging", "Tech Startups"] }
+                            new() { Name = "Edinburgh", Latitude = 55.9533, Longitude = -3.1883, BoundingBox = new(55.88, -3.30, 56.00, -3.10), SuggestedNiches = ["Financial & Asset Management", "Tourism & Heritage Lodging", "Tech Startups"] },
+                            new() { Name = "Glasgow", Latitude = 55.8642, Longitude = -4.2518, BoundingBox = new(55.80, -4.38, 55.92, -4.15), SuggestedNiches = ["Engineering & Manufacturing", "Space Technology", "Higher Education"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Wales",
+                        Code = "WLS",
+                        Cities =
+                        [
+                            new() { Name = "Cardiff", Latitude = 51.4816, Longitude = -3.1791, BoundingBox = new(51.42, -3.28, 51.55, -3.10), SuggestedNiches = ["Media & Broadcasting", "Financial Services", "Medical Diagnostics"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Northern Ireland",
+                        Code = "NIR",
+                        Cities =
+                        [
+                            new() { Name = "Belfast", Latitude = 54.5973, Longitude = -5.9301, BoundingBox = new(54.52, -6.02, 54.68, -5.85), SuggestedNiches = ["Cybersecurity", "FinTech", "Film Production Studios"] }
                         ]
                     }
                 ]
@@ -418,7 +490,8 @@ public class GeoLocationService : IGeoLocationService
                         Code = "AUH",
                         Cities =
                         [
-                            new() { Name = "Abu Dhabi", Latitude = 24.4539, Longitude = 54.3773, BoundingBox = new(24.35, 54.28, 24.55, 54.50), SuggestedNiches = ["Oil & Gas Contracting", "Government Advisory", "Healthcare & Specialty Hospitals"] }
+                            new() { Name = "Abu Dhabi", Latitude = 24.4539, Longitude = 54.3773, BoundingBox = new(24.35, 54.28, 24.55, 54.50), SuggestedNiches = ["Oil & Gas Contracting", "Government Advisory", "Healthcare & Specialty Hospitals"] },
+                            new() { Name = "Al Ain", Latitude = 24.2075, Longitude = 55.7447, BoundingBox = new(24.12, 55.65, 24.28, 55.85), SuggestedNiches = ["Agricultural Tech", "Educational Institutes", "Heritage Tourism"] }
                         ]
                     },
                     new()
@@ -428,6 +501,24 @@ public class GeoLocationService : IGeoLocationService
                         Cities =
                         [
                             new() { Name = "Sharjah", Latitude = 25.3463, Longitude = 55.4209, BoundingBox = new(25.28, 55.35, 25.42, 55.50), SuggestedNiches = ["Publishing & Education", "Industrial Manufacturing", "Wholesale Trading"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Ajman",
+                        Code = "AJM",
+                        Cities =
+                        [
+                            new() { Name = "Ajman", Latitude = 25.4052, Longitude = 55.5136, BoundingBox = new(25.35, 55.45, 25.45, 55.58), SuggestedNiches = ["Ship Repair & Marine", "Textile Trading", "Real Estate Development"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Ras Al Khaimah",
+                        Code = "RAK",
+                        Cities =
+                        [
+                            new() { Name = "Ras Al Khaimah", Latitude = 25.7895, Longitude = 55.9432, BoundingBox = new(25.70, 55.88, 25.88, 56.02), SuggestedNiches = ["Ceramics & Building Materials", "Hospitality Resorts", "Pharmaceuticals"] }
                         ]
                     }
                 ]
@@ -448,7 +539,19 @@ public class GeoLocationService : IGeoLocationService
                         Cities =
                         [
                             new() { Name = "Toronto", Latitude = 43.6532, Longitude = -79.3832, BoundingBox = new(43.58, -79.55, 43.78, -79.25), SuggestedNiches = ["FinTech & Banking", "Immigration & Legal Firms", "Specialty Dental Practices"] },
-                            new() { Name = "Ottawa", Latitude = 45.4215, Longitude = -75.6972, BoundingBox = new(45.32, -75.85, 45.48, -75.58), SuggestedNiches = ["GovTech Solutions", "Security & Defense Consulting"] }
+                            new() { Name = "Ottawa", Latitude = 45.4215, Longitude = -75.6972, BoundingBox = new(45.32, -75.85, 45.48, -75.58), SuggestedNiches = ["GovTech Solutions", "Security & Defense Consulting"] },
+                            new() { Name = "Mississauga", Latitude = 43.5890, Longitude = -79.6441, BoundingBox = new(43.50, -79.75, 43.68, -79.55), SuggestedNiches = ["Aerospace & Defense", "Pharma Distribution", "Freight Logistics"] },
+                            new() { Name = "Hamilton", Latitude = 43.2557, Longitude = -79.8711, BoundingBox = new(43.18, -79.98, 43.32, -79.78), SuggestedNiches = ["Steel & Heavy Industry", "Health Sciences", "Advanced Manufacturing"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Quebec",
+                        Code = "QC",
+                        Cities =
+                        [
+                            new() { Name = "Montreal", Latitude = 45.5017, Longitude = -73.5673, BoundingBox = new(45.42, -73.72, 45.60, -73.45), SuggestedNiches = ["AI & Deep Learning", "Video Game Studios", "Aerospace Manufacturing"] },
+                            new() { Name = "Quebec City", Latitude = 46.8139, Longitude = -71.2080, BoundingBox = new(46.75, -71.32, 46.90, -71.12), SuggestedNiches = ["Optics & Photonics", "Public Sector Consulting", "Tourism & Culture"] }
                         ]
                     },
                     new()
@@ -457,7 +560,18 @@ public class GeoLocationService : IGeoLocationService
                         Code = "BC",
                         Cities =
                         [
-                            new() { Name = "Vancouver", Latitude = 49.2827, Longitude = -123.1207, BoundingBox = new(49.20, -123.25, 49.32, -123.02), SuggestedNiches = ["CleanTech & Sustainability", "Film & VFX Studios", "Real Estate Developers"] }
+                            new() { Name = "Vancouver", Latitude = 49.2827, Longitude = -123.1207, BoundingBox = new(49.20, -123.25, 49.32, -123.02), SuggestedNiches = ["CleanTech & Sustainability", "Film & VFX Studios", "Real Estate Developers"] },
+                            new() { Name = "Victoria", Latitude = 48.4284, Longitude = -123.3656, BoundingBox = new(48.38, -123.45, 48.50, -123.30), SuggestedNiches = ["Marine Tech", "Tourism", "Public Sector"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Alberta",
+                        Code = "AB",
+                        Cities =
+                        [
+                            new() { Name = "Calgary", Latitude = 51.0447, Longitude = -114.0719, BoundingBox = new(50.92, -114.22, 51.15, -113.92), SuggestedNiches = ["Energy & Utilities", "Agribusiness", "Transportation & Logistics"] },
+                            new() { Name = "Edmonton", Latitude = 53.5461, Longitude = -113.4938, BoundingBox = new(53.42, -113.65, 53.65, -113.35), SuggestedNiches = ["Petrochemicals", "Health Tech", "Environmental Services"] }
                         ]
                     }
                 ]
@@ -486,7 +600,29 @@ public class GeoLocationService : IGeoLocationService
                         Code = "MKH",
                         Cities =
                         [
-                            new() { Name = "Jeddah", Latitude = 21.5433, Longitude = 39.1728, BoundingBox = new(21.40, 39.05, 21.72, 39.30), SuggestedNiches = ["Port & Maritime Logistics", "Hospitality & Hotels", "Retail Megamalls"] }
+                            new() { Name = "Jeddah", Latitude = 21.5433, Longitude = 39.1728, BoundingBox = new(21.40, 39.05, 21.72, 39.30), SuggestedNiches = ["Port & Maritime Logistics", "Hospitality & Hotels", "Retail Megamalls"] },
+                            new() { Name = "Mecca", Latitude = 21.3891, Longitude = 39.8579, BoundingBox = new(21.30, 39.75, 21.48, 39.95), SuggestedNiches = ["Pilgrimage Logistics", "Hotel Management", "Food & Beverage Distribution"] },
+                            new() { Name = "Taif", Latitude = 21.4373, Longitude = 40.5127, BoundingBox = new(21.35, 40.40, 21.52, 40.60), SuggestedNiches = ["Agriculture & Rose Water", "Tourism Resorts", "Honey Trading"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Eastern Province",
+                        Code = "EAS",
+                        Cities =
+                        [
+                            new() { Name = "Dammam", Latitude = 26.4207, Longitude = 50.0888, BoundingBox = new(26.32, 49.98, 26.52, 50.18), SuggestedNiches = ["Oilfield Services", "Industrial Equipment", "Import & Export Logistics"] },
+                            new() { Name = "Khobar", Latitude = 26.2172, Longitude = 50.1971, BoundingBox = new(26.12, 50.10, 26.30, 50.28), SuggestedNiches = ["Corporate Consulting", "IT Solutions", "Commercial Real Estate"] },
+                            new() { Name = "Jubail", Latitude = 27.0046, Longitude = 49.6601, BoundingBox = new(26.92, 49.52, 27.12, 49.75), SuggestedNiches = ["Petrochemical Refining", "Industrial Construction", "Plastics"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Medina Region",
+                        Code = "MED",
+                        Cities =
+                        [
+                            new() { Name = "Medina", Latitude = 24.5247, Longitude = 39.5692, BoundingBox = new(24.42, 39.48, 24.62, 39.68), SuggestedNiches = ["Hospitality & Lodging", "Dates Farming & Export", "Transportation Services"] }
                         ]
                     }
                 ]
@@ -506,7 +642,8 @@ public class GeoLocationService : IGeoLocationService
                         Code = "NSW",
                         Cities =
                         [
-                            new() { Name = "Sydney", Latitude = -33.8688, Longitude = 151.2093, BoundingBox = new(-33.95, 151.08, -33.78, 151.30), SuggestedNiches = ["Financial Services", "Coastal Tourism & Hospitality", "Legal & Accounting Practices"] }
+                            new() { Name = "Sydney", Latitude = -33.8688, Longitude = 151.2093, BoundingBox = new(-33.95, 151.08, -33.78, 151.30), SuggestedNiches = ["Financial Services", "Coastal Tourism & Hospitality", "Legal & Accounting Practices"] },
+                            new() { Name = "Newcastle", Latitude = -32.9283, Longitude = 151.7817, BoundingBox = new(-33.00, 151.68, -32.85, 151.88), SuggestedNiches = ["Port Facilities", "Mining Tech", "Clean Energy"] }
                         ]
                     },
                     new()
@@ -515,7 +652,27 @@ public class GeoLocationService : IGeoLocationService
                         Code = "VIC",
                         Cities =
                         [
-                            new() { Name = "Melbourne", Latitude = -37.8136, Longitude = 144.9631, BoundingBox = new(-37.90, 144.85, -37.72, 145.08), SuggestedNiches = ["Coffee Roasters & Specialty Cafes", "Creative Design Agencies", "Biotech Startups"] }
+                            new() { Name = "Melbourne", Latitude = -37.8136, Longitude = 144.9631, BoundingBox = new(-37.90, 144.85, -37.72, 145.08), SuggestedNiches = ["Coffee Roasters & Specialty Cafes", "Creative Design Agencies", "Biotech Startups"] },
+                            new() { Name = "Geelong", Latitude = -38.1499, Longitude = 144.3617, BoundingBox = new(-38.22, 144.28, -38.08, 144.45), SuggestedNiches = ["Advanced Manufacturing", "Health Tech", "Education"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Queensland",
+                        Code = "QLD",
+                        Cities =
+                        [
+                            new() { Name = "Brisbane", Latitude = -27.4698, Longitude = 153.0251, BoundingBox = new(-27.58, 152.92, -27.35, 153.15), SuggestedNiches = ["Mining & Resources", "AgTech", "Tourism Infrastructure"] },
+                            new() { Name = "Gold Coast", Latitude = -28.0167, Longitude = 153.4000, BoundingBox = new(-28.12, 153.30, -27.90, 153.50), SuggestedNiches = ["Tourism & Hospitality", "Sports & Fitness", "Film Production"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Western Australia",
+                        Code = "WA",
+                        Cities =
+                        [
+                            new() { Name = "Perth", Latitude = -31.9505, Longitude = 115.8605, BoundingBox = new(-32.05, 115.75, -31.85, 115.98), SuggestedNiches = ["Mining & Exploration", "Renewable Energy", "Maritime Services"] }
                         ]
                     }
                 ]
@@ -535,7 +692,8 @@ public class GeoLocationService : IGeoLocationService
                         Code = "BY",
                         Cities =
                         [
-                            new() { Name = "Munich", Latitude = 48.1351, Longitude = 11.5820, BoundingBox = new(48.05, 11.45, 48.22, 11.70), SuggestedNiches = ["Automotive Engineering", "Industrial IoT", "Private Banking & Wealth Management"] }
+                            new() { Name = "Munich", Latitude = 48.1351, Longitude = 11.5820, BoundingBox = new(48.05, 11.45, 48.22, 11.70), SuggestedNiches = ["Automotive Engineering", "Industrial IoT", "Private Banking & Wealth Management"] },
+                            new() { Name = "Nuremberg", Latitude = 49.4521, Longitude = 11.0767, BoundingBox = new(49.38, 10.98, 49.52, 11.18), SuggestedNiches = ["Electronics", "Energy Tech", "Market Research"] }
                         ]
                     },
                     new()
@@ -545,6 +703,383 @@ public class GeoLocationService : IGeoLocationService
                         Cities =
                         [
                             new() { Name = "Berlin", Latitude = 52.5200, Longitude = 13.4050, BoundingBox = new(52.42, 13.25, 52.62, 13.55), SuggestedNiches = ["E-Commerce Startups", "Creative Studios & Media", "Renewable Energy"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Hesse",
+                        Code = "HE",
+                        Cities =
+                        [
+                            new() { Name = "Frankfurt", Latitude = 50.1109, Longitude = 8.6821, BoundingBox = new(50.02, 8.55, 50.18, 8.80), SuggestedNiches = ["European Banking HQ", "FinTech Solutions", "Data Center Infrastructure"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Hamburg",
+                        Code = "HH",
+                        Cities =
+                        [
+                            new() { Name = "Hamburg", Latitude = 53.5511, Longitude = 9.9937, BoundingBox = new(53.45, 9.85, 53.65, 10.15), SuggestedNiches = ["Maritime Shipping", "Aviation Engineering", "Media & Advertising"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "North Rhine-Westphalia",
+                        Code = "NW",
+                        Cities =
+                        [
+                            new() { Name = "Cologne", Latitude = 50.9375, Longitude = 6.9603, BoundingBox = new(50.88, 6.85, 51.02, 7.05), SuggestedNiches = ["Trade Fairs", "Digital Media", "Chemicals & Plastics"] },
+                            new() { Name = "Dusseldorf", Latitude = 51.2277, Longitude = 6.7735, BoundingBox = new(51.18, 6.70, 51.30, 6.88), SuggestedNiches = ["Fashion & Retail", "Telecommunications", "Legal Advisory"] }
+                        ]
+                    }
+                ]
+            },
+
+            // 9. Qatar
+            new()
+            {
+                Code = "QA",
+                Name = "Qatar",
+                FlagEmoji = "🇶🇦",
+                States =
+                [
+                    new()
+                    {
+                        Name = "Doha",
+                        Code = "DOH",
+                        Cities =
+                        [
+                            new() { Name = "Doha", Latitude = 25.2854, Longitude = 51.5310, BoundingBox = new(25.18, 51.42, 25.38, 51.62), SuggestedNiches = ["FinTech & Islamic Banking", "Luxury Hospitality & Hotels", "Energy Contracting", "Corporate Law"] },
+                            new() { Name = "Lusail", Latitude = 25.4206, Longitude = 51.4925, BoundingBox = new(25.35, 51.42, 25.48, 51.56), SuggestedNiches = ["Smart City Tech", "Entertainment & Sports", "Real Estate Investment"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Al Rayyan",
+                        Code = "RAY",
+                        Cities =
+                        [
+                            new() { Name = "Al Rayyan", Latitude = 25.2919, Longitude = 51.4244, BoundingBox = new(25.22, 51.35, 25.36, 51.48), SuggestedNiches = ["Education & Research Institutes", "Sports Medicine", "Commercial Retail"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Al Wakrah",
+                        Code = "WAK",
+                        Cities =
+                        [
+                            new() { Name = "Al Wakrah", Latitude = 25.1768, Longitude = 51.6048, BoundingBox = new(25.10, 51.52, 25.25, 51.66), SuggestedNiches = ["Port Facilities & Maritime", "Logistics Centers", "Fisheries Trading"] }
+                        ]
+                    }
+                ]
+            },
+
+            // 10. Oman
+            new()
+            {
+                Code = "OM",
+                Name = "Oman",
+                FlagEmoji = "🇴🇲",
+                States =
+                [
+                    new()
+                    {
+                        Name = "Muscat Governorate",
+                        Code = "MCT",
+                        Cities =
+                        [
+                            new() { Name = "Muscat", Latitude = 23.5880, Longitude = 58.3829, BoundingBox = new(23.48, 58.25, 23.68, 58.55), SuggestedNiches = ["Tourism & Heritage Lodging", "Oilfield & Energy Services", "Logistics & Cross-Border Trade"] },
+                            new() { Name = "Seeb", Latitude = 23.6703, Longitude = 58.1891, BoundingBox = new(23.60, 58.10, 23.75, 58.28), SuggestedNiches = ["Wholesale Markets", "Fisheries", "Commercial Retail"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Dhofar Governorate",
+                        Code = "DHO",
+                        Cities =
+                        [
+                            new() { Name = "Salalah", Latitude = 17.0151, Longitude = 54.0924, BoundingBox = new(16.95, 54.00, 17.10, 54.20), SuggestedNiches = ["Free Zone Logistics", "Khareef Season Tourism", "Agriculture & Frankincense"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Al Batinah North",
+                        Code = "BAT",
+                        Cities =
+                        [
+                            new() { Name = "Sohar", Latitude = 24.3642, Longitude = 56.7468, BoundingBox = new(24.28, 56.65, 24.45, 56.82), SuggestedNiches = ["Port & Industrial Freezone", "Petrochemicals", "Steel & Metals"] }
+                        ]
+                    }
+                ]
+            },
+
+            // 11. Kuwait
+            new()
+            {
+                Code = "KW",
+                Name = "Kuwait",
+                FlagEmoji = "🇰🇼",
+                States =
+                [
+                    new()
+                    {
+                        Name = "Al Asimah (Capital)",
+                        Code = "ASI",
+                        Cities =
+                        [
+                            new() { Name = "Kuwait City", Latitude = 29.3759, Longitude = 47.9774, BoundingBox = new(29.30, 47.90, 29.45, 48.05), SuggestedNiches = ["Investment Banking & FinTech", "Corporate Law Firms", "Retail Megastores", "Aesthetic Healthcare"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Hawalli Governorate",
+                        Code = "HAW",
+                        Cities =
+                        [
+                            new() { Name = "Hawalli", Latitude = 29.3328, Longitude = 48.0281, BoundingBox = new(29.28, 48.00, 29.38, 48.08), SuggestedNiches = ["Consumer Electronics", "Commercial Shopping", "Private Clinics"] },
+                            new() { Name = "Salmiya", Latitude = 29.3344, Longitude = 48.0758, BoundingBox = new(29.28, 48.02, 29.38, 48.12), SuggestedNiches = ["Seaside Hospitality", "Boutique Fashion", "Food & Beverage"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Al Ahmadi Governorate",
+                        Code = "AHM",
+                        Cities =
+                        [
+                            new() { Name = "Al Ahmadi", Latitude = 29.0769, Longitude = 48.0839, BoundingBox = new(29.00, 48.00, 29.15, 48.15), SuggestedNiches = ["Oil Refining & Petrochemicals", "Engineering Contracting", "Heavy Equipment"] }
+                        ]
+                    }
+                ]
+            },
+
+            // 12. Bahrain
+            new()
+            {
+                Code = "BH",
+                Name = "Bahrain",
+                FlagEmoji = "🇧🇭",
+                States =
+                [
+                    new()
+                    {
+                        Name = "Capital Governorate",
+                        Code = "CAP",
+                        Cities =
+                        [
+                            new() { Name = "Manama", Latitude = 26.2285, Longitude = 50.5860, BoundingBox = new(26.18, 50.52, 26.28, 50.65), SuggestedNiches = ["Offshore Banking & FinTech", "Crypto & Blockchain Regulations", "Luxury Hospitality", "Corporate Advisory"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Muharraq Governorate",
+                        Code = "MUH",
+                        Cities =
+                        [
+                            new() { Name = "Muharraq", Latitude = 26.2572, Longitude = 50.6119, BoundingBox = new(26.22, 50.58, 26.30, 50.66), SuggestedNiches = ["Aviation Services", "Traditional Pearl & Heritage Trade", "Logistics"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Northern Governorate",
+                        Code = "NOR",
+                        Cities =
+                        [
+                            new() { Name = "Riffa", Latitude = 26.1300, Longitude = 50.5550, BoundingBox = new(26.08, 50.50, 26.18, 50.62), SuggestedNiches = ["Residential Real Estate", "Sports & Golf Facilities", "Private Education"] }
+                        ]
+                    }
+                ]
+            },
+
+            // 13. Malaysia
+            new()
+            {
+                Code = "MY",
+                Name = "Malaysia",
+                FlagEmoji = "🇲🇾",
+                States =
+                [
+                    new()
+                    {
+                        Name = "Federal Territory",
+                        Code = "KL",
+                        Cities =
+                        [
+                            new() { Name = "Kuala Lumpur", Latitude = 3.1390, Longitude = 101.6869, BoundingBox = new(3.05, 101.60, 3.25, 101.78), SuggestedNiches = ["FinTech & Islamic Finance", "Software Development Agencies", "Hospitality & Tourism", "E-Commerce D2C"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Selangor",
+                        Code = "SGR",
+                        Cities =
+                        [
+                            new() { Name = "Petaling Jaya", Latitude = 3.1073, Longitude = 101.6067, BoundingBox = new(3.04, 101.55, 3.16, 101.66), SuggestedNiches = ["Digital Marketing", "Tech Startups", "Consumer Goods"] },
+                            new() { Name = "Shah Alam", Latitude = 3.0738, Longitude = 101.5183, BoundingBox = new(3.00, 101.45, 3.14, 101.58), SuggestedNiches = ["Automotive Assembly", "Industrial Manufacturing", "Logistics Hubs"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Penang",
+                        Code = "PNG",
+                        Cities =
+                        [
+                            new() { Name = "George Town", Latitude = 5.4141, Longitude = 100.3288, BoundingBox = new(5.35, 100.26, 5.48, 5.38), SuggestedNiches = ["Semiconductor Assembly", "Medical Tourism", "Heritage Hotels & Cafes"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Johor",
+                        Code = "JHR",
+                        Cities =
+                        [
+                            new() { Name = "Johor Bahru", Latitude = 1.4927, Longitude = 103.7414, BoundingBox = new(1.42, 103.65, 1.58, 103.82), SuggestedNiches = ["Cross-Border Singapore Services", "Petrochemicals", "Real Estate"] }
+                        ]
+                    }
+                ]
+            },
+
+            // 14. Singapore
+            new()
+            {
+                Code = "SG",
+                Name = "Singapore",
+                FlagEmoji = "🇸🇬",
+                States =
+                [
+                    new()
+                    {
+                        Name = "Singapore",
+                        Code = "SGP",
+                        Cities =
+                        [
+                            new() { Name = "Singapore", Latitude = 1.3521, Longitude = 103.8198, BoundingBox = new(1.22, 103.60, 1.48, 104.05), SuggestedNiches = ["Global FinTech & Wealth Management", "Regional Headquarters & SaaS", "Biomedical Sciences", "Maritime & Port Logistics"] },
+                            new() { Name = "Jurong", Latitude = 1.3329, Longitude = 103.7436, BoundingBox = new(1.28, 103.68, 1.38, 103.78), SuggestedNiches = ["Advanced Manufacturing", "CleanTech Park", "Heavy Engineering"] }
+                        ]
+                    }
+                ]
+            },
+
+            // 15. Ireland
+            new()
+            {
+                Code = "IE",
+                Name = "Ireland",
+                FlagEmoji = "🇮🇪",
+                States =
+                [
+                    new()
+                    {
+                        Name = "Leinster",
+                        Code = "L",
+                        Cities =
+                        [
+                            new() { Name = "Dublin", Latitude = 53.3498, Longitude = -6.2603, BoundingBox = new(53.28, -6.40, 53.42, -6.15), SuggestedNiches = ["European Tech Headquarters (Silicon Docks)", "Aircraft Leasing & FinTech", "Pharma R&D"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Munster",
+                        Code = "M",
+                        Cities =
+                        [
+                            new() { Name = "Cork", Latitude = 51.8985, Longitude = -8.4756, BoundingBox = new(51.84, -8.56, 51.96, -8.38), SuggestedNiches = ["Biopharma & MedTech", "Information Technology", "Cybersecurity"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Connacht",
+                        Code = "C",
+                        Cities =
+                        [
+                            new() { Name = "Galway", Latitude = 53.2707, Longitude = -9.0568, BoundingBox = new(53.23, -9.14, 53.32, -8.98), SuggestedNiches = ["Medical Device Manufacturing", "Culture & Arts Tourism", "Software Development"] }
+                        ]
+                    }
+                ]
+            },
+
+            // 16. Netherlands
+            new()
+            {
+                Code = "NL",
+                Name = "Netherlands",
+                FlagEmoji = "🇳🇱",
+                States =
+                [
+                    new()
+                    {
+                        Name = "North Holland",
+                        Code = "NH",
+                        Cities =
+                        [
+                            new() { Name = "Amsterdam", Latitude = 52.3676, Longitude = 4.9041, BoundingBox = new(52.30, 4.80, 52.44, 5.02), SuggestedNiches = ["Global FinTech & Payments", "Creative Agencies & Media", "Logistics & E-Commerce"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "South Holland",
+                        Code = "ZH",
+                        Cities =
+                        [
+                            new() { Name = "Rotterdam", Latitude = 51.9244, Longitude = 4.4777, BoundingBox = new(51.85, 4.38, 52.00, 4.58), SuggestedNiches = ["Largest Port in Europe", "Clean Maritime Energy", "Logistics & Supply Chain"] },
+                            new() { Name = "The Hague", Latitude = 52.0705, Longitude = 4.3007, BoundingBox = new(52.02, 4.22, 52.12, 4.38), SuggestedNiches = ["International Law & Arbitration", "Security & Intelligence", "Government Services"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "North Brabant",
+                        Code = "NB",
+                        Cities =
+                        [
+                            new() { Name = "Eindhoven", Latitude = 51.4416, Longitude = 5.4697, BoundingBox = new(51.38, 5.40, 51.50, 5.55), SuggestedNiches = ["High-Tech Semiconductor Equipment", "Industrial Design", "Automotive R&D"] }
+                        ]
+                    }
+                ]
+            },
+
+            // 17. Turkey
+            new()
+            {
+                Code = "TR",
+                Name = "Turkey",
+                FlagEmoji = "🇹🇷",
+                States =
+                [
+                    new()
+                    {
+                        Name = "Marmara Region",
+                        Code = "MAR",
+                        Cities =
+                        [
+                            new() { Name = "Istanbul", Latitude = 41.0082, Longitude = 28.9784, BoundingBox = new(40.85, 28.75, 41.20, 29.25), SuggestedNiches = ["Health Tourism (Aesthetics & Dental)", "Textile & Garment Manufacturing", "E-Commerce Startups", "Logistics & Shipping"] },
+                            new() { Name = "Bursa", Latitude = 40.1885, Longitude = 29.0610, BoundingBox = new(40.12, 28.95, 40.26, 29.18), SuggestedNiches = ["Automotive Manufacturing", "Silk & Textiles", "Food Processing"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Central Anatolia",
+                        Code = "CEN",
+                        Cities =
+                        [
+                            new() { Name = "Ankara", Latitude = 39.9334, Longitude = 32.8597, BoundingBox = new(39.82, 32.72, 40.05, 33.02), SuggestedNiches = ["Defense & Aerospace Industries", "Government IT Contractors", "Higher Education"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Aegean Region",
+                        Code = "AEG",
+                        Cities =
+                        [
+                            new() { Name = "Izmir", Latitude = 38.4237, Longitude = 27.1428, BoundingBox = new(38.32, 27.02, 38.52, 27.25), SuggestedNiches = ["Renewable Wind Energy", "Export Agriculture & Food", "Port Logistics"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Mediterranean Region",
+                        Code = "MED",
+                        Cities =
+                        [
+                            new() { Name = "Antalya", Latitude = 36.8969, Longitude = 30.7133, BoundingBox = new(36.80, 30.60, 36.98, 30.82), SuggestedNiches = ["Resort Hotels & Lodging", "Yachting & Coastal Tourism", "Fresh Citrus Export"] }
                         ]
                     }
                 ]

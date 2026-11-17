@@ -31,6 +31,26 @@ public class WebsiteAudit
     public string? PageTitle { get; set; }
     public string? MetaDescription { get; set; }
     
+    // Advanced Technical, SEO & Security Diagnostics
+    public string? CanonicalUrl { get; set; }
+    public string? H1Text { get; set; }
+    public int? H1Count { get; set; }
+    public int? H2Count { get; set; }
+    public int? ImagesTotalCount { get; set; }
+    public int? ImagesMissingAltCount { get; set; }
+    public int? InternalLinksCount { get; set; }
+    public int? ExternalLinksCount { get; set; }
+    public string? ServerBanner { get; set; }
+    public string? CompressionType { get; set; }
+    public string? SecurityHeadersGrade { get; set; }
+    public string? AnalyticsTrackersDetected { get; set; }
+    public bool ViewportConfigured { get; set; } = false;
+    public bool OpenGraphConfigured { get; set; } = false;
+    public bool TwitterCardConfigured { get; set; } = false;
+    public bool HstsConfigured { get; set; } = false;
+    public bool CspConfigured { get; set; } = false;
+    public bool XFrameOptionsConfigured { get; set; } = false;
+    
     public string? RawReportJson { get; set; }
     public string? ErrorMessage { get; set; }
     

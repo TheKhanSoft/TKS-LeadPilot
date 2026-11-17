@@ -97,6 +97,9 @@
                             </ComboBox.ItemTemplate>
                         </ComboBox>
 
+                        <!-- Sort By Dropdown -->
+                        <ComboBox Width="160" ItemsSource="{Binding SortOptions}" SelectedItem="{Binding SelectedSortOption}" IsEnabled="{Binding !IsLoading}" ToolTip.Tip="Sort order for leads" Margin="0,0,8,6"/>
+
                         <!-- Action Buttons -->
                         <Button Content="Filter" Command="{Binding ApplyFiltersCommand}" Classes="btn-primary" IsEnabled="{Binding !IsLoading}" Margin="0,0,6,6"/>
                         <Button Content="Reset All" Command="{Binding ResetFiltersCommand}" Classes="btn-secondary" IsEnabled="{Binding !IsLoading}" Margin="0,0,6,6"/>
@@ -299,11 +302,35 @@
                                 </Border>
                             </StackPanel>
 
-                            <Separator Background="#223147" IsVisible="{Binding IsGoogleVerified}"/>
+                            <Separator Background="#223147"/>
 
-                            <!-- Actions -->
+                            <!-- Quick Outreach & Lead Utilities -->
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="QUICK OUTREACH &amp; ACTIONS" FontSize="11" FontWeight="Bold" Foreground="#64748B"/>
+                                <Button Content="📋 Copy Tailored Pitch" 
+                                        Command="{Binding ((vm:BusinessesViewModel)DataContext).CopyQuickPitchCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                        Classes="btn-accent" HorizontalAlignment="Stretch"/>
+                                <Button Content="🌐 Launch Website in Browser" 
+                                        Command="{Binding ((vm:BusinessesViewModel)DataContext).OpenWebsiteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                        Classes="btn-primary" HorizontalAlignment="Stretch"
+                                        IsVisible="{Binding WebsiteUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                <Grid ColumnDefinitions="*,*">
+                                    <Button Grid.Column="0" Content="📞 Copy Phone" 
+                                            Command="{Binding ((vm:BusinessesViewModel)DataContext).CopyPhoneCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                            Classes="btn-secondary" HorizontalAlignment="Stretch" Margin="0,0,4,0"
+                                            IsVisible="{Binding PhonePrimary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                    <Button Grid.Column="1" Content="✉️ Copy Email" 
+                                            Command="{Binding ((vm:BusinessesViewModel)DataContext).CopyEmailCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                            Classes="btn-secondary" HorizontalAlignment="Stretch" Margin="4,0,0,0"
+                                            IsVisible="{Binding EmailPrimary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                </Grid>
+                            </StackPanel>
+
+                            <Separator Background="#223147"/>
+
+                            <!-- Record Management -->
                             <StackPanel Spacing="8">
-                                <TextBlock Text="ACTIONS" FontSize="11" FontWeight="Bold" Foreground="#64748B"/>
+                                <TextBlock Text="RECORD MANAGEMENT" FontSize="11" FontWeight="Bold" Foreground="#64748B"/>
                                 <Button Content="✨ Enrich with Google Places" 
                                         Command="{Binding ((vm:BusinessesViewModel)DataContext).OpenEnrichConfirmCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         HorizontalAlignment="Stretch" Classes="btn-teal"/>

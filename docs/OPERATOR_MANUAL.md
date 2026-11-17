@@ -59,7 +59,7 @@ flowchart TD
 
 ### Launching the Application
 - **Method 1 (Recommended):** Double-click [`run-desktop.bat`](file:///D:/Projects/TKS-LeadPilot/run-desktop.bat) in the repository root. This script checks the environment, verifies SQLite schema integrity, and launches the desktop station.
-- **Method 2 (Standalone Binary):** Launch [`desktop/dist/TKS.LeadPilot.UI.exe`](file:///D:/Projects/TKS-LeadPilot/desktop/dist/TKS.LeadPilot.UI.exe).
+- **Method 2 (Standalone Binary):** Launch [`desktop/dist/TKS.LeadPilot.exe`](file:///D:/Projects/TKS-LeadPilot/desktop/dist/TKS.LeadPilot.exe).
 
 ### Initial Configuration Checklist
 1. Navigate to **⚙️ Settings & Vault** from the sidebar.

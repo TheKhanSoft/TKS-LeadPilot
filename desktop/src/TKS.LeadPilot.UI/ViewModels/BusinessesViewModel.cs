@@ -4,6 +4,8 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Input;
+using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using TKS.LeadPilot.Core.Enums;
@@ -730,16 +732,25 @@ public partial class BusinessesViewModel : ViewModelBase
 
     // --- Quick Actions on Selected Lead ---
 
+    private static async Task CopyToClipboardAsync(string text)
+    {
+        try
+        {
+            if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.Clipboard != null)
+            {
+                await desktop.MainWindow.Clipboard.SetTextAsync(text);
+            }
+        }
+        catch { }
+    }
+
     [RelayCommand]
     public async Task CopyPhone()
     {
         if (SelectedBusiness != null && !string.IsNullOrWhiteSpace(SelectedBusiness.PhonePrimary))
         {
-            if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.Clipboard != null)
-            {
-                await desktop.MainWindow.Clipboard.SetTextAsync(SelectedBusiness.PhonePrimary);
-                StatusMessage = $"📞 Phone copied ({SelectedBusiness.PhonePrimary}) to clipboard!";
-            }
+            await CopyToClipboardAsync(SelectedBusiness.PhonePrimary);
+            StatusMessage = $"📞 Phone copied ({SelectedBusiness.PhonePrimary}) to clipboard!";
         }
     }
 
@@ -748,11 +759,8 @@ public partial class BusinessesViewModel : ViewModelBase
     {
         if (SelectedBusiness != null && !string.IsNullOrWhiteSpace(SelectedBusiness.EmailPrimary))
         {
-            if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.Clipboard != null)
-            {
-                await desktop.MainWindow.Clipboard.SetTextAsync(SelectedBusiness.EmailPrimary);
-                StatusMessage = $"✉️ Email copied ({SelectedBusiness.EmailPrimary}) to clipboard!";
-            }
+            await CopyToClipboardAsync(SelectedBusiness.EmailPrimary);
+            StatusMessage = $"✉️ Email copied ({SelectedBusiness.EmailPrimary}) to clipboard!";
         }
     }
 
@@ -796,11 +804,8 @@ public partial class BusinessesViewModel : ViewModelBase
                         $"Would you be available for a brief 5-minute discovery consultation this week?\n\n" +
                         $"Sincerely,\nTheKhanSoft Enterprise Team\ninfo@thekhansoft.com";
 
-            if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.Clipboard != null)
-            {
-                await desktop.MainWindow.Clipboard.SetTextAsync(pitch);
-                StatusMessage = $"📋 Tailored outreach pitch for {SelectedBusiness.Name} copied to clipboard!";
-            }
+            await CopyToClipboardAsync(pitch);
+            StatusMessage = $"📋 Tailored outreach pitch for {SelectedBusiness.Name} copied to clipboard!";
         }
     }
 

@@ -16,21 +16,36 @@
         <Style Selector="Button.nav">
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="Padding" Value="12,10"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="#94A3B8"/>
             <Setter Property="FontWeight" Value="Medium"/>
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Margin" Value="0,2"/>
         </Style>
         <Style Selector="Button.nav:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#151E2E"/>
+            <Setter Property="Background" Value="#131C2E"/>
             <Setter Property="Foreground" Value="#F8FAFC"/>
+            <Setter Property="BorderBrush" Value="#1E293B"/>
         </Style>
         <Style Selector="Button.nav:pressed /template/ ContentPresenter">
-            <Setter Property="Background" Value="#1E293B"/>
+            <Setter Property="Background" Value="#1A2842"/>
             <Setter Property="Foreground" Value="#38BDF8"/>
+        </Style>
+        <!-- Active Selected State -->
+        <Style Selector="Button.nav.active">
+            <Setter Property="Background" Value="#0F2038"/>
+            <Setter Property="Foreground" Value="#38BDF8"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="BorderBrush" Value="#0284C7"/>
+        </Style>
+        <Style Selector="Button.nav.active /template/ ContentPresenter">
+            <Setter Property="Background" Value="#0F2038"/>
+            <Setter Property="Foreground" Value="#38BDF8"/>
+            <Setter Property="BorderBrush" Value="#0284C7"/>
         </Style>
     </Window.Styles>
 
@@ -95,25 +110,62 @@
         <Border Grid.Row="1" Grid.Column="0" Background="#0C121E" BorderBrush="#1E293B" BorderThickness="0,0,1,0" Padding="12,16">
             <Grid RowDefinitions="*,Auto">
                 <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
-                    <StackPanel Spacing="4">
+                    <StackPanel Spacing="3">
                         <TextBlock Text="CORE DISCOVERY" FontSize="10" FontWeight="Bold" Foreground="#475569" Margin="10,4,0,6" LetterSpacing="0.8"/>
                         
-                        <Button Classes="nav" Content="📊 Executive Dashboard" Command="{Binding NavigateCommand}" CommandParameter="Dashboard"/>
-                        <Button Classes="nav" Content="🏢 Business Database" Command="{Binding NavigateCommand}" CommandParameter="Businesses"/>
-                        <Button Classes="nav" Content="🛰️ Free Discovery (OSM)" Command="{Binding NavigateCommand}" CommandParameter="Businesses"/>
+                        <Button Classes="nav" Classes.active="{Binding IsDashboardActive}"
+                                Command="{Binding NavigateCommand}" CommandParameter="Dashboard">
+                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                <TextBlock Text="📊" FontSize="14" VerticalAlignment="Center"/>
+                                <TextBlock Text="Executive Dashboard" FontSize="13" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
 
-                        <TextBlock Text="INTELLIGENCE &amp; CRM" FontSize="10" FontWeight="Bold" Foreground="#475569" Margin="10,16,0,6" LetterSpacing="0.8"/>
+                        <Button Classes="nav" Classes.active="{Binding IsBusinessesActive}"
+                                Command="{Binding NavigateCommand}" CommandParameter="Businesses">
+                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                <TextBlock Text="🏢" FontSize="14" VerticalAlignment="Center"/>
+                                <TextBlock Text="Business Intelligence" FontSize="13" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
 
-                        <Button Classes="nav" Content="🔬 Website Audits" Command="{Binding NavigateCommand}" CommandParameter="Audits"/>
-                        <Button Classes="nav" Content="📈 CRM Sales Pipeline" Command="{Binding NavigateCommand}" CommandParameter="Pipeline"/>
+                        <TextBlock Text="INTELLIGENCE &amp; CRM" FontSize="10" FontWeight="Bold" Foreground="#475569" Margin="10,14,0,6" LetterSpacing="0.8"/>
 
-                        <TextBlock Text="OUTREACH &amp; CAMPAIGNS" FontSize="10" FontWeight="Bold" Foreground="#475569" Margin="10,16,0,6" LetterSpacing="0.8"/>
+                        <Button Classes="nav" Classes.active="{Binding IsAuditsActive}"
+                                Command="{Binding NavigateCommand}" CommandParameter="Audits">
+                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                <TextBlock Text="🔬" FontSize="14" VerticalAlignment="Center"/>
+                                <TextBlock Text="Website Audits" FontSize="13" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
 
-                        <Button Classes="nav" Content="✉️ Message Studio" Command="{Binding NavigateCommand}" CommandParameter="Messages"/>
+                        <Button Classes="nav" Classes.active="{Binding IsPipelineActive}"
+                                Command="{Binding NavigateCommand}" CommandParameter="Pipeline">
+                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                <TextBlock Text="📈" FontSize="14" VerticalAlignment="Center"/>
+                                <TextBlock Text="CRM Sales Pipeline" FontSize="13" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
 
-                        <TextBlock Text="CONFIGURATION" FontSize="10" FontWeight="Bold" Foreground="#475569" Margin="10,16,0,6" LetterSpacing="0.8"/>
+                        <TextBlock Text="OUTREACH &amp; CAMPAIGNS" FontSize="10" FontWeight="Bold" Foreground="#475569" Margin="10,14,0,6" LetterSpacing="0.8"/>
 
-                        <Button Classes="nav" Content="⚙️ Settings &amp; Vault" Command="{Binding NavigateCommand}" CommandParameter="Settings"/>
+                        <Button Classes="nav" Classes.active="{Binding IsMessagesActive}"
+                                Command="{Binding NavigateCommand}" CommandParameter="Messages">
+                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                <TextBlock Text="✉️" FontSize="14" VerticalAlignment="Center"/>
+                                <TextBlock Text="Message Studio" FontSize="13" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <TextBlock Text="CONFIGURATION" FontSize="10" FontWeight="Bold" Foreground="#475569" Margin="10,14,0,6" LetterSpacing="0.8"/>
+
+                        <Button Classes="nav" Classes.active="{Binding IsSettingsActive}"
+                                Command="{Binding NavigateCommand}" CommandParameter="Settings">
+                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                <TextBlock Text="⚙️" FontSize="14" VerticalAlignment="Center"/>
+                                <TextBlock Text="Settings &amp; Vault" FontSize="13" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
                 </ScrollViewer>
 

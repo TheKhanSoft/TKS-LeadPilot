@@ -39,7 +39,7 @@ public class WebsiteAuditEngineTests
 
         var audit = await sut.RunAuditAsync("biz-123", "https://example.com");
 
-        audit.Status.Should().Be(AuditStatus.Completed);
+        audit.Status.Should().Be(AuditStatus.Completed, because: audit.ErrorMessage);
         audit.Findings.Should().Contain(f => f.RuleCode == "SEO_NO_TITLE");
         audit.Findings.Should().Contain(f => f.RuleCode == "MOB_NO_VIEWPORT");
         audit.Findings.Should().Contain(f => f.RuleCode == "SEC_NO_HSTS");

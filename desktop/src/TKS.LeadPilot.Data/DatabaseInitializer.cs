@@ -230,6 +230,24 @@ public class DatabaseInitializer : IDatabaseInitializer
         await EnsureColumnAsync("WebsiteAudits", "DetectedTechStack", "TEXT NULL", ct);
         await EnsureColumnAsync("WebsiteAudits", "PageTitle", "TEXT NULL", ct);
         await EnsureColumnAsync("WebsiteAudits", "MetaDescription", "TEXT NULL", ct);
+        await EnsureColumnAsync("WebsiteAudits", "CanonicalUrl", "TEXT NULL", ct);
+        await EnsureColumnAsync("WebsiteAudits", "H1Text", "TEXT NULL", ct);
+        await EnsureColumnAsync("WebsiteAudits", "H1Count", "INTEGER NULL", ct);
+        await EnsureColumnAsync("WebsiteAudits", "H2Count", "INTEGER NULL", ct);
+        await EnsureColumnAsync("WebsiteAudits", "ImagesTotalCount", "INTEGER NULL", ct);
+        await EnsureColumnAsync("WebsiteAudits", "ImagesMissingAltCount", "INTEGER NULL", ct);
+        await EnsureColumnAsync("WebsiteAudits", "InternalLinksCount", "INTEGER NULL", ct);
+        await EnsureColumnAsync("WebsiteAudits", "ExternalLinksCount", "INTEGER NULL", ct);
+        await EnsureColumnAsync("WebsiteAudits", "ServerBanner", "TEXT NULL", ct);
+        await EnsureColumnAsync("WebsiteAudits", "CompressionType", "TEXT NULL", ct);
+        await EnsureColumnAsync("WebsiteAudits", "SecurityHeadersGrade", "TEXT NULL", ct);
+        await EnsureColumnAsync("WebsiteAudits", "AnalyticsTrackersDetected", "TEXT NULL", ct);
+        await EnsureColumnAsync("WebsiteAudits", "ViewportConfigured", "INTEGER NOT NULL DEFAULT 0", ct);
+        await EnsureColumnAsync("WebsiteAudits", "OpenGraphConfigured", "INTEGER NOT NULL DEFAULT 0", ct);
+        await EnsureColumnAsync("WebsiteAudits", "TwitterCardConfigured", "INTEGER NOT NULL DEFAULT 0", ct);
+        await EnsureColumnAsync("WebsiteAudits", "HstsConfigured", "INTEGER NOT NULL DEFAULT 0", ct);
+        await EnsureColumnAsync("WebsiteAudits", "CspConfigured", "INTEGER NOT NULL DEFAULT 0", ct);
+        await EnsureColumnAsync("WebsiteAudits", "XFrameOptionsConfigured", "INTEGER NOT NULL DEFAULT 0", ct);
 
         await EnsureColumnAsync("WebsiteAuditFindings", "RuleCode", "TEXT NOT NULL DEFAULT ''", ct);
         await EnsureColumnAsync("WebsiteAuditFindings", "EvidenceText", "TEXT NULL", ct);

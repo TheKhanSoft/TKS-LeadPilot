@@ -18,6 +18,23 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private string _activeTab = "Dashboard";
 
+    public bool IsDashboardActive => ActiveTab == "Dashboard";
+    public bool IsBusinessesActive => ActiveTab == "Businesses";
+    public bool IsAuditsActive => ActiveTab == "Audits";
+    public bool IsPipelineActive => ActiveTab == "Pipeline";
+    public bool IsMessagesActive => ActiveTab == "Messages" || ActiveTab == "Outreach";
+    public bool IsSettingsActive => ActiveTab == "Settings";
+
+    partial void OnActiveTabChanged(string value)
+    {
+        OnPropertyChanged(nameof(IsDashboardActive));
+        OnPropertyChanged(nameof(IsBusinessesActive));
+        OnPropertyChanged(nameof(IsAuditsActive));
+        OnPropertyChanged(nameof(IsPipelineActive));
+        OnPropertyChanged(nameof(IsMessagesActive));
+        OnPropertyChanged(nameof(IsSettingsActive));
+    }
+
     [ObservableProperty]
     private bool _isAiEmergencyPaused = false;
 
