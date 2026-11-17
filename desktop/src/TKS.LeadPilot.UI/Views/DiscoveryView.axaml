@@ -9,20 +9,22 @@
         <Grid RowDefinitions="Auto,Auto,*,Auto">
             
             <!-- 1. Header & Live Telemetry Bar -->
-            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
                 <!-- Left Title & Subtitle -->
-                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <TextBlock Text="⚡ Lead Discovery Station" FontSize="18" FontWeight="ExtraBold" Foreground="#F8FAFC" VerticalAlignment="Center"/>
+                        <TextBlock Text="⚡ Lead Discovery Station" FontSize="19" FontWeight="ExtraBold" Foreground="#F8FAFC" VerticalAlignment="Center"/>
                         <Border Background="#064E3B" BorderBrush="#059669" BorderThickness="1" CornerRadius="10" Padding="8,2" VerticalAlignment="Center">
-                            <TextBlock Text="MULTI-ENGINE" FontSize="10" FontWeight="Bold" Foreground="#34D399"/>
+                            <TextBlock Text="MULTI-ENGINE RADAR" FontSize="10" FontWeight="Bold" Foreground="#34D399"/>
                         </Border>
                     </StackPanel>
+                    <TextBlock Text="Autonomous multi-source intelligence engine for discovering unlisted, website-less, and high-opportunity commercial leads across global territories." 
+                               FontSize="11.5" Foreground="#64748B"/>
                 </StackPanel>
 
-                <!-- Right Live Status & Metric Strip -->
+                <!-- Right Live Status & Engine Strip -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                    <Border Background="#111827" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="10,4">
+                    <Border Background="#111A2C" BorderBrush="#223147" BorderThickness="1" CornerRadius="8" Padding="10,5">
                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                             <Ellipse Width="8" Height="8" Fill="#10B981" VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding SelectedEngine}" FontSize="11" Foreground="#38BDF8" FontWeight="SemiBold"/>
@@ -32,31 +34,31 @@
             </Grid>
 
             <!-- 2. Discovery Control Console Ribbon -->
-            <Border Grid.Row="1" Background="#111A2C" BorderBrush="#223147" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,0,8">
-                <StackPanel Spacing="12">
+            <Border Grid.Row="1" Background="#111A2C" BorderBrush="#223147" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,0,0,8">
+                <StackPanel Spacing="10">
                     
-                    <!-- Row 1: Cascading Geographic Location Hierarchy & Proximity -->
+                    <!-- Deck 1: Geographic Territory & Proximity Targeting -->
                     <Grid ColumnDefinitions="Auto,*,Auto">
                         <WrapPanel Grid.Column="0" VerticalAlignment="Center">
-                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" Margin="0,0,10,6">
+                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" Margin="0,0,8,4">
                                 <TextBlock Text="📍" FontSize="13" VerticalAlignment="Center"/>
-                                <TextBlock Text="LOCATION:" FontSize="11" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center"/>
+                                <TextBlock Text="TERRITORY:" FontSize="10.5" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center"/>
                             </StackPanel>
 
                             <!-- Country Dropdown -->
-                            <ComboBox Width="180" ItemsSource="{Binding Countries}" SelectedItem="{Binding SelectedCountry}" IsEnabled="{Binding !IsScanning}" ToolTip.Tip="Filter by Country" Margin="0,0,8,6"/>
+                            <ComboBox Width="160" ItemsSource="{Binding Countries}" SelectedItem="{Binding SelectedCountry}" IsEnabled="{Binding !IsScanning}" ToolTip.Tip="Filter by Country" Margin="0,0,6,4" Padding="8,4" FontSize="11"/>
 
                             <!-- State/Province Dropdown -->
-                            <ComboBox Width="180" ItemsSource="{Binding States}" SelectedItem="{Binding SelectedState}" IsEnabled="{Binding !IsScanning}" ToolTip.Tip="Filter by State or Province" Margin="0,0,8,6"/>
+                            <ComboBox Width="160" ItemsSource="{Binding States}" SelectedItem="{Binding SelectedState}" IsEnabled="{Binding !IsScanning}" ToolTip.Tip="Filter by State or Province" Margin="0,0,6,4" Padding="8,4" FontSize="11"/>
 
                             <!-- City Dropdown -->
-                            <ComboBox Width="160" ItemsSource="{Binding Cities}" SelectedItem="{Binding SelectedCity}" IsEnabled="{Binding !IsScanning}" ToolTip.Tip="Filter by City" Margin="0,0,8,6"/>
+                            <ComboBox Width="150" ItemsSource="{Binding Cities}" SelectedItem="{Binding SelectedCity}" IsEnabled="{Binding !IsScanning}" ToolTip.Tip="Filter by City" Margin="0,0,6,4" Padding="8,4" FontSize="11"/>
 
                             <!-- Nearby Me Quick Button -->
-                            <Button Content="📍 Nearby Me" Command="{Binding DetectNearbyLocationCommand}" IsEnabled="{Binding !IsScanning}" Classes="btn-accent" Margin="0,0,8,6" ToolTip.Tip="Detect live GPS/IP location and select closest commercial hub"/>
+                            <Button Content="📍 Nearby Me" Command="{Binding DetectNearbyLocationCommand}" IsEnabled="{Binding !IsScanning}" Classes="btn-accent" Margin="0,0,6,4" Padding="9,4" FontSize="11" ToolTip.Tip="Detect live GPS/IP location and select closest commercial hub"/>
 
                             <!-- Nearby Radius Selector -->
-                            <ComboBox Width="100" ItemsSource="{Binding AvailableRadii}" SelectedItem="{Binding NearbyRadiusKm}" IsEnabled="{Binding !IsScanning}" ToolTip.Tip="Proximity radius (km)" Margin="0,0,8,6">
+                            <ComboBox Width="88" ItemsSource="{Binding AvailableRadii}" SelectedItem="{Binding NearbyRadiusKm}" IsEnabled="{Binding !IsScanning}" ToolTip.Tip="Proximity radius (km)" Margin="0,0,6,4" Padding="8,4" FontSize="11">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate x:DataType="x:Double">
                                         <TextBlock Text="{Binding StringFormat='{}{0} km'}"/>
@@ -66,241 +68,418 @@
                         </WrapPanel>
 
                         <!-- Active Proximity Indicator -->
-                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" IsVisible="{Binding IsNearbyActive}">
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" IsVisible="{Binding IsNearbyActive}">
                             <Border Background="#064E3B" BorderBrush="#059669" BorderThickness="1" CornerRadius="12" Padding="8,3">
-                                <TextBlock Text="📍 Proximity Active" FontSize="11" FontWeight="Bold" Foreground="#34D399"/>
+                                <TextBlock Text="📍 Proximity Active" FontSize="10.5" FontWeight="Bold" Foreground="#34D399"/>
                             </Border>
-                            <Button Content="✕ Clear" Command="{Binding ClearNearbyCommand}" Classes="btn-danger-ghost" Padding="6,2" FontSize="11"/>
+                            <Button Content="✕ Clear" Command="{Binding ClearNearbyCommand}" Classes="btn-danger-ghost" Padding="5,2" FontSize="10.5"/>
                         </StackPanel>
                     </Grid>
 
-                    <Separator Background="#1D2A3D"/>
+                    <Separator Background="#1E2A3B" Height="1"/>
 
-                    <!-- Row 2: Search Engine, Business Category, Keyword & Scan Action -->
+                    <!-- Deck 2: Multi-Source Engine, Category Preset, Keyword & Scan Action -->
                     <WrapPanel VerticalAlignment="Center">
                         <!-- Multi-Source Engine Selector -->
-                        <StackPanel Margin="0,0,10,6">
+                        <StackPanel Margin="0,0,8,4">
                             <TextBlock Text="SEARCH ENGINE" FontSize="10" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,3"/>
-                            <ComboBox Width="240" ItemsSource="{Binding AvailableEngines}" SelectedItem="{Binding SelectedEngine}" IsEnabled="{Binding !IsScanning}"/>
+                            <ComboBox Width="230" ItemsSource="{Binding AvailableEngines}" SelectedItem="{Binding SelectedEngine}" IsEnabled="{Binding !IsScanning}" Padding="8,4" FontSize="11"/>
                         </StackPanel>
 
                         <!-- Business Category Preset -->
-                        <StackPanel Margin="0,0,10,6">
+                        <StackPanel Margin="0,0,8,4">
                             <TextBlock Text="CATEGORY PRESET" FontSize="10" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,3"/>
-                            <ComboBox Width="260" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" IsEnabled="{Binding !IsScanning}"/>
+                            <ComboBox Width="240" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" IsEnabled="{Binding !IsScanning}" Padding="8,4" FontSize="11"/>
                         </StackPanel>
 
                         <!-- Custom Keyword Search -->
-                        <StackPanel Margin="0,0,12,6">
+                        <StackPanel Margin="0,0,8,4">
                             <TextBlock Text="CUSTOM KEYWORD / NICHE" FontSize="10" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,3"/>
-                            <TextBox Width="220" Text="{Binding CustomSearchKeyword}" IsEnabled="{Binding !IsScanning}" PlaceholderText="e.g. dentist, solar, law..." VerticalContentAlignment="Center"/>
+                            <TextBox Width="200" Text="{Binding CustomSearchKeyword}" IsEnabled="{Binding !IsScanning}" PlaceholderText="e.g. dentist, solar, law..." Padding="8,4" FontSize="11" VerticalContentAlignment="Center"/>
                         </StackPanel>
 
-                        <!-- Scan & Cancel Buttons -->
-                        <StackPanel VerticalAlignment="Bottom" Margin="0,0,0,6">
+                        <!-- Hero Scan & Cancel Buttons (Directly aligned on the same row!) -->
+                        <StackPanel VerticalAlignment="Bottom" Margin="0,0,0,4">
                             <Button Content="🚀 Start Discovery Scan" 
                                     Command="{Binding StartScanCommand}" 
                                     Classes="btn-accent" 
                                     IsVisible="{Binding !IsScanning}"
                                     FontWeight="Bold"
-                                    Padding="18,9"
+                                    Padding="16,7"
+                                    FontSize="11.5"
                                     ToolTip.Tip="Launch multi-source query across selected geographic territory"/>
                             <Button Content="🛑 Cancel Scan" 
                                     Command="{Binding CancelScanCommand}" 
                                     Classes="btn-danger" 
                                     IsVisible="{Binding IsScanning}"
                                     FontWeight="Bold"
-                                    Padding="18,9"/>
+                                    Padding="16,7"
+                                    FontSize="11.5"/>
                         </StackPanel>
                     </WrapPanel>
 
-                    <!-- Row 3: Pre-Scan Constraint Filters -->
-                    <WrapPanel VerticalAlignment="Center">
-                        <TextBlock Text="TARGET CONSTRAINTS:" FontSize="10" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,12,4"/>
-                        <CheckBox Content="Target Missing Website Only" IsChecked="{Binding TargetMissingWebsite}" IsEnabled="{Binding !IsScanning}" Margin="0,0,16,4" FontSize="12" Foreground="#CBD5E1"/>
-                        <CheckBox Content="Target Missing GMB Only" IsChecked="{Binding TargetMissingGmb}" IsEnabled="{Binding !IsScanning}" Margin="0,0,16,4" FontSize="12" Foreground="#CBD5E1"/>
-                        <CheckBox Content="Require Verified Phone" IsChecked="{Binding RequirePhone}" IsEnabled="{Binding !IsScanning}" Margin="0,0,16,4" FontSize="12" Foreground="#CBD5E1"/>
-                    </WrapPanel>
+                    <!-- Deck 3: Modern Target Constraints & Regional Niches -->
+                    <Grid ColumnDefinitions="Auto,*">
+                        <!-- Modern Interactive Toggle Chips -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="0,0,12,0">
+                            <TextBlock Text="CONSTRAINTS:" FontSize="10" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <ToggleButton Classes="toggle-chip" IsChecked="{Binding TargetMissingWebsite}" IsEnabled="{Binding !IsScanning}" Content="🌐 Missing Website Only" ToolTip.Tip="Focus on businesses without any registered web domain"/>
+                            <ToggleButton Classes="toggle-chip" IsChecked="{Binding TargetMissingGmb}" IsEnabled="{Binding !IsScanning}" Content="📍 Missing GMB Profile" ToolTip.Tip="Focus on businesses without a claimed Google Business Profile"/>
+                            <ToggleButton Classes="toggle-chip" IsChecked="{Binding RequirePhone}" IsEnabled="{Binding !IsScanning}" Content="📞 Verified Phone Required" ToolTip.Tip="Require verified phone number for cold outreach"/>
+                        </StackPanel>
 
-                    <!-- Row 4: Suggested Regional Business Niches -->
-                    <WrapPanel VerticalAlignment="Center" IsVisible="{Binding SuggestedNiches.Count}">
-                        <TextBlock Text="💡 REGIONAL NICHES:" FontSize="10" FontWeight="Bold" Foreground="#F59E0B" VerticalAlignment="Center" Margin="0,0,8,4"/>
-                        <ItemsControl ItemsSource="{Binding SuggestedNiches}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="x:String">
-                                    <Button Content="{Binding}" 
-                                            Command="{Binding ((vm:DiscoveryViewModel)DataContext).SelectSuggestedNicheCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                            CommandParameter="{Binding}"
-                                            IsEnabled="{Binding !((vm:DiscoveryViewModel)DataContext).IsScanning, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                            Classes="niche-pill"
-                                            Margin="0,0,6,4"/>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </WrapPanel>
+                        <!-- Suggested Regional Business Niches (Scrollable strip) -->
+                        <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" AllowAutoHide="True" IsVisible="{Binding SuggestedNiches.Count}">
+                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                <TextBlock Text="💡 NICHES:" FontSize="10" FontWeight="Bold" Foreground="#F59E0B" VerticalAlignment="Center" Margin="0,0,2,0"/>
+                                <ItemsControl ItemsSource="{Binding SuggestedNiches}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" Spacing="4"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="x:String">
+                                            <Button Content="{Binding}" 
+                                                    Command="{Binding ((vm:DiscoveryViewModel)DataContext).SelectSuggestedNicheCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    IsEnabled="{Binding !((vm:DiscoveryViewModel)DataContext).IsScanning, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    Classes="niche-pill"
+                                                    Padding="7,2"
+                                                    FontSize="10.5"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
 
                     <!-- Scanning Progress Bar Indicator -->
-                    <ProgressBar IsIndeterminate="True" Height="3" Background="#1E293B" Foreground="#38BDF8" IsVisible="{Binding IsScanning}" Margin="0,2,0,0"/>
+                    <ProgressBar IsIndeterminate="True" Height="2" Background="#1E293B" Foreground="#38BDF8" IsVisible="{Binding IsScanning}" Margin="0,-2,0,0"/>
 
-                    <!-- Filter Summary & Status Bar -->
+                    <!-- Live Status Message & Telemetry Badges -->
                     <Grid ColumnDefinitions="*,Auto" Margin="0,2,0,0">
-                        <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="12" Foreground="#38BDF8" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
-                            <TextBlock Text="{Binding TotalFoundCount, StringFormat='Found: {0}'}" FontSize="12" FontWeight="Bold" Foreground="#F8FAFC"/>
-                            <TextBlock Text="{Binding NewLeadsCount, StringFormat='⭐ New: {0}'}" FontSize="12" FontWeight="Bold" Foreground="#10B981"/>
-                            <TextBlock Text="{Binding DuplicateLeadsCount, StringFormat='⚠️ In Database: {0}'}" FontSize="12" Foreground="#F59E0B"/>
-                            <TextBlock Text="{Binding SelectedForImportCount, StringFormat='✓ Selected: {0}'}" FontSize="12" FontWeight="Bold" Foreground="#38BDF8"/>
+                        <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="11.5" Foreground="#38BDF8" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="6">
+                            <Border Background="#162235" CornerRadius="6" Padding="8,3">
+                                <TextBlock Text="{Binding TotalFoundCount, StringFormat='Found: {0}'}" FontSize="11" FontWeight="Bold" Foreground="#F8FAFC"/>
+                            </Border>
+                            <Border Background="#064E3B" CornerRadius="6" Padding="8,3">
+                                <TextBlock Text="{Binding NewLeadsCount, StringFormat='⭐ New: {0}'}" FontSize="11" FontWeight="Bold" Foreground="#34D399"/>
+                            </Border>
+                            <Border Background="#451A03" CornerRadius="6" Padding="8,3">
+                                <TextBlock Text="{Binding DuplicateLeadsCount, StringFormat='⚠️ In DB: {0}'}" FontSize="11" FontWeight="Bold" Foreground="#FBBF24"/>
+                            </Border>
+                            <Border Background="#0C233C" CornerRadius="6" Padding="8,3">
+                                <TextBlock Text="{Binding SelectedForImportCount, StringFormat='✓ Selected: {0}'}" FontSize="11" FontWeight="Bold" Foreground="#38BDF8"/>
+                            </Border>
                         </StackPanel>
                     </Grid>
                 </StackPanel>
             </Border>
 
-            <!-- 3. Discovered Leads Results Table -->
-            <Border Grid.Row="2" Background="#111A2C" BorderBrush="#223147" BorderThickness="1" CornerRadius="10" Padding="0">
-                <Grid RowDefinitions="Auto,*">
-                    <!-- Batch Selection Action Bar -->
-                    <Border Grid.Row="0" Background="#0C1322" BorderBrush="#1E293B" BorderThickness="0,0,0,1" Padding="14,10">
-                        <Grid ColumnDefinitions="Auto,*,Auto">
-                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
-                                <TextBlock Text="BATCH SELECTION:" FontSize="10" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                                <Button Content="Select All" Command="{Binding SelectAllCommand}" Classes="btn-secondary" Padding="10,5" FontSize="11" IsEnabled="{Binding !IsScanning}"/>
-                                <Button Content="Unselect All" Command="{Binding UnselectAllCommand}" Classes="btn-secondary" Padding="10,5" FontSize="11" IsEnabled="{Binding !IsScanning}"/>
-                                <Button Content="⭐ Select Only New" Command="{Binding SelectOnlyNewCommand}" Classes="btn-secondary" Padding="10,5" FontSize="11" IsEnabled="{Binding !IsScanning}"/>
+            <!-- 3. Results Section: Zero-State Radar OR Interactive Discovered Leads Table -->
+            <Grid Grid.Row="2">
+                <!-- 3A. Zero-State Radar Deck (Shown when no leads are discovered yet) -->
+                <Border Background="#0C1422" 
+                        BorderBrush="#1E2A3B" 
+                        BorderThickness="1" 
+                        CornerRadius="10" 
+                        Padding="24,20"
+                        IsVisible="{Binding !DiscoveredLeads.Count}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="760" Spacing="16">
+                        <!-- High-Tech Radar Visual -->
+                        <Border Width="60" Height="60" CornerRadius="30" Background="#0C233C" BorderBrush="#0284C7" BorderThickness="1.5" HorizontalAlignment="Center">
+                            <TextBlock Text="🛰️" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+
+                        <StackPanel Spacing="4" HorizontalAlignment="Center">
+                            <TextBlock Text="Autonomous Lead Discovery Radar Standing By" FontSize="17" FontWeight="ExtraBold" Foreground="#F8FAFC" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Target any commercial territory above to query multi-source registries, or launch one of our curated high-conversion presets below." 
+                                       FontSize="12" Foreground="#94A3B8" HorizontalAlignment="Center" TextAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- Curated Quick Intelligence Presets Grid -->
+                        <Border Background="#080D17" BorderBrush="#162235" BorderThickness="1" CornerRadius="10" Padding="12">
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="⚡ CURATED HIGH-OPPORTUNITY PRESETS (ONE-CLICK SCAN):" FontSize="10.5" FontWeight="Bold" Foreground="#38BDF8" HorizontalAlignment="Center"/>
+                                
+                                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto">
+                                    <!-- Preset 1: Healthcare & Clinics -->
+                                    <Border Grid.Row="0" Grid.Column="0" Background="#101A2B" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="4">
+                                        <Button Background="Transparent" BorderThickness="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                                Command="{Binding LaunchPresetScanCommand}" CommandParameter="healthcare" Padding="0">
+                                            <Grid ColumnDefinitions="Auto,*">
+                                                <TextBlock Grid.Column="0" Text="🏥" FontSize="20" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                                    <TextBlock Text="Private Healthcare &amp; Dental Clinics" FontSize="12" FontWeight="Bold" Foreground="#F8FAFC"/>
+                                                    <TextBlock Text="Doctors, dentists, diagnostic &amp; surgical labs" FontSize="10.5" Foreground="#64748B"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Button>
+                                    </Border>
+
+                                    <!-- Preset 2: Real Estate & Architecture -->
+                                    <Border Grid.Row="0" Grid.Column="1" Background="#101A2B" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="4">
+                                        <Button Background="Transparent" BorderThickness="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                                Command="{Binding LaunchPresetScanCommand}" CommandParameter="realestate" Padding="0">
+                                            <Grid ColumnDefinitions="Auto,*">
+                                                <TextBlock Grid.Column="0" Text="🏗️" FontSize="20" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                                    <TextBlock Text="Real Estate &amp; Property Developers" FontSize="12" FontWeight="Bold" Foreground="#F8FAFC"/>
+                                                    <TextBlock Text="Commercial brokers, architects &amp; construction" FontSize="10.5" Foreground="#64748B"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Button>
+                                    </Border>
+
+                                    <!-- Preset 3: Restaurants & Hospitality -->
+                                    <Border Grid.Row="1" Grid.Column="0" Background="#101A2B" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="4">
+                                        <Button Background="Transparent" BorderThickness="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                                Command="{Binding LaunchPresetScanCommand}" CommandParameter="restaurants" Padding="0">
+                                            <Grid ColumnDefinitions="Auto,*">
+                                                <TextBlock Grid.Column="0" Text="🍽️" FontSize="20" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                                    <TextBlock Text="Restaurants, Fine Dining &amp; Hospitality" FontSize="12" FontWeight="Bold" Foreground="#F8FAFC"/>
+                                                    <TextBlock Text="High-end dining, boutique hotels &amp; cafes" FontSize="10.5" Foreground="#64748B"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Button>
+                                    </Border>
+
+                                    <!-- Preset 4: Corporate Law & Financial Chambers -->
+                                    <Border Grid.Row="1" Grid.Column="1" Background="#101A2B" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="4">
+                                        <Button Background="Transparent" BorderThickness="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                                Command="{Binding LaunchPresetScanCommand}" CommandParameter="corporate" Padding="0">
+                                            <Grid ColumnDefinitions="Auto,*">
+                                                <TextBlock Grid.Column="0" Text="⚖️" FontSize="20" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                                    <TextBlock Text="Corporate Law &amp; Financial Advisory" FontSize="12" FontWeight="Bold" Foreground="#F8FAFC"/>
+                                                    <TextBlock Text="Legal chambers, tax consultancies &amp; chartered accountants" FontSize="10.5" Foreground="#64748B"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Button>
+                                    </Border>
+                                </Grid>
                             </StackPanel>
+                        </Border>
 
-                            <!-- Direct Import Button in Header Strip -->
-                            <Button Grid.Column="2" 
-                                    Content="{Binding SelectedForImportCount, StringFormat='📥 Import Selected Leads ({0})'}" 
-                                    Command="{Binding ImportSelectedLeadsCommand}" 
-                                    Classes="btn-success" 
-                                    IsEnabled="{Binding !IsImporting}"
-                                    Padding="16,6"
-                                    FontWeight="Bold"/>
-                        </Grid>
-                    </Border>
+                        <TextBlock Text="💡 Pro Tip: Leads without websites or with missing Google Business profiles represent prime web redesign &amp; SEO targets." 
+                                   FontSize="11" Foreground="#475569" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
 
-                    <!-- Leads DataGrid -->
-                    <DataGrid Grid.Row="1"
-                              ItemsSource="{Binding DiscoveredLeads}"
-                              SelectedItem="{Binding SelectedLead}"
-                              AutoGenerateColumns="False"
-                              IsReadOnly="True"
-                              GridLinesVisibility="Horizontal"
-                              HorizontalScrollBarVisibility="Auto"
-                              VerticalScrollBarVisibility="Auto"
-                              RowBackground="#111A2C"
-                              BorderThickness="0">
-                        <DataGrid.Columns>
+                <!-- 3B. Discovered Leads Results Table (Visible when leads are found) -->
+                <Border Background="#111A2C" BorderBrush="#223147" BorderThickness="1" CornerRadius="10" Padding="0" IsVisible="{Binding DiscoveredLeads.Count}">
+                    <Grid RowDefinitions="Auto,*">
+                        <!-- Batch Selection Action Bar (Clean selection toolbar, redundant import button removed) -->
+                        <Border Grid.Row="0" Background="#0C1322" BorderBrush="#1E293B" BorderThickness="0,0,0,1" Padding="12,8">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <TextBlock Text="BATCH SELECTION:" FontSize="10" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                    <Button Content="Select All" Command="{Binding SelectAllCommand}" Classes="btn-secondary" Padding="8,4" FontSize="11" IsEnabled="{Binding !IsScanning}"/>
+                                    <Button Content="Unselect All" Command="{Binding UnselectAllCommand}" Classes="btn-secondary" Padding="8,4" FontSize="11" IsEnabled="{Binding !IsScanning}"/>
+                                    <Button Content="⭐ Select Only New" Command="{Binding SelectOnlyNewCommand}" Classes="btn-secondary" Padding="8,4" FontSize="11" IsEnabled="{Binding !IsScanning}"/>
+                                </StackPanel>
+
+                                <!-- Selection Status Badge (Header info pill) -->
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <Border Background="#0C233C" BorderBrush="#0284C7" BorderThickness="1" CornerRadius="12" Padding="10,3">
+                                        <TextBlock Text="{Binding SelectedForImportCount, StringFormat='✓ {0} Leads Selected for CRM'}" FontSize="11" FontWeight="Bold" Foreground="#38BDF8"/>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Leads DataGrid with Context Menu & Inline Actions -->
+                        <DataGrid Grid.Row="1"
+                                  ItemsSource="{Binding DiscoveredLeads}"
+                                  SelectedItem="{Binding SelectedLead}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  GridLinesVisibility="Horizontal"
+                                  HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Auto"
+                                  RowBackground="#111A2C"
+                                  BorderThickness="0">
                             
-                            <!-- Selection Checkbox Column -->
-                            <DataGridTemplateColumn Header="Import" Width="60">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate x:DataType="m:DiscoveredLead">
-                                        <CheckBox IsChecked="{Binding IsSelectedForImport}" 
-                                                  HorizontalAlignment="Center" 
-                                                  VerticalAlignment="Center"/>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
+                            <!-- Right-Click Row Context Menu -->
+                            <DataGrid.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="💬 WhatsApp Outreach" Command="{Binding OpenWhatsAppCommand}" CommandParameter="{Binding SelectedLead}">
+                                        <MenuItem.Icon><TextBlock Text="💬" FontSize="13"/></MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="✉️ Open Email Composer" Command="{Binding OpenEmailComposerCommand}" CommandParameter="{Binding SelectedLead}">
+                                        <MenuItem.Icon><TextBlock Text="✉️" FontSize="13"/></MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="📞 Call Phone" Command="{Binding OpenPhoneDialerCommand}" CommandParameter="{Binding SelectedLead}">
+                                        <MenuItem.Icon><TextBlock Text="📞" FontSize="13"/></MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="🗺️ Search on Google Maps" Command="{Binding OpenGoogleMapsCommand}" CommandParameter="{Binding SelectedLead}">
+                                        <MenuItem.Icon><TextBlock Text="🗺️" FontSize="13"/></MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="🌐 Launch Website in Browser" Command="{Binding OpenWebsiteCommand}" CommandParameter="{Binding SelectedLead}">
+                                        <MenuItem.Icon><TextBlock Text="🌐" FontSize="13"/></MenuItem.Icon>
+                                    </MenuItem>
+                                    <Separator/>
+                                    <MenuItem Header="🎨 Launch AI Landing Page Studio" Command="{Binding OpenLandingPageStudioCommand}" CommandParameter="{Binding SelectedLead}">
+                                        <MenuItem.Icon><TextBlock Text="🎨" FontSize="13"/></MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="📋 Copy Outreach Pitch" Command="{Binding CopyPitchCommand}" CommandParameter="{Binding SelectedLead}">
+                                        <MenuItem.Icon><TextBlock Text="📋" FontSize="13"/></MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="📋 Copy Contact Details Card" Command="{Binding CopyContactCardCommand}" CommandParameter="{Binding SelectedLead}">
+                                        <MenuItem.Icon><TextBlock Text="📋" FontSize="13"/></MenuItem.Icon>
+                                    </MenuItem>
+                                    <Separator/>
+                                    <MenuItem Header="📥 Import This Lead to SQLite Database" Command="{Binding ImportSingleLeadCommand}" CommandParameter="{Binding SelectedLead}">
+                                        <MenuItem.Icon><TextBlock Text="📥" FontSize="13"/></MenuItem.Icon>
+                                    </MenuItem>
+                                </ContextMenu>
+                            </DataGrid.ContextMenu>
 
-                            <!-- Business Name -->
-                            <DataGridTextColumn Header="Business Name" Binding="{Binding Business.Name}" Width="220" />
+                            <DataGrid.Columns>
+                                <!-- Selection Checkbox Column -->
+                                <DataGridTemplateColumn Header="Import" Width="55">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate x:DataType="m:DiscoveredLead">
+                                            <CheckBox IsChecked="{Binding IsSelectedForImport}" 
+                                                      HorizontalAlignment="Center" 
+                                                      VerticalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
 
-                            <!-- Category -->
-                            <DataGridTextColumn Header="Category" Binding="{Binding Business.Category}" Width="160" />
+                                <!-- Business Name -->
+                                <DataGridTemplateColumn Header="Business Name" Width="230">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate x:DataType="m:DiscoveredLead">
+                                            <TextBlock Text="{Binding Business.Name}" FontWeight="SemiBold" Foreground="#F8FAFC" FontSize="12" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
 
-                            <!-- City -->
-                            <DataGridTextColumn Header="City" Binding="{Binding Business.City}" Width="120" />
+                                <!-- Category -->
+                                <DataGridTextColumn Header="Category" Binding="{Binding Business.Category}" Width="160" />
 
-                            <!-- Country -->
-                            <DataGridTextColumn Header="Country" Binding="{Binding Business.Country}" Width="110" />
+                                <!-- City -->
+                                <DataGridTextColumn Header="City" Binding="{Binding Business.City}" Width="120" />
 
-                            <!-- Source Engine Provider -->
-                            <DataGridTextColumn Header="Source Engine" Binding="{Binding Business.SourceProvider}" Width="160" />
+                                <!-- Country -->
+                                <DataGridTextColumn Header="Country" Binding="{Binding Business.Country}" Width="110" />
 
-                            <!-- Website -->
-                            <DataGridTemplateColumn Header="Website Status" Width="180">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate x:DataType="m:DiscoveredLead">
-                                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                            <Border Background="#064E3B" CornerRadius="4" Padding="5,2" IsVisible="{Binding Business.WebsiteUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                                                <TextBlock Text="{Binding Business.WebsiteUrl}" FontSize="11" Foreground="#34D399" TextTrimming="CharacterEllipsis" MaxWidth="150"/>
-                                            </Border>
-                                            <Border Background="#450A0A" CornerRadius="4" Padding="5,2" IsVisible="{Binding Business.WebsiteUrl, Converter={x:Static StringConverters.IsNullOrEmpty}}">
-                                                <TextBlock Text="❌ No Website" FontSize="10" FontWeight="Bold" Foreground="#FCA5A5"/>
-                                            </Border>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
+                                <!-- Source Engine Provider -->
+                                <DataGridTextColumn Header="Source Engine" Binding="{Binding Business.SourceProvider}" Width="140" />
 
-                            <!-- Primary Phone -->
-                            <DataGridTextColumn Header="Phone" Binding="{Binding Business.PhonePrimary}" Width="130" />
+                                <!-- Website Status -->
+                                <DataGridTemplateColumn Header="Website Status" Width="180">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate x:DataType="m:DiscoveredLead">
+                                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                <Border Background="#064E3B" CornerRadius="4" Padding="5,2" IsVisible="{Binding Business.WebsiteUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                                    <TextBlock Text="{Binding Business.WebsiteUrl}" FontSize="11" Foreground="#34D399" TextTrimming="CharacterEllipsis" MaxWidth="150"/>
+                                                </Border>
+                                                <Border Background="#450A0A" CornerRadius="4" Padding="5,2" IsVisible="{Binding Business.WebsiteUrl, Converter={x:Static StringConverters.IsNullOrEmpty}}">
+                                                    <TextBlock Text="❌ No Website" FontSize="10" FontWeight="Bold" Foreground="#FCA5A5"/>
+                                                </Border>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
 
-                            <!-- Duplicate / Database Status -->
-                            <DataGridTemplateColumn Header="Status" Width="110">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate x:DataType="m:DiscoveredLead">
-                                        <StackPanel VerticalAlignment="Center">
-                                            <Border Background="#064E3B" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" IsVisible="{Binding !IsDuplicate}">
-                                                <TextBlock Text="⭐ NEW" FontSize="10" FontWeight="Bold" Foreground="#34D399"/>
-                                            </Border>
-                                            <Border Background="#451A03" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" IsVisible="{Binding IsDuplicate}">
-                                                <TextBlock Text="⚠️ IN DATABASE" FontSize="9" FontWeight="Bold" Foreground="#FBBF24"/>
-                                            </Border>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
+                                <!-- Primary Phone -->
+                                <DataGridTextColumn Header="Phone" Binding="{Binding Business.PhonePrimary}" Width="130" />
 
-                            <!-- Quick Action Buttons -->
-                            <DataGridTemplateColumn Header="Actions" Width="140">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate x:DataType="m:DiscoveredLead">
-                                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                            <Button Content="📋 Pitch" 
-                                                    Command="{Binding ((vm:DiscoveryViewModel)DataContext).CopyPitchCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                    CommandParameter="{Binding}"
-                                                    Classes="btn-secondary"
-                                                    Padding="6,3"
-                                                    FontSize="10"
-                                                    ToolTip.Tip="Copy targeted cold outreach proposal"/>
-                                            <Button Content="📞" 
-                                                    Command="{Binding ((vm:DiscoveryViewModel)DataContext).CopyPhoneCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                    CommandParameter="{Binding}"
-                                                    Classes="btn-secondary"
-                                                    Padding="6,3"
-                                                    FontSize="10"
-                                                    ToolTip.Tip="Copy phone number"/>
-                                            <Button Content="🌐" 
-                                                    Command="{Binding ((vm:DiscoveryViewModel)DataContext).OpenWebsiteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                    CommandParameter="{Binding}"
-                                                    Classes="btn-secondary"
-                                                    Padding="6,3"
-                                                    FontSize="10"
-                                                    IsVisible="{Binding Business.WebsiteUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                                                    ToolTip.Tip="Launch website in browser"/>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
+                                <!-- Duplicate / Database Status -->
+                                <DataGridTemplateColumn Header="Status" Width="115">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate x:DataType="m:DiscoveredLead">
+                                            <StackPanel VerticalAlignment="Center">
+                                                <Border Background="#064E3B" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" IsVisible="{Binding !IsDuplicate}">
+                                                    <TextBlock Text="⭐ NEW" FontSize="10" FontWeight="Bold" Foreground="#34D399"/>
+                                                </Border>
+                                                <Border Background="#451A03" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" IsVisible="{Binding IsDuplicate}">
+                                                    <TextBlock Text="⚠️ IN DATABASE" FontSize="9" FontWeight="Bold" Foreground="#FBBF24"/>
+                                                </Border>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
 
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </Grid>
-            </Border>
+                                <!-- Executive Actions Dropdown Column -->
+                                <DataGridTemplateColumn Header="Actions" Width="150">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate x:DataType="m:DiscoveredLead">
+                                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                                <!-- Dedicated Menu Flyout Button -->
+                                                <Button Content="⚡ Menu ▾" 
+                                                        Classes="btn-secondary" 
+                                                        Padding="8,3" 
+                                                        FontSize="11" 
+                                                        FontWeight="Bold"
+                                                        Foreground="#38BDF8"
+                                                        ToolTip.Tip="Access quick outreach and CRM actions">
+                                                    <Button.Flyout>
+                                                        <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                                                            <MenuItem Header="💬 WhatsApp Outreach" 
+                                                                      Command="{Binding ((vm:DiscoveryViewModel)DataContext).OpenWhatsAppCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                                      CommandParameter="{Binding}"/>
+                                                            <MenuItem Header="✉️ Send Email" 
+                                                                      Command="{Binding ((vm:DiscoveryViewModel)DataContext).OpenEmailComposerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                                      CommandParameter="{Binding}"/>
+                                                            <MenuItem Header="📞 Call Phone" 
+                                                                      Command="{Binding ((vm:DiscoveryViewModel)DataContext).OpenPhoneDialerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                                      CommandParameter="{Binding}"/>
+                                                            <MenuItem Header="🗺️ View on Google Maps" 
+                                                                      Command="{Binding ((vm:DiscoveryViewModel)DataContext).OpenGoogleMapsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                                      CommandParameter="{Binding}"/>
+                                                            <MenuItem Header="🌐 Open Website" 
+                                                                      Command="{Binding ((vm:DiscoveryViewModel)DataContext).OpenWebsiteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                                      CommandParameter="{Binding}"
+                                                                      IsVisible="{Binding Business.WebsiteUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                                            <Separator/>
+                                                            <MenuItem Header="🎨 Launch AI Landing Page Studio" 
+                                                                      Command="{Binding ((vm:DiscoveryViewModel)DataContext).OpenLandingPageStudioCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                                      CommandParameter="{Binding}"/>
+                                                            <MenuItem Header="📋 Copy Outreach Pitch" 
+                                                                      Command="{Binding ((vm:DiscoveryViewModel)DataContext).CopyPitchCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                                      CommandParameter="{Binding}"/>
+                                                            <MenuItem Header="📋 Copy Contact Card" 
+                                                                      Command="{Binding ((vm:DiscoveryViewModel)DataContext).CopyContactCardCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                                      CommandParameter="{Binding}"/>
+                                                            <Separator/>
+                                                            <MenuItem Header="📥 Import This Lead to SQLite" 
+                                                                      Command="{Binding ((vm:DiscoveryViewModel)DataContext).ImportSingleLeadCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                                      CommandParameter="{Binding}"/>
+                                                        </MenuFlyout>
+                                                    </Button.Flyout>
+                                                </Button>
 
-            <!-- 4. Sticky Bottom Action Strip -->
-            <Border Grid.Row="3" Background="#0C1322" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="16,12" Margin="0,12,0,0">
+                                                <!-- Quick Pitch Copy Button -->
+                                                <Button Content="📋" 
+                                                        Command="{Binding ((vm:DiscoveryViewModel)DataContext).CopyPitchCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}"
+                                                        Classes="btn-secondary"
+                                                        Padding="6,3"
+                                                        FontSize="10"
+                                                        ToolTip.Tip="Copy targeted cold outreach pitch"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- 4. Sticky Bottom Action Strip (The Single, Authoritative CRM Import Action) -->
+            <Border Grid.Row="3" Background="#0C1322" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="16,12" Margin="0,10,0,0">
                 <Grid ColumnDefinitions="*,Auto">
                     <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
                         <TextBlock Text="Ready to persist selected leads into local SQLite database for CRM pipelining, audits, and outreach." FontSize="12" Foreground="#94A3B8"/>
-                        <TextBlock Text="Duplicates are automatically skipped to prevent data collisions." FontSize="11" Foreground="#64748B"/>
+                        <TextBlock Text="Duplicates are automatically skipped using phonetic &amp; geographic deduplication to maintain clean records." FontSize="11" Foreground="#64748B"/>
                     </StackPanel>
 
                     <Button Grid.Column="1" 

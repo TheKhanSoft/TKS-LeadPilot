@@ -246,6 +246,59 @@
             <Setter Property="Opacity" Value="0.35"/>
         </Style>
 
+        <!-- 10b. Toggle Chips for Discovery & Filtering -->
+        <Style Selector="ToggleButton.toggle-chip">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="#0F172A"/>
+            <Setter Property="Foreground" Value="#94A3B8"/>
+            <Setter Property="BorderBrush" Value="#1E293B"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="14"/>
+            <Setter Property="Padding" Value="12,5"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.12"/>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.12"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="ToggleButton.toggle-chip:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#1E293B"/>
+            <Setter Property="Foreground" Value="#F1F5F9"/>
+            <Setter Property="BorderBrush" Value="#38BDF8"/>
+        </Style>
+        <Style Selector="ToggleButton.toggle-chip:checked /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#0369A1"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#38BDF8"/>
+        </Style>
+        <Style Selector="ToggleButton.toggle-chip:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#0284C7"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#7DD3FC"/>
+        </Style>
+
+        <!-- Modern Sleek ScrollBar Styling (Prevents native bulky scrollbars from occluding buttons) -->
+        <Style Selector="ScrollBar:horizontal">
+            <Setter Property="Height" Value="6"/>
+            <Setter Property="MinHeight" Value="6"/>
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="ScrollBar:vertical">
+            <Setter Property="Width" Value="8"/>
+            <Setter Property="MinWidth" Value="8"/>
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="ScrollBar /template/ Thumb#PART_TrackThumb">
+            <Setter Property="Background" Value="#334155"/>
+            <Setter Property="CornerRadius" Value="3"/>
+        </Style>
+        <Style Selector="ScrollBar:pointerover /template/ Thumb#PART_TrackThumb">
+            <Setter Property="Background" Value="#38BDF8"/>
+        </Style>
+
         <!-- 11. AI Guard Buttons in Top Header -->
         <Style Selector="Button.btn-guard-active">
             <Setter Property="Background" Value="#7F1D1D"/>

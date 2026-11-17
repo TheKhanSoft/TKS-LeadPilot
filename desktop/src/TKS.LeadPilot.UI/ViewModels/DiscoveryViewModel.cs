@@ -8,8 +8,10 @@ using System.Threading.Tasks;
 using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using TKS.LeadPilot.Core.Interfaces;
 using TKS.LeadPilot.Core.Models;
+using TKS.LeadPilot.UI.Views;
 
 namespace TKS.LeadPilot.UI.ViewModels;
 
@@ -20,6 +22,7 @@ public partial class DiscoveryViewModel : ViewModelBase
     private readonly IBusinessRepository _businessRepository;
     private readonly IDeduplicationService _dedupService;
     private readonly ISecretVault _secretVault;
+    private readonly IServiceProvider? _serviceProvider;
 
     private bool _isSuppressingLocationCascades = false;
     private CancellationTokenSource? _scanCts;
@@ -140,7 +143,12 @@ public partial class DiscoveryViewModel : ViewModelBase
     private int _lastSkippedCount = 0;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasDiscoveredLeads))]
+    [NotifyPropertyChangedFor(nameof(HasNoDiscoveredLeads))]
     private ObservableCollection<DiscoveredLead> _discoveredLeads = [];
+
+    public bool HasDiscoveredLeads => DiscoveredLeads != null && DiscoveredLeads.Count > 0;
+    public bool HasNoDiscoveredLeads => !HasDiscoveredLeads;
 
     [ObservableProperty]
     private DiscoveredLead? _selectedLead;
@@ -150,13 +158,15 @@ public partial class DiscoveryViewModel : ViewModelBase
         IGeoLocationService geoLocationService,
         IBusinessRepository businessRepository,
         IDeduplicationService dedupService,
-        ISecretVault secretVault)
+        ISecretVault secretVault,
+        IServiceProvider? serviceProvider = null)
     {
         _discoveryService = discoveryService;
         _geoLocationService = geoLocationService;
         _businessRepository = businessRepository;
         _dedupService = dedupService;
         _secretVault = secretVault;
+        _serviceProvider = serviceProvider;
 
         InitializeCatalog();
     }
@@ -620,5 +630,191 @@ public partial class DiscoveryViewModel : ViewModelBase
         {
             StatusMessage = $"Could not launch browser: {ex.Message}";
         }
+    }
+
+    [RelayCommand]
+    public void OpenWhatsApp(DiscoveredLead? lead)
+    {
+        var b = lead?.Business ?? SelectedLead?.Business;
+        if (b == null) return;
+
+        var phone = b.PhonePrimary ?? string.Empty;
+        var cleanPhone = new string(phone.Where(char.IsDigit).ToArray());
+        if (string.IsNullOrWhiteSpace(cleanPhone))
+        {
+            StatusMessage = $"⚠️ No valid phone number available for {b.Name}.";
+            return;
+        }
+
+        try
+        {
+            var defaultMsg = Uri.EscapeDataString($"Hi {b.Name}, I came across your business in {b.City} and would like to share how we can help elevate your digital presence.");
+            var url = $"https://wa.me/{cleanPhone}?text={defaultMsg}";
+            Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
+            StatusMessage = $"💬 Opened WhatsApp chat for {b.Name}.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Could not launch WhatsApp: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public void OpenEmailComposer(DiscoveredLead? lead)
+    {
+        var b = lead?.Business ?? SelectedLead?.Business;
+        if (b == null) return;
+
+        if (string.IsNullOrWhiteSpace(b.EmailPrimary))
+        {
+            StatusMessage = $"⚠️ No email address available for {b.Name}.";
+            return;
+        }
+
+        try
+        {
+            var subject = Uri.EscapeDataString($"Partnership & Digital Growth Opportunity for {b.Name}");
+            var body = Uri.EscapeDataString($"Hi {b.Name},\n\nWe noticed your business in {b.City} has strong potential for growth through modern web optimization.\n\nBest regards,\nTheKhanSoft Enterprise Team");
+            var mailto = $"mailto:{b.EmailPrimary}?subject={subject}&body={body}";
+            Process.Start(new ProcessStartInfo { FileName = mailto, UseShellExecute = true });
+            StatusMessage = $"✉️ Opened email composer for {b.Name}.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Could not launch email client: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public void OpenPhoneDialer(DiscoveredLead? lead)
+    {
+        var b = lead?.Business ?? SelectedLead?.Business;
+        if (b == null) return;
+
+        var phone = b.PhonePrimary;
+        if (string.IsNullOrWhiteSpace(phone))
+        {
+            StatusMessage = $"⚠️ No phone number available for {b.Name}.";
+            return;
+        }
+
+        try
+        {
+            var clean = new string(phone.Where(c => char.IsDigit(c) || c == '+').ToArray());
+            Process.Start(new ProcessStartInfo { FileName = $"tel:{clean}", UseShellExecute = true });
+            StatusMessage = $"📞 Dialing {b.Name} ({phone})...";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Could not launch dialer: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public void OpenGoogleMaps(DiscoveredLead? lead)
+    {
+        var b = lead?.Business ?? SelectedLead?.Business;
+        if (b == null) return;
+
+        try
+        {
+            var query = Uri.EscapeDataString($"{b.Name} {b.AddressLine1} {b.City} {b.Country}".Trim());
+            var url = $"https://www.google.com/maps/search/?api=1&query={query}";
+            Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
+            StatusMessage = $"🗺️ Opened Google Maps search for {b.Name}.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Could not launch maps: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public async Task CopyContactCardAsync(DiscoveredLead? lead)
+    {
+        var b = lead?.Business ?? SelectedLead?.Business;
+        if (b == null) return;
+
+        var card = $"BUSINESS CONTACT CARD\n" +
+                   $"=====================\n" +
+                   $"Name:     {b.Name}\n" +
+                   $"Category: {b.Category}\n" +
+                   $"Phone:    {b.PhonePrimary ?? "N/A"}\n" +
+                   $"Email:    {b.EmailPrimary ?? "N/A"}\n" +
+                   $"Website:  {b.WebsiteUrl ?? "N/A"}\n" +
+                   $"Address:  {b.AddressLine1 ?? "N/A"}, {b.City}, {b.Country}\n" +
+                   $"Source:   {b.SourceProvider ?? "Discovery Station"}";
+
+        if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.Clipboard != null)
+        {
+            await desktop.MainWindow.Clipboard.SetTextAsync(card);
+            StatusMessage = $"📋 Contact card for {b.Name} copied to clipboard!";
+        }
+    }
+
+    [RelayCommand]
+    public async Task ImportSingleLeadAsync(DiscoveredLead? lead)
+    {
+        if (lead == null) return;
+        lead.IsSelectedForImport = true;
+        UpdateSelectionCount();
+        await ImportSelectedLeadsAsync();
+    }
+
+    [RelayCommand]
+    public void OpenLandingPageStudio(DiscoveredLead? lead)
+    {
+        var b = lead?.Business ?? SelectedLead?.Business;
+        if (b == null) return;
+
+        if (_serviceProvider == null)
+        {
+            StatusMessage = "Service provider unavailable to launch Studio.";
+            return;
+        }
+
+        try
+        {
+            var studioVm = _serviceProvider.GetRequiredService<LandingPageStudioViewModel>();
+            studioVm.PopulateFromBusiness(b);
+
+            var window = new LandingPageStudioWindow
+            {
+                DataContext = studioVm
+            };
+            window.Show();
+            StatusMessage = $"🎨 Launched AI Landing Page Studio for {b.Name}!";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Could not launch AI Landing Page Studio: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public async Task LaunchPresetScanAsync(string presetKey)
+    {
+        if (IsScanning) return;
+
+        switch (presetKey.ToLowerInvariant())
+        {
+            case "healthcare":
+                CustomSearchKeyword = "dental clinic, hospital, diagnostic center";
+                break;
+            case "realestate":
+                CustomSearchKeyword = "real estate, property, developer, architecture";
+                break;
+            case "restaurants":
+                CustomSearchKeyword = "restaurant, cafe, bistro, fine dining";
+                break;
+            case "corporate":
+                CustomSearchKeyword = "law firm, legal chambers, corporate consultant, tax audit";
+                break;
+            default:
+                CustomSearchKeyword = presetKey;
+                break;
+        }
+
+        await StartScanAsync();
     }
 }
