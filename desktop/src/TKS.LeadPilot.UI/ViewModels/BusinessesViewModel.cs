@@ -173,6 +173,55 @@ public partial class BusinessesViewModel : ViewModelBase
     partial void OnFilteredCountChanged(int value) => OnPropertyChanged(nameof(ShowingSummaryText));
     partial void OnTotalCountChanged(int value) => OnPropertyChanged(nameof(ShowingSummaryText));
 
+    // Layout & Responsive UI State
+    [ObservableProperty]
+    private bool _isAdvancedFiltersExpanded = false;
+
+    [ObservableProperty]
+    private bool _isDetailPaneVisible = true;
+
+    public string AdvancedFiltersToggleText => IsAdvancedFiltersExpanded
+        ? (ActiveAdvancedFilterCount > 0 ? $"▴ Less Filters ({ActiveAdvancedFilterCount})" : "▴ Less Filters")
+        : (ActiveAdvancedFilterCount > 0 ? $"🎛️ Filters ({ActiveAdvancedFilterCount} active) ▾" : "🎛️ Advanced Filters ▾");
+
+    public string DetailPaneToggleText => IsDetailPaneVisible ? "◨ Hide Details" : "◧ Show Details";
+
+    public int ActiveAdvancedFilterCount
+    {
+        get
+        {
+            int count = 0;
+            if (!string.IsNullOrWhiteSpace(SelectedState) && SelectedState != "All States/Provinces") count++;
+            if (!string.IsNullOrWhiteSpace(SelectedCity) && SelectedCity != "All Cities") count++;
+            if (SelectedScoreFilter != "All Scores (0–100)") count++;
+            if (SelectedContactFilter != "All Contacts") count++;
+            if (SelectedWebsiteFilter != "All Sites") count++;
+            if (SelectedStage != null) count++;
+            if (IsNearbyActive) count++;
+            return count;
+        }
+    }
+
+    public void NotifyAdvancedFilterPropertiesChanged()
+    {
+        OnPropertyChanged(nameof(ActiveAdvancedFilterCount));
+        OnPropertyChanged(nameof(AdvancedFiltersToggleText));
+    }
+
+    [RelayCommand]
+    public void ToggleAdvancedFilters()
+    {
+        IsAdvancedFiltersExpanded = !IsAdvancedFiltersExpanded;
+        NotifyAdvancedFilterPropertiesChanged();
+    }
+
+    [RelayCommand]
+    public void ToggleDetailPane()
+    {
+        IsDetailPaneVisible = !IsDetailPaneVisible;
+        OnPropertyChanged(nameof(DetailPaneToggleText));
+    }
+
     [ObservableProperty]
     private string _statusMessage = string.Empty;
 
@@ -418,6 +467,7 @@ public partial class BusinessesViewModel : ViewModelBase
         finally
         {
             IsLoading = false;
+            NotifyAdvancedFilterPropertiesChanged();
         }
     }
 
@@ -774,6 +824,7 @@ public partial class BusinessesViewModel : ViewModelBase
         finally
         {
             IsLoading = false;
+            NotifyAdvancedFilterPropertiesChanged();
         }
     }
 
@@ -840,6 +891,7 @@ public partial class BusinessesViewModel : ViewModelBase
         finally
         {
             IsLoading = false;
+            NotifyAdvancedFilterPropertiesChanged();
         }
     }
 
@@ -895,6 +947,7 @@ public partial class BusinessesViewModel : ViewModelBase
         finally
         {
             IsLoading = false;
+            NotifyAdvancedFilterPropertiesChanged();
         }
     }
 
@@ -922,6 +975,7 @@ public partial class BusinessesViewModel : ViewModelBase
         finally
         {
             IsLoading = false;
+            NotifyAdvancedFilterPropertiesChanged();
         }
     }
 
