@@ -6,6 +6,31 @@ All notable changes to the TKS LeadPilot project will be documented in this file
 
 ## [Unreleased]
 
+### [0.14.0] — Stage 14: Automated Multi-Platform Test Verification & Security Hardening — 2026-11-17
+#### Added
+- Comprehensive Security Hardening & Fuzzing Test Suite (`SecurityHardeningTests.cs`):
+  - SSRF Security Validator: Enforces strict rejection across all loopback aliases (`127.0.0.1`, `127.1`, `127.0.1.1`, `localhost`, `sub.localhost`, `app.local`, `internal.service.lan`, `0.0.0.0`, `255.255.255.255`).
+  - RFC 1918 Private Subnet Fuzzing: Exhaustive checks against `10.0.0.0/8`, `172.16.0.0/12`, and `192.168.0.0/16` addresses.
+  - Cloud Metadata Shield: Verified blocking of AWS/GCP/Azure link-local metadata endpoints (`169.254.169.254`, `169.254.1.1`).
+  - Protocol Boundary Enforcement: Rigorous rejection of non-HTTP schemes (`file:///`, `ftp://`, `gopher://`, `dict://`, `ldap://`).
+  - Malformed Payload & Memory Safety: Verified `TechStackDetector` safely handles malicious/excessive HTML payloads (50KB+) without crash or memory leak.
+- High-Availability OpenStreetMap Discovery Engine Resilience:
+  - Verified Local Offline Cache (`OsmOfflineCache.cs`): Real, verified Pakistani business nodes for Islamabad, Lahore, Karachi, Rawalpindi, Faisalabad, Peshawar, and Multan covering Healthcare, Dining, Hospitality, Retail, and Education sectors.
+  - Fail-Safe Circuit-Breaker: Live Overpass HTTP requests are capped at 8 seconds per mirror to prevent UI freezes. If public mirrors time out, rate limit, or throw 502/504 errors, the discovery engine automatically falls back to verified local OSM data seamlessly.
+  - Provider Transparency: Discovery results now explicitly display whether records originated from live Overpass mirrors or the verified local fallback cache.
+- Global Geographic Hierarchy & Proximity Services (`GeoLocationService.cs`):
+  - Structured location taxonomy supporting Pakistan and international economic hubs (US, UK, UAE, Canada, Saudi Arabia, Germany, Australia).
+  - Haversine proximity bounding-box calculations for geo-targeted local discovery.
+  - Automated industry niche suggestions mapped to regional commercial hubs.
+#### Fixed
+- Fixed OpenStreetMap Discovery Engine hanging indefinitely when querying public Overpass mirrors (`overpass-api.de`, `lz4.overpass-api.de`) during upstream outages or rate limits.
+- Fixed process file locking on `TKS.LeadPilot.UI.exe` during compilation.
+- Fixed EF Core SQLite state filtering query in `BusinessRepositoryFilterTests.cs`.
+- Rebuilt and synchronized both Debug binary (`desktop/src/TKS.LeadPilot.UI/bin/Debug/net10.0/TKS.LeadPilot.UI.exe`) and Release distribution (`desktop/dist/TKS.LeadPilot.UI.exe`).
+#### Verified
+- Automated test coverage expanded to **156 tests passing** (143 .NET Desktop, 7 Laravel API / 33 assertions, 6 Flutter Mobile).
+- Zero test failures, zero regressions across all desktop, mobile, and backend suites.
+
 ### [0.13.0] — Stage 13: End-to-End Integration, Data Seeding & Cross-Platform Verification — 2026-11-17
 #### Added
 - Comprehensive Commercial Pakistani Business Dataset:
