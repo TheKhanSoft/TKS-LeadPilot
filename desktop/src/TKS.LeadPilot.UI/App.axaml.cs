@@ -88,6 +88,7 @@ public partial class App : Application
         services.AddScoped<LeadScoringEngine.ILeadScoreStore, EfLeadScoreStore>();
         services.AddScoped<ITksServiceMatcher, TksServiceMatcher>();
         services.AddScoped<ICrmService, CrmService>();
+        services.AddScoped<IOutreachService, OutreachService>();
 
         // Secret Vault
         services.AddSingleton<ISecretVault, DpapiSecretVault>();
@@ -98,6 +99,7 @@ public partial class App : Application
         services.AddTransient<BusinessesViewModel>();
         services.AddTransient<AuditsViewModel>();
         services.AddTransient<PipelineViewModel>();
+        services.AddTransient<MessageStudioViewModel>();
         services.AddTransient<SettingsViewModel>();
     }
 }

@@ -181,5 +181,50 @@ public class DatabaseInitializer : IDatabaseInitializer
             await _context.Businesses.AddRangeAsync(sampleBusinesses, ct);
             await _context.SaveChangesAsync(ct);
         }
+
+        // Seed Outreach Templates if empty (Stage 10)
+        if (!await _context.OutreachTemplates.AnyAsync(ct))
+        {
+            var templates = new List<OutreachTemplate>
+            {
+                new()
+                {
+                    Id = "tpl-audit-email",
+                    Name = "Technical Audit & Modernization Proposal",
+                    Channel = OutreachChannel.Email,
+                    Category = "Audit Discovery",
+                    SubjectTemplate = "Technical assessment and growth opportunities for {{business_name}}",
+                    BodyTemplate = "Hi {{contact_name}},\n\nWe recently conducted a technical assessment of {{business_name}} in {{city}}. While analyzing {{website_url}}, our diagnostics identified key friction points ({{top_audit_issue}}).\n\nAt TheKhanSoft, we specialize in {{suggested_service}}. We prepared an executive audit report outlining actionable solutions to elevate your digital presence.\n\nWould you be open to a brief 10-minute conversation this week?\n\nBest regards,\nTheKhanSoft Outreach Team"
+                },
+                new()
+                {
+                    Id = "tpl-speed-email",
+                    Name = "Speed & Core Web Vitals Optimization",
+                    Channel = OutreachChannel.Email,
+                    Category = "Performance",
+                    SubjectTemplate = "Mobile load speed and search ranking for {{business_name}}",
+                    BodyTemplate = "Hi {{contact_name}},\n\nOur diagnostic scan of {{website_url}} registered server latency of {{ttfb_ms}}ms. Under Google's search algorithms, slow response times directly impact client acquisition in {{city}}.\n\nThrough our {{suggested_service}}, we optimize websites to load in under 1 second.\n\nCan we share our 1-page remediation plan with you?\n\nRegards,\nTheKhanSoft Engineering"
+                },
+                new()
+                {
+                    Id = "tpl-quick-wa",
+                    Name = "Quick Website Diagnostic Notice",
+                    Channel = OutreachChannel.WhatsApp,
+                    Category = "Quick Outreach",
+                    BodyTemplate = "Hello {{contact_name}}! 👋 I'm reaching out from TheKhanSoft. We ran a routine performance scan on {{business_name}}'s site ({{website_url}}) and identified a key bottleneck ({{top_audit_issue}}). We prepared a complimentary 1-page report for your team. Would you like me to share it here?"
+                },
+                new()
+                {
+                    Id = "tpl-noweb-wa",
+                    Name = "New Website & Digital Presence Offer",
+                    Channel = OutreachChannel.WhatsApp,
+                    Category = "New Website",
+                    BodyTemplate = "Assalam-o-Alaikum {{contact_name}}! We noticed {{business_name}} in {{city}} is missing an official mobile-friendly website. Potential clients searching for {{category}} in {{city}} are finding competitors instead. TheKhanSoft builds modern high-speed websites tailored for your sector. Would you be interested in viewing a sample mockup?"
+                }
+            };
+
+            await _context.OutreachTemplates.AddRangeAsync(templates, ct);
+            await _context.SaveChangesAsync(ct);
+        }
     }
 }

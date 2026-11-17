@@ -20,6 +20,8 @@ public class AppDbContext : DbContext
     public DbSet<SalesTask> SalesTasks => Set<SalesTask>();
     public DbSet<SalesNote> SalesNotes => Set<SalesNote>();
     public DbSet<AppSetting> AppSettings => Set<AppSetting>();
+    public DbSet<OutreachMessage> OutreachMessages => Set<OutreachMessage>();
+    public DbSet<OutreachTemplate> OutreachTemplates => Set<OutreachTemplate>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -136,6 +138,28 @@ public class AppDbContext : DbContext
         {
             entity.HasKey(e => e.Key);
             entity.Property(e => e.Key).HasMaxLength(100);
+        });
+
+        // OutreachMessage
+        modelBuilder.Entity<OutreachMessage>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Body).IsRequired();
+            entity.HasIndex(e => e.BusinessId);
+            entity.HasIndex(e => e.ApprovalStatus);
+
+            entity.HasOne(e => e.Business)
+                .WithMany()
+                .HasForeignKey(e => e.BusinessId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // OutreachTemplate
+        modelBuilder.Entity<OutreachTemplate>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(150);
+            entity.Property(e => e.BodyTemplate).IsRequired();
         });
     }
 }

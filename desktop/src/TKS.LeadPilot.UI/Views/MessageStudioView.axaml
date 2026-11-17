@@ -1,0 +1,202 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TKS.LeadPilot.UI.ViewModels"
+             xmlns:m="using:TKS.LeadPilot.Core.Models"
+             xmlns:e="using:TKS.LeadPilot.Core.Enums"
+             x:Class="TKS.LeadPilot.UI.Views.MessageStudioView"
+             x:DataType="vm:MessageStudioViewModel">
+
+    <Grid RowDefinitions="Auto,*" Margin="24">
+        <!-- 1. Top Header -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+            <StackPanel Grid.Column="0" Spacing="4">
+                <TextBlock Text="Message Studio &amp; Multi-Channel Outreach" FontSize="22" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                <TextBlock Text="Compose tailored Email &amp; WhatsApp outreach with dynamic audit tokens, compliance checks, and approval queues." FontSize="13" Foreground="#94A3B8"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                <Border Background="#1E293B" CornerRadius="6" Padding="12,6">
+                    <TextBlock Text="{Binding StatusMessage}" FontSize="12" Foreground="#38BDF8"/>
+                </Border>
+            </StackPanel>
+        </Grid>
+
+        <!-- 2. Dual-Column Workspace -->
+        <Grid Grid.Row="1" ColumnDefinitions="1.2*,1.8*">
+            <!-- Left Column: Recipient Selector & Outbox Approval Queue -->
+            <Grid Grid.Column="0" RowDefinitions="Auto,*" Margin="0,0,10,0">
+                <!-- Target Recipient Card -->
+                <Border Grid.Row="0" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,12">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="RECIPIENT LEAD SELECTION" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
+
+                        <Grid ColumnDefinitions="*,*">
+                            <!-- Select Business -->
+                            <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                                <TextBlock Text="Target Business:" FontSize="11" Foreground="#94A3B8" Margin="0,0,0,4"/>
+                                <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding Businesses}" SelectedItem="{Binding SelectedBusiness}" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="m:Business">
+                                            <TextBlock Text="{Binding Name}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- Select Contact -->
+                            <StackPanel Grid.Column="1" Margin="6,0,0,0">
+                                <TextBlock Text="Contact Person:" FontSize="11" Foreground="#94A3B8" Margin="0,0,0,4"/>
+                                <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding Contacts}" SelectedItem="{Binding SelectedContact}" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="m:BusinessContact">
+                                            <TextBlock Text="{Binding FullName}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Address Info -->
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="Recipient Address / Phone:" FontSize="11" Foreground="#64748B"/>
+                                <TextBlock Text="{Binding RecipientAddress, TargetNullValue='No address specified'}" FontSize="13" Foreground="#38BDF8" FontWeight="SemiBold"/>
+                            </StackPanel>
+                            <Button Grid.Column="1" Content="🛑 Suppress (DNC)" Command="{Binding MarkDoNotContactCommand}" Background="#1E293B" Foreground="#F43F5E" BorderBrush="#334155" BorderThickness="1" CornerRadius="4" Padding="8,4" FontSize="11" VerticalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Approval Queue Outbox Card -->
+                <Border Grid.Row="1" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="14">
+                    <Grid RowDefinitions="Auto,*">
+                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="OUTBOX APPROVAL QUEUE" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
+                                <TextBlock Text="Mandatory approval queue: Zero outbound messages sent without human approval." FontSize="11" Foreground="#94A3B8"/>
+                            </StackPanel>
+                            <Button Grid.Column="1" Content="🔄 Refresh" Command="{Binding RefreshQueueCommand}" Background="#1E293B" Foreground="#38BDF8" CornerRadius="4" Padding="8,4" FontSize="11"/>
+                        </Grid>
+
+                        <DataGrid Grid.Row="1" ItemsSource="{Binding ApprovalQueue}"
+                                  SelectedItem="{Binding SelectedQueueMessage}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  GridLinesVisibility="Horizontal"
+                                  RowBackground="#151E2E"
+                                  BorderThickness="0">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Channel" Binding="{Binding Channel}" Width="0.8*" />
+                                <DataGridTextColumn Header="Lead Name" Binding="{Binding Business.Name}" Width="1.5*" />
+                                <DataGridTextColumn Header="Recipient" Binding="{Binding RecipientAddress}" Width="1.5*" />
+                                <DataGridTextColumn Header="Status" Binding="{Binding ApprovalStatus}" Width="1*" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- Right Column: Multi-Channel Composer & Live Preview -->
+            <Border Grid.Column="1" Background="#151E2E" BorderBrush="#26334A" BorderThickness="1" CornerRadius="8" Padding="18">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="14">
+                        <!-- Channel & Template Picker -->
+                        <Grid ColumnDefinitions="*,2*">
+                            <!-- Channel Switcher -->
+                            <StackPanel Grid.Column="0" Margin="0,0,8,0" Spacing="4">
+                                <TextBlock Text="CHANNEL" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <RadioButton Content="✉️ Email" IsChecked="{Binding SelectedChannel, Converter={x:Static ObjectConverters.IsNotNull}}" Background="#1E293B" Foreground="#F8FAFC" FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Template Selector -->
+                            <StackPanel Grid.Column="1" Margin="8,0,0,0" Spacing="4">
+                                <TextBlock Text="SELECT TEMPLATE" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
+                                <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding Templates}" SelectedItem="{Binding SelectedTemplate}" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#26334A" CornerRadius="6">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="m:OutreachTemplate">
+                                            <TextBlock Text="{Binding Name}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Dynamic Token Ribbon -->
+                        <Border Background="#0F172A" BorderBrush="#26334A" BorderThickness="1" CornerRadius="6" Padding="8">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="AVAILABLE DYNAMIC TOKENS (Auto-resolved on render):" FontSize="10" FontWeight="Bold" Foreground="#64748B"/>
+                                <WrapPanel>
+                                    <Border Background="#1E293B" CornerRadius="4" Padding="6,2" Margin="0,0,4,4">
+                                        <TextBlock Text="{}{business_name}" FontSize="11" Foreground="#38BDF8"/>
+                                    </Border>
+                                    <Border Background="#1E293B" CornerRadius="4" Padding="6,2" Margin="0,0,4,4">
+                                        <TextBlock Text="{}{contact_name}" FontSize="11" Foreground="#38BDF8"/>
+                                    </Border>
+                                    <Border Background="#1E293B" CornerRadius="4" Padding="6,2" Margin="0,0,4,4">
+                                        <TextBlock Text="{}{category}" FontSize="11" Foreground="#38BDF8"/>
+                                    </Border>
+                                    <Border Background="#1E293B" CornerRadius="4" Padding="6,2" Margin="0,0,4,4">
+                                        <TextBlock Text="{}{city}" FontSize="11" Foreground="#38BDF8"/>
+                                    </Border>
+                                    <Border Background="#1E293B" CornerRadius="4" Padding="6,2" Margin="0,0,4,4">
+                                        <TextBlock Text="{}{website_url}" FontSize="11" Foreground="#38BDF8"/>
+                                    </Border>
+                                    <Border Background="#1E293B" CornerRadius="4" Padding="6,2" Margin="0,0,4,4">
+                                        <TextBlock Text="{}{lead_score}" FontSize="11" Foreground="#10B981"/>
+                                    </Border>
+                                    <Border Background="#1E293B" CornerRadius="4" Padding="6,2" Margin="0,0,4,4">
+                                        <TextBlock Text="{}{top_audit_issue}" FontSize="11" Foreground="#F59E0B"/>
+                                    </Border>
+                                    <Border Background="#1E293B" CornerRadius="4" Padding="6,2" Margin="0,0,4,4">
+                                        <TextBlock Text="{}{suggested_service}" FontSize="11" Foreground="#8B5CF6"/>
+                                    </Border>
+                                    <Border Background="#1E293B" CornerRadius="4" Padding="6,2" Margin="0,0,4,4">
+                                        <TextBlock Text="{}{ttfb_ms}" FontSize="11" Foreground="#EC4899"/>
+                                    </Border>
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Subject Line (Email) -->
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="SUBJECT LINE:" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
+                            <TextBox Text="{Binding Subject}" PlaceholderText="Enter email subject template..." Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6" Padding="10,6"/>
+                        </StackPanel>
+
+                        <!-- Body Template Editor -->
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="MESSAGE BODY TEMPLATE:" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
+                            <TextBox Text="{Binding BodyTemplate}" AcceptsReturn="True" Height="140" TextWrapping="Wrap" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6" Padding="10"/>
+                        </StackPanel>
+
+                        <!-- Live Rendered Preview -->
+                        <Border Background="#0B0F19" BorderBrush="#0284C7" BorderThickness="1" CornerRadius="8" Padding="14">
+                            <StackPanel Spacing="6">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Text="LIVE RENDERED PREVIEW (Target Lead View):" FontSize="11" FontWeight="Bold" Foreground="#38BDF8"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding SelectedBusiness.Name, StringFormat='For: {0}'}" FontSize="11" Foreground="#64748B"/>
+                                </Grid>
+                                <TextBox Text="{Binding RenderedPreview}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" Height="130" Background="Transparent" Foreground="#E2E8F0" BorderThickness="0" FontFamily="Consolas, monospace"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Actions Bar -->
+                        <Grid ColumnDefinitions="Auto,*">
+                            <Button Grid.Column="0" Content="+ Add to Approval Queue" Command="{Binding CreateDraftCommand}" Background="#2563EB" Foreground="#FFFFFF" CornerRadius="6" Padding="16,8" FontWeight="Bold"/>
+
+                            <!-- Quick Dispatch if Selected in Queue -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                                <Button Content="✓ Approve" Command="{Binding ApproveMessageCommand}" CommandParameter="{Binding SelectedQueueMessage}" IsEnabled="{Binding SelectedQueueMessage, Converter={x:Static ObjectConverters.IsNotNull}}" Background="#059669" Foreground="#FFFFFF" CornerRadius="6" Padding="12,8" FontWeight="SemiBold"/>
+                                <Button Content="✕ Reject" Command="{Binding RejectMessageCommand}" CommandParameter="{Binding SelectedQueueMessage}" IsEnabled="{Binding SelectedQueueMessage, Converter={x:Static ObjectConverters.IsNotNull}}" Background="#991B1B" Foreground="#FFFFFF" CornerRadius="6" Padding="12,8"/>
+                                <Button Content="📧 Open in Email Client" Command="{Binding SendViaEmailCommand}" CommandParameter="{Binding SelectedQueueMessage}" IsEnabled="{Binding SelectedQueueMessage, Converter={x:Static ObjectConverters.IsNotNull}}" Background="#0F766E" Foreground="#FFFFFF" CornerRadius="6" Padding="14,8" FontWeight="Bold"/>
+                                <Button Content="💬 Open in WhatsApp" Command="{Binding SendViaWhatsAppCommand}" CommandParameter="{Binding SelectedQueueMessage}" IsEnabled="{Binding SelectedQueueMessage, Converter={x:Static ObjectConverters.IsNotNull}}" Background="#15803D" Foreground="#FFFFFF" CornerRadius="6" Padding="14,8" FontWeight="Bold"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

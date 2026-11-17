@@ -49,6 +49,7 @@ public partial class MainViewModel : ViewModelBase
             "Businesses" => _serviceProvider.GetRequiredService<BusinessesViewModel>(),
             "Audits" => _serviceProvider.GetRequiredService<AuditsViewModel>(),
             "Pipeline" => _serviceProvider.GetRequiredService<PipelineViewModel>(),
+            "Messages" or "Outreach" => _serviceProvider.GetRequiredService<MessageStudioViewModel>(),
             "Settings" => _serviceProvider.GetRequiredService<SettingsViewModel>(),
             _ => _serviceProvider.GetRequiredService<DashboardViewModel>()
         };

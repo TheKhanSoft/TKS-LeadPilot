@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using TKS.LeadPilot.Core.Enums;
 using TKS.LeadPilot.Core.Models;
 
 namespace TKS.LeadPilot.Core.Interfaces;
@@ -144,4 +145,19 @@ public interface ICrmService
     Task<List<SalesNote>> GetNotesForBusinessAsync(string businessId, CancellationToken ct = default);
     Task<SalesNote> AddNoteAsync(SalesNote note, CancellationToken ct = default);
     Task<bool> DeleteNoteAsync(string noteId, CancellationToken ct = default);
+}
+
+public interface IOutreachService
+{
+    Task<List<OutreachTemplate>> GetTemplatesAsync(OutreachChannel? channel = null, CancellationToken ct = default);
+    Task<OutreachMessage> CreateDraftAsync(string businessId, string templateId, string? contactId = null, CancellationToken ct = default);
+    Task<OutreachMessage> CreateCustomDraftAsync(OutreachMessage message, CancellationToken ct = default);
+    Task<List<OutreachMessage>> GetApprovalQueueAsync(CancellationToken ct = default);
+    Task<List<OutreachMessage>> GetMessagesForBusinessAsync(string businessId, CancellationToken ct = default);
+    Task<bool> ApproveMessageAsync(string messageId, CancellationToken ct = default);
+    Task<bool> RejectMessageAsync(string messageId, CancellationToken ct = default);
+    Task<bool> MarkAsSentAsync(string messageId, CancellationToken ct = default);
+    string RenderTemplate(string template, Business business, BusinessContact? contact, WebsiteAudit? audit, string? serviceName = null);
+    string BuildMailtoUri(OutreachMessage message);
+    string BuildWhatsAppUri(OutreachMessage message);
 }
