@@ -57,6 +57,7 @@
 - **📍 Missing Google My Business (GMB) Targeting:** Instant 1-click filter (`📍 Missing GMB`) isolating businesses without Google Business Profile or Google Maps listings, automatically matched to TheKhanSoft's *Google Business Profile (GMB) & Local Maps Booster* service package (`svc-gmb-local-seo`).
 - **Comprehensive Multi-Country Geographic Directory (17 Countries & 100+ Commercial Metropolises):** Native cascading hierarchy (`Country -> State/Province -> City`) covering Pakistan, UAE, Saudi Arabia, Qatar, Oman, Kuwait, Bahrain, United Kingdom, United States, Canada, Australia, Germany, Ireland, Netherlands, Malaysia, Singapore, and Turkey with precise bounding boxes, coordinates, country dialing codes, and regional suggested niches.
 - **Global Multi-Source Lead Discovery Engine:** Live lead scanning engine combining OpenStreetMap Nominatim live search, Overpass live mirrors, Google Places (GMB), Google Gemini Free Tier AI commercial discovery, and a 350+ record verified local catalog. Supports full-city scans across all commercial sectors (`⭐ All Commercial Businesses & Enterprises`), custom search keywords, and engine selection with pre-flight duplicate resolution.
+- **🎨 AI Landing Page & Website Studio (Integrated Gemini AI & Detachable Window):** Complete creative studio allowing operators to design bespoke commercial landing pages and technical blueprints for any business lead. Combines custom prompt directives, 6 conversion archetypes, 5 design palettes, and a 12-module selector (Hero, Trust Bar, Services, Testimonials, FAQ, Lead Form, WhatsApp Float, ROI Calculator, SEO Schema). Features live 1-click web browser previewing, raw HTML5/Tailwind code export, Midjourney image generation prompts, and pop-out multi-window capability.
 - **Deep Website Forensics & Security Audit Engine:** Full DOM heading hierarchy (H1/H2), image alt optimization, internal/external links count, canonical validation, OpenGraph/Twitter Cards, Viewport checks, analytics tracking detection (GA4, GTM, Meta Pixel, Hotjar, TikTok Pixel, Clarity), server banner inspection, and security header report card (A+ to F).
 
 ---
@@ -86,6 +87,20 @@ Businesses lacking a verified Google Business Profile or Google Places listing r
 - **Automated Service Match:** Matched with 92% confidence to TheKhanSoft's service package **`svc-gmb-local-seo`** (*Google Business Profile & Local Maps Booster* — PKR 35,000 / $150).
 - **Dynamic Pitch Deck:** The Message Studio automatically generates personalized outreach pitches highlighting their invisibility on Google Maps and lost local search traffic:
   > *"We noticed {{business_name}} currently does not have an active Google Maps / Google Business Profile presence in {{city}}. You are missing dozens of local customers searching daily for {{category}}..."*
+
+---
+
+## 🎨 AI Landing Page & Website Studio
+
+LeadPilot includes an integrated creative workspace for synthesizing bespoke landing pages and website blueprints for any target business:
+
+- **Integrated Google Gemini AI + Offline Resilient Engine:** Uses your configured Gemini API key (Free Tier, `gemini-1.5-flash`) or an ultra-high-fidelity offline deterministic engine to craft production-ready HTML5 and architecture strategies in seconds.
+- **Dedicated Window & Sidebar View:** Access directly via the **"🎨 AI Landing Page Studio"** sidebar navigation or click **"🪟 Detach Window"** to pop out a standalone desktop window on a second monitor.
+- **1-Click Pre-fill from Business Leads:** From the Business Intelligence table, click **"🎨 AI Landing Page Studio"** to automatically populate the studio with the business's name, category, city, and phone number.
+- **Custom Prompt Instruction Engine:** Provide natural-language instructions (e.g. *"Emphasize painless teeth whitening, doctor credentials, and WhatsApp booking"*), or pick from quick presets (Dental Clinic, Corporate Law, Solar Energy, SaaS Cloud, Luxury Living).
+- **12-Module Dynamic Selector:** Toggle Hero Banners, Trust Badges, Services Grid, Before & After Comparisons, Team Bios, Client Testimonials, Pricing Tiers, FAQ Accordions, Lead Capture Forms, Floating WhatsApp Widgets, ROI Calculators, and SEO Schema.
+- **Live Browser Interactivity:** Click **"🌐 Open in Web Browser"** to launch the self-contained HTML5 page (with Tailwind CSS CDN, interactive accordions, and WhatsApp widgets) directly in Edge or Chrome.
+- **Developer & Marketing Exports:** Instantly copy full HTML code, Markdown blueprints, Midjourney photo prompts, and Google/Meta ad copy.
 
 ---
 

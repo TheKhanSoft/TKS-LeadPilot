@@ -108,29 +108,35 @@ public class GeoLocationService : IGeoLocationService
         var result = new NearbyLocationResult
         {
             Country = "Pakistan",
-            StateProvince = "Punjab",
-            City = "Lahore",
-            Latitude = 31.5204,
-            Longitude = 74.3587,
+            StateProvince = "Khyber Pakhtunkhwa",
+            City = "Peshawar",
+            Latitude = 34.0151,
+            Longitude = 71.5249,
             RadiusKm = radiusKm,
-            BoundingBox = CalculateProximityBoundingBox(31.5204, 74.3587, radiusKm),
+            BoundingBox = CalculateProximityBoundingBox(34.0151, 71.5249, radiusKm),
             IsDetectedFromIp = false,
-            Message = "Defaulting to Lahore, Pakistan"
+            Message = "Detecting location..."
         };
 
-        if (_httpClient != null)
+        var client = _httpClient ?? new HttpClient();
+        bool detected = false;
+
+        // 1. Primary: ipwho.is (fast, highly accurate, returns city, region, country, lat, lon)
+        try
         {
-            try
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            cts.CancelAfter(TimeSpan.FromSeconds(4));
+
+            using var req = new HttpRequestMessage(HttpMethod.Get, "https://ipwho.is/");
+            req.Headers.Add("User-Agent", "TKS-LeadPilot/1.0");
+            var resp = await client.SendAsync(req, cts.Token);
+            if (resp.IsSuccessStatusCode)
             {
-                using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-                cts.CancelAfter(TimeSpan.FromSeconds(3)); // 3-second strict timeout
-
-                // IP Geolocation probe (non-blocking, lightweight)
-                var response = await _httpClient.GetStringAsync("https://ipapi.co/json/", cts.Token);
-                using var doc = JsonDocument.Parse(response);
+                var json = await resp.Content.ReadAsStringAsync(ct);
+                using var doc = JsonDocument.Parse(json);
                 var root = doc.RootElement;
-
-                if (root.TryGetProperty("latitude", out var latProp) && latProp.TryGetDouble(out var lat) &&
+                if (root.TryGetProperty("success", out var succ) && succ.GetBoolean() &&
+                    root.TryGetProperty("latitude", out var latProp) && latProp.TryGetDouble(out var lat) &&
                     root.TryGetProperty("longitude", out var lonProp) && lonProp.TryGetDouble(out var lon))
                 {
                     result.Latitude = lat;
@@ -139,21 +145,156 @@ public class GeoLocationService : IGeoLocationService
                     result.BoundingBox = CalculateProximityBoundingBox(lat, lon, radiusKm);
                     result.IsDetectedFromIp = true;
 
-                    if (root.TryGetProperty("city", out var cityProp)) result.City = cityProp.GetString() ?? result.City;
-                    if (root.TryGetProperty("region", out var regProp)) result.StateProvince = regProp.GetString() ?? result.StateProvince;
-                    if (root.TryGetProperty("country_name", out var countryProp)) result.Country = countryProp.GetString() ?? result.Country;
+                    if (root.TryGetProperty("city", out var cp) && !string.IsNullOrWhiteSpace(cp.GetString()))
+                        result.City = cp.GetString()!.Trim();
+                    if (root.TryGetProperty("region", out var rp) && !string.IsNullOrWhiteSpace(rp.GetString()))
+                        result.StateProvince = rp.GetString()!.Trim();
+                    if (root.TryGetProperty("country", out var ctryp) && !string.IsNullOrWhiteSpace(ctryp.GetString()))
+                        result.Country = ctryp.GetString()!.Trim();
 
-                    result.Message = $"Detected approximate location: {result.City}, {result.StateProvince}, {result.Country}";
+                    detected = true;
                 }
             }
-            catch
+        }
+        catch { }
+
+        // 2. Secondary fallback: ip-api.com
+        if (!detected)
+        {
+            try
             {
-                // Fallback gracefully without throwing
-                result.Message = "Could not resolve IP location; using regional anchor (Lahore, PK).";
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                cts.CancelAfter(TimeSpan.FromSeconds(4));
+
+                using var req = new HttpRequestMessage(HttpMethod.Get, "http://ip-api.com/json/");
+                req.Headers.Add("User-Agent", "TKS-LeadPilot/1.0");
+                var resp = await client.SendAsync(req, cts.Token);
+                if (resp.IsSuccessStatusCode)
+                {
+                    var json = await resp.Content.ReadAsStringAsync(ct);
+                    using var doc = JsonDocument.Parse(json);
+                    var root = doc.RootElement;
+                    if (root.TryGetProperty("status", out var st) && st.GetString() == "success" &&
+                        root.TryGetProperty("lat", out var latProp) && latProp.TryGetDouble(out var lat) &&
+                        root.TryGetProperty("lon", out var lonProp) && lonProp.TryGetDouble(out var lon))
+                    {
+                        result.Latitude = lat;
+                        result.Longitude = lon;
+                        result.RadiusKm = radiusKm;
+                        result.BoundingBox = CalculateProximityBoundingBox(lat, lon, radiusKm);
+                        result.IsDetectedFromIp = true;
+
+                        if (root.TryGetProperty("city", out var cp) && !string.IsNullOrWhiteSpace(cp.GetString()))
+                            result.City = cp.GetString()!.Trim();
+                        if (root.TryGetProperty("regionName", out var rp) && !string.IsNullOrWhiteSpace(rp.GetString()))
+                            result.StateProvince = rp.GetString()!.Trim();
+                        if (root.TryGetProperty("country", out var ctryp) && !string.IsNullOrWhiteSpace(ctryp.GetString()))
+                            result.Country = ctryp.GetString()!.Trim();
+
+                        detected = true;
+                    }
+                }
             }
+            catch { }
         }
 
+        // 3. Tertiary fallback: freeipapi.com
+        if (!detected)
+        {
+            try
+            {
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                cts.CancelAfter(TimeSpan.FromSeconds(4));
+
+                using var req = new HttpRequestMessage(HttpMethod.Get, "https://freeipapi.com/api/json");
+                req.Headers.Add("User-Agent", "TKS-LeadPilot/1.0");
+                var resp = await client.SendAsync(req, cts.Token);
+                if (resp.IsSuccessStatusCode)
+                {
+                    var json = await resp.Content.ReadAsStringAsync(ct);
+                    using var doc = JsonDocument.Parse(json);
+                    var root = doc.RootElement;
+                    if (root.TryGetProperty("latitude", out var latProp) && latProp.TryGetDouble(out var lat) &&
+                        root.TryGetProperty("longitude", out var lonProp) && lonProp.TryGetDouble(out var lon))
+                    {
+                        result.Latitude = lat;
+                        result.Longitude = lon;
+                        result.RadiusKm = radiusKm;
+                        result.BoundingBox = CalculateProximityBoundingBox(lat, lon, radiusKm);
+                        result.IsDetectedFromIp = true;
+
+                        if (root.TryGetProperty("cityName", out var cp) && !string.IsNullOrWhiteSpace(cp.GetString()))
+                            result.City = cp.GetString()!.Trim();
+                        if (root.TryGetProperty("regionName", out var rp) && !string.IsNullOrWhiteSpace(rp.GetString()))
+                            result.StateProvince = rp.GetString()!.Trim();
+                        if (root.TryGetProperty("countryName", out var ctryp) && !string.IsNullOrWhiteSpace(ctryp.GetString()))
+                            result.Country = ctryp.GetString()!.Trim();
+
+                        detected = true;
+                    }
+                }
+            }
+            catch { }
+        }
+
+        // Align detected raw values to catalog entities
+        AlignToCatalog(result);
+
+        result.Message = detected
+            ? $"📍 Accurate location detected: {result.City}, {result.StateProvince}, {result.Country} (GPS: {result.Latitude:F4}, {result.Longitude:F4})"
+            : "Could not resolve live network location; using regional anchor.";
+
         return result;
+    }
+
+    private static void AlignToCatalog(NearbyLocationResult result)
+    {
+        var country = CountriesList.FirstOrDefault(c =>
+            string.Equals(c.Name, result.Country, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(c.Code, result.Country, StringComparison.OrdinalIgnoreCase) ||
+            result.Country.Contains(c.Name, StringComparison.OrdinalIgnoreCase));
+
+        if (country == null) return;
+        result.Country = country.Name;
+
+        var state = country.States.FirstOrDefault(s =>
+            string.Equals(s.Name, result.StateProvince, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(s.Code, result.StateProvince, StringComparison.OrdinalIgnoreCase) ||
+            result.StateProvince.Contains(s.Name, StringComparison.OrdinalIgnoreCase));
+
+        if (state == null && country.States.Count > 0)
+        {
+            state = country.States.FirstOrDefault(s => s.Cities.Any(c =>
+                string.Equals(c.Name, result.City, StringComparison.OrdinalIgnoreCase)));
+            state ??= country.States[0];
+        }
+
+        if (state != null)
+        {
+            result.StateProvince = state.Name;
+
+            var city = state.Cities.FirstOrDefault(c =>
+                string.Equals(c.Name, result.City, StringComparison.OrdinalIgnoreCase));
+
+            if (city != null)
+            {
+                result.City = city.Name;
+            }
+            else if (state.Cities.Count > 0)
+            {
+                var closest = state.Cities
+                    .OrderBy(c => DistanceSquared(result.Latitude, result.Longitude, c.Latitude, c.Longitude))
+                    .First();
+                result.City = closest.Name;
+            }
+        }
+    }
+
+    private static double DistanceSquared(double lat1, double lon1, double lat2, double lon2)
+    {
+        var dLat = lat1 - lat2;
+        var dLon = lon1 - lon2;
+        return (dLat * dLat) + (dLon * dLon);
     }
 
     public IReadOnlyList<string> GetSuggestedNiches(string? country = null, string? city = null)
@@ -1084,6 +1225,773 @@ public class GeoLocationService : IGeoLocationService
                     }
                 ]
             }
+        ,
+
+            // 18. Switzerland
+            new()
+            {
+                Code = "CH",
+                Name = "Switzerland",
+                FlagEmoji = "🇨🇭",
+                States =
+                [
+                    new()
+                    {
+                        Name = "Zurich",
+                        Code = "ZH",
+                        Cities =
+                        [
+                            new() { Name = "Zurich", Latitude = 47.3769, Longitude = 8.5417, BoundingBox = new(47.30, 8.45, 47.45, 8.62), SuggestedNiches = ["Private Wealth Management & FinTech", "Boutique Medical & Aesthetic Clinics", "SaaS & AI Platforms", "Luxury E-Commerce & Retail"] },
+                            new() { Name = "Winterthur", Latitude = 47.4984, Longitude = 8.7241, BoundingBox = new(47.45, 8.68, 47.55, 8.78), SuggestedNiches = ["Precision Engineering & Robotics", "Software & Cloud Services", "Higher Education Tech"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Geneva",
+                        Code = "GE",
+                        Cities =
+                        [
+                            new() { Name = "Geneva", Latitude = 46.2044, Longitude = 6.1432, BoundingBox = new(46.15, 6.08, 46.25, 6.22), SuggestedNiches = ["Private Banking & Asset Management", "International Corporate Law", "Luxury Horology & Jewelry", "Biotech & Diagnostics"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Basel-Stadt",
+                        Code = "BS",
+                        Cities =
+                        [
+                            new() { Name = "Basel", Latitude = 47.5596, Longitude = 7.5886, BoundingBox = new(47.50, 7.52, 47.60, 7.65), SuggestedNiches = ["Global Pharmaceutical HQs", "Life Sciences R&D", "Chemical Specialities", "Art & Design Galleries"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Bern",
+                        Code = "BE",
+                        Cities =
+                        [
+                            new() { Name = "Bern", Latitude = 46.9480, Longitude = 7.4474, BoundingBox = new(46.90, 7.38, 46.98, 7.52), SuggestedNiches = ["GovTech & Public IT", "Telecommunications", "Medical Technology & Devices"] },
+                            new() { Name = "Thun", Latitude = 46.7580, Longitude = 7.6280, BoundingBox = new(46.72, 7.58, 46.80, 7.68), SuggestedNiches = ["Tourism & Alpine Hospitality", "Precision Machinery", "Digital Creative Agencies"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Vaud",
+                        Code = "VD",
+                        Cities =
+                        [
+                            new() { Name = "Lausanne", Latitude = 46.5197, Longitude = 6.6323, BoundingBox = new(46.48, 6.58, 46.56, 6.70), SuggestedNiches = ["Sports Tech & Global Federations", "Health Valley MedTech", "Digital Media Studios"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Zug",
+                        Code = "ZG",
+                        Cities =
+                        [
+                            new() { Name = "Zug", Latitude = 47.1662, Longitude = 8.5155, BoundingBox = new(47.12, 8.46, 47.22, 8.58), SuggestedNiches = ["Crypto Valley & Blockchain Hub", "Commodity Trading", "International Asset Holdings", "Corporate Consulting"] }
+                        ]
+                    }
+                ]
+            },
+
+            // 19. France
+            new()
+            {
+                Code = "FR",
+                Name = "France",
+                FlagEmoji = "🇫🇷",
+                States =
+                [
+                    new()
+                    {
+                        Name = "Île-de-France",
+                        Code = "IDF",
+                        Cities =
+                        [
+                            new() { Name = "Paris", Latitude = 48.8566, Longitude = 2.3522, BoundingBox = new(48.78, 2.22, 48.92, 2.45), SuggestedNiches = ["Luxury Fashion & Cosmetics E-Commerce", "B2B SaaS & Tech Startups (Station F)", "Corporate Law & Litigation", "High-End Gastronomy & Hospitality"] },
+                            new() { Name = "Boulogne-Billancourt", Latitude = 48.8397, Longitude = 2.2399, BoundingBox = new(48.80, 2.20, 48.88, 2.28), SuggestedNiches = ["Digital Media & Advertising", "Telecom & Cloud Platforms", "Automotive Design"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Auvergne-Rhône-Alpes",
+                        Code = "ARA",
+                        Cities =
+                        [
+                            new() { Name = "Lyon", Latitude = 45.7640, Longitude = 4.8357, BoundingBox = new(45.70, 4.75, 45.82, 4.92), SuggestedNiches = ["Biopharma & Vaccines", "Cleantech & Smart Energy", "Fine Dining Gastronomy", "Digital Creative Studios"] },
+                            new() { Name = "Grenoble", Latitude = 45.1885, Longitude = 5.7245, BoundingBox = new(45.14, 5.68, 45.24, 5.78), SuggestedNiches = ["Nanotech & Semiconductors", "Scientific Software", "Renewable Energy Research"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Provence-Alpes-Côte d'Azur",
+                        Code = "PAC",
+                        Cities =
+                        [
+                            new() { Name = "Marseille", Latitude = 43.2965, Longitude = 5.3698, BoundingBox = new(43.22, 5.30, 43.38, 5.48), SuggestedNiches = ["Mediterranean Maritime Logistics", "Subsea Telecom & Data Centers", "Healthcare Clinics"] },
+                            new() { Name = "Nice", Latitude = 43.7102, Longitude = 7.2620, BoundingBox = new(43.65, 7.18, 43.76, 7.32), SuggestedNiches = ["Riviera Luxury Hospitality", "Sophia Antipolis Tech Hub", "Aesthetic Clinics & Wellness"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Occitanie",
+                        Code = "OCC",
+                        Cities =
+                        [
+                            new() { Name = "Toulouse", Latitude = 43.6047, Longitude = 1.4442, BoundingBox = new(43.54, 1.35, 43.68, 1.52), SuggestedNiches = ["Aerospace & Satellite Systems", "Embedded Software Engineering", "Biomedical R&D"] },
+                            new() { Name = "Montpellier", Latitude = 43.6108, Longitude = 3.8767, BoundingBox = new(43.56, 3.82, 43.66, 3.94), SuggestedNiches = ["HealthTech & Diagnostics", "AgriTech & Viticulture", "Video Game Studios"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Nouvelle-Aquitaine",
+                        Code = "NAQ",
+                        Cities =
+                        [
+                            new() { Name = "Bordeaux", Latitude = 44.8378, Longitude = -0.5792, BoundingBox = new(44.78, -0.65, 44.90, -0.50), SuggestedNiches = ["Fine Wine E-Commerce & Export", "Green Tech & Photonics", "Digital Marketing Agencies"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Hauts-de-France",
+                        Code = "HDF",
+                        Cities =
+                        [
+                            new() { Name = "Lille", Latitude = 50.6292, Longitude = 3.0573, BoundingBox = new(50.58, 2.98, 50.68, 3.14), SuggestedNiches = ["E-Commerce & Retail Tech", "Logistics & Supply Chain", "Bio-Incubators"] }
+                        ]
+                    }
+                ]
+            },
+
+            // 20. Sweden
+            new()
+            {
+                Code = "SE",
+                Name = "Sweden",
+                FlagEmoji = "🇸🇪",
+                States =
+                [
+                    new()
+                    {
+                        Name = "Stockholm County",
+                        Code = "AB",
+                        Cities =
+                        [
+                            new() { Name = "Stockholm", Latitude = 59.3293, Longitude = 18.0686, BoundingBox = new(59.25, 17.92, 59.40, 18.22), SuggestedNiches = ["Unicorn Tech & SaaS Startups", "FinTech & Open Banking", "E-Commerce Platforms & D2C", "GreenTech & Sustainable Living"] },
+                            new() { Name = "Kista", Latitude = 59.4026, Longitude = 17.9443, BoundingBox = new(59.38, 17.90, 59.43, 17.98), SuggestedNiches = ["5G Telecom & Wireless Systems", "Semiconductor Design", "Cloud Infrastructure"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Västra Götaland",
+                        Code = "O",
+                        Cities =
+                        [
+                            new() { Name = "Gothenburg", Latitude = 57.7089, Longitude = 11.9746, BoundingBox = new(57.65, 11.88, 57.78, 12.08), SuggestedNiches = ["Automotive & EV Innovation", "Port & Maritime Logistics", "Life Sciences & MedTech"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Skåne",
+                        Code = "M",
+                        Cities =
+                        [
+                            new() { Name = "Malmö", Latitude = 55.6050, Longitude = 13.0038, BoundingBox = new(55.55, 12.92, 55.66, 13.10), SuggestedNiches = ["Game Development Studios", "Cross-Border Copenhagen Commerce", "Clean Energy Startups"] },
+                            new() { Name = "Lund", Latitude = 55.7047, Longitude = 13.1910, BoundingBox = new(55.67, 13.15, 55.74, 13.24), SuggestedNiches = ["Biotechnology & Nanotech", "DeepTech Research", "Mobile Communications"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Uppsala County",
+                        Code = "C",
+                        Cities =
+                        [
+                            new() { Name = "Uppsala", Latitude = 59.8586, Longitude = 17.6389, BoundingBox = new(59.80, 17.56, 59.90, 17.70), SuggestedNiches = ["Biotech & Pharmaceuticals", "MedTech Devices", "Academic Software Labs"] }
+                        ]
+                    }
+                ]
+            },
+
+            // 21. Denmark
+            new()
+            {
+                Code = "DK",
+                Name = "Denmark",
+                FlagEmoji = "🇩🇰",
+                States =
+                [
+                    new()
+                    {
+                        Name = "Capital Region",
+                        Code = "H",
+                        Cities =
+                        [
+                            new() { Name = "Copenhagen", Latitude = 55.6761, Longitude = 12.5683, BoundingBox = new(55.62, 12.48, 55.74, 12.65), SuggestedNiches = ["FinTech & Payment Solutions", "Medicon Valley Life Sciences", "Nordic Design & E-Commerce", "Renewable Wind Energy"] },
+                            new() { Name = "Frederiksberg", Latitude = 55.6791, Longitude = 12.5348, BoundingBox = new(55.66, 12.50, 55.70, 12.56), SuggestedNiches = ["High-End Culinary & Cafes", "Boutique Creative Studios", "Digital Consulting"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Central Denmark",
+                        Code = "M",
+                        Cities =
+                        [
+                            new() { Name = "Aarhus", Latitude = 56.1629, Longitude = 10.2039, BoundingBox = new(56.10, 10.12, 56.22, 10.28), SuggestedNiches = ["Agri-Food Tech Innovation", "Software & IT Consultancies", "Container Port Logistics"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Southern Denmark",
+                        Code = "S",
+                        Cities =
+                        [
+                            new() { Name = "Odense", Latitude = 55.4038, Longitude = 10.4024, BoundingBox = new(55.35, 10.32, 55.45, 10.48), SuggestedNiches = ["Collaborative Robotics & Automation", "Drone Tech", "Health Innovation"] }
+                        ]
+                    }
+                ]
+            },
+
+            // 22. Norway
+            new()
+            {
+                Code = "NO",
+                Name = "Norway",
+                FlagEmoji = "🇳🇴",
+                States =
+                [
+                    new()
+                    {
+                        Name = "Oslo",
+                        Code = "03",
+                        Cities =
+                        [
+                            new() { Name = "Oslo", Latitude = 59.9139, Longitude = 10.7522, BoundingBox = new(59.85, 10.65, 59.98, 10.85), SuggestedNiches = ["Wealth & Energy Asset Management", "Maritime Tech & Shipping", "B2B SaaS & Enterprise Tech", "EV & Cleantech Infrastructure"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Vestland",
+                        Code = "46",
+                        Cities =
+                        [
+                            new() { Name = "Bergen", Latitude = 60.3913, Longitude = 5.3221, BoundingBox = new(60.34, 5.25, 60.45, 5.40), SuggestedNiches = ["Aquaculture & Salmon Export", "Subsea Offshore Engineering", "Fjord Tourism & Lodging"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Trøndelag",
+                        Code = "50",
+                        Cities =
+                        [
+                            new() { Name = "Trondheim", Latitude = 63.4305, Longitude = 10.3951, BoundingBox = new(63.38, 10.30, 63.48, 10.48), SuggestedNiches = ["Deeptech R&D & AI", "Semiconductors", "Renewable Hydro Energy"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Rogaland",
+                        Code = "11",
+                        Cities =
+                        [
+                            new() { Name = "Stavanger", Latitude = 58.9700, Longitude = 5.7331, BoundingBox = new(58.92, 5.65, 59.02, 5.80), SuggestedNiches = ["Offshore Energy & Gas", "Renewable Wind Support", "Engineering Contracting"] }
+                        ]
+                    }
+                ]
+            },
+
+            // 23. New Zealand
+            new()
+            {
+                Code = "NZ",
+                Name = "New Zealand",
+                FlagEmoji = "🇳🇿",
+                States =
+                [
+                    new()
+                    {
+                        Name = "Auckland Region",
+                        Code = "AUK",
+                        Cities =
+                        [
+                            new() { Name = "Auckland", Latitude = -36.8485, Longitude = 174.7633, BoundingBox = new(-36.95, 174.65, -36.75, 174.90), SuggestedNiches = ["Cloud Software & SaaS", "FinTech & Payments", "Specialty Medical Practices", "Commercial Marine & Yachting"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Wellington Region",
+                        Code = "WGN",
+                        Cities =
+                        [
+                            new() { Name = "Wellington", Latitude = -41.2865, Longitude = 174.7762, BoundingBox = new(-41.35, 174.70, -41.22, 174.85), SuggestedNiches = ["GovTech Platforms", "Digital VFX & Film Production", "Boutique Roasteries & Cafes"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Canterbury",
+                        Code = "CAN",
+                        Cities =
+                        [
+                            new() { Name = "Christchurch", Latitude = -43.5321, Longitude = 172.6362, BoundingBox = new(-43.60, 172.52, -43.45, 172.72), SuggestedNiches = ["Aerospace & Satellite Launch", "High-Tech Manufacturing", "AgriTech Solutions"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Otago",
+                        Code = "OTA",
+                        Cities =
+                        [
+                            new() { Name = "Queenstown", Latitude = -45.0312, Longitude = 168.6626, BoundingBox = new(-45.08, 168.60, -44.98, 168.75), SuggestedNiches = ["Luxury Resort Hospitality", "Adventure Tourism Operators", "High-End Real Estate"] }
+                        ]
+                    }
+                ]
+            },
+
+            // 24. Spain
+            new()
+            {
+                Code = "ES",
+                Name = "Spain",
+                FlagEmoji = "🇪🇸",
+                States =
+                [
+                    new()
+                    {
+                        Name = "Community of Madrid",
+                        Code = "MD",
+                        Cities =
+                        [
+                            new() { Name = "Madrid", Latitude = 40.4168, Longitude = -3.7038, BoundingBox = new(40.32, -3.82, 40.52, -3.58), SuggestedNiches = ["FinTech & Open Banking", "Digital Nomad Platforms & SaaS", "Corporate Legal & Tax Advisory", "Hospitality & Gastronomy"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Catalonia",
+                        Code = "CT",
+                        Cities =
+                        [
+                            new() { Name = "Barcelona", Latitude = 41.3851, Longitude = 2.1734, BoundingBox = new(41.30, 2.08, 41.48, 2.25), SuggestedNiches = ["Mobile World & Tech Startups (22@)", "E-Commerce D2C Brands", "Biopharma & MedTech", "Creative Design Studios"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Valencian Community",
+                        Code = "VC",
+                        Cities =
+                        [
+                            new() { Name = "Valencia", Latitude = 39.4699, Longitude = -0.3763, BoundingBox = new(39.42, -0.45, 39.52, -0.30), SuggestedNiches = ["Port Logistics & Shipping", "Agri-Food Export", "Software & Game Studios"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Andalusia",
+                        Code = "AN",
+                        Cities =
+                        [
+                            new() { Name = "Seville", Latitude = 37.3891, Longitude = -5.9845, BoundingBox = new(37.32, -6.05, 37.45, -5.90), SuggestedNiches = ["Aerospace Components", "Renewable Solar Energy", "Cultural Tourism"] },
+                            new() { Name = "Malaga", Latitude = 36.7213, Longitude = -4.4214, BoundingBox = new(36.67, -4.50, 36.78, -4.35), SuggestedNiches = ["Cybersecurity Hub", "International Tech Hub (Costa del Sol)", "Luxury Real Estate"] }
+                        ]
+                    }
+                ]
+            },
+
+            // 25. Italy
+            new()
+            {
+                Code = "IT",
+                Name = "Italy",
+                FlagEmoji = "🇮🇹",
+                States =
+                [
+                    new()
+                    {
+                        Name = "Lombardy",
+                        Code = "LOM",
+                        Cities =
+                        [
+                            new() { Name = "Milan", Latitude = 45.4642, Longitude = 9.1900, BoundingBox = new(45.38, 9.08, 45.54, 9.28), SuggestedNiches = ["Global Fashion & Luxury E-Commerce", "Investment Banking & FinTech", "Industrial Design & Architecture", "Private Aesthetic Clinics"] },
+                            new() { Name = "Brescia", Latitude = 45.5416, Longitude = 10.2118, BoundingBox = new(45.50, 10.15, 45.58, 10.28), SuggestedNiches = ["Precision Metalworking", "Automotive Parts", "Industrial Machinery"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Lazio",
+                        Code = "LAZ",
+                        Cities =
+                        [
+                            new() { Name = "Rome", Latitude = 41.9028, Longitude = 12.4964, BoundingBox = new(41.80, 12.38, 42.00, 12.60), SuggestedNiches = ["Public Sector & Defense Contracting", "Corporate Law Practices", "Heritage Tourism & Luxury Hotels"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Piedmont",
+                        Code = "PIE",
+                        Cities =
+                        [
+                            new() { Name = "Turin", Latitude = 45.0703, Longitude = 7.6869, BoundingBox = new(45.00, 7.60, 45.14, 7.76), SuggestedNiches = ["Automotive & EV Engineering", "Aerospace Systems", "Gourmet Food Processing"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Emilia-Romagna",
+                        Code = "EMR",
+                        Cities =
+                        [
+                            new() { Name = "Bologna", Latitude = 44.4949, Longitude = 11.3426, BoundingBox = new(44.45, 11.28, 44.55, 11.42), SuggestedNiches = ["Motor Valley (Supercars & Bikes)", "Packaging Automation", "Specialty Food & Wine"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Tuscany",
+                        Code = "TOS",
+                        Cities =
+                        [
+                            new() { Name = "Florence", Latitude = 43.7696, Longitude = 11.2558, BoundingBox = new(43.72, 11.18, 43.82, 11.32), SuggestedNiches = ["Luxury Leathercraft & Fashion", "Boutique Hospitality", "Artisan E-Commerce"] }
+                        ]
+                    }
+                ]
+            },
+
+            // 26. Japan
+            new()
+            {
+                Code = "JP",
+                Name = "Japan",
+                FlagEmoji = "🇯🇵",
+                States =
+                [
+                    new()
+                    {
+                        Name = "Tokyo Metropolis",
+                        Code = "13",
+                        Cities =
+                        [
+                            new() { Name = "Tokyo", Latitude = 35.6762, Longitude = 139.6503, BoundingBox = new(35.55, 139.50, 35.80, 139.85), SuggestedNiches = ["Global FinTech & Trading", "Robotics & AI Automation", "Digital Entertainment & Gaming", "B2B Enterprise Software"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Osaka Prefecture",
+                        Code = "27",
+                        Cities =
+                        [
+                            new() { Name = "Osaka", Latitude = 34.6937, Longitude = 135.5023, BoundingBox = new(34.60, 135.40, 34.78, 135.60), SuggestedNiches = ["Pharmaceuticals & Life Sciences", "Electronics & Battery Tech", "Wholesale Commercial Trade"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Kanagawa Prefecture",
+                        Code = "14",
+                        Cities =
+                        [
+                            new() { Name = "Yokohama", Latitude = 35.4437, Longitude = 139.6380, BoundingBox = new(35.35, 139.55, 35.52, 139.72), SuggestedNiches = ["Automotive Engineering", "Biotechnology R&D", "International Port Logistics"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Aichi Prefecture",
+                        Code = "23",
+                        Cities =
+                        [
+                            new() { Name = "Nagoya", Latitude = 35.1815, Longitude = 136.9066, BoundingBox = new(35.10, 136.80, 35.25, 137.02), SuggestedNiches = ["Automotive Heavy Industry", "Aerospace Manufacturing", "Robotics Hardware"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Fukuoka Prefecture",
+                        Code = "40",
+                        Cities =
+                        [
+                            new() { Name = "Fukuoka", Latitude = 33.5904, Longitude = 130.4017, BoundingBox = new(33.52, 130.32, 33.68, 130.48), SuggestedNiches = ["Startup City Japan Hub", "Asian Cross-Border Commerce", "HealthTech & Gaming"] }
+                        ]
+                    }
+                ]
+            },
+
+            // 27. South Korea
+            new()
+            {
+                Code = "KR",
+                Name = "South Korea",
+                FlagEmoji = "🇰🇷",
+                States =
+                [
+                    new()
+                    {
+                        Name = "Seoul Special City",
+                        Code = "11",
+                        Cities =
+                        [
+                            new() { Name = "Seoul", Latitude = 37.5665, Longitude = 126.9780, BoundingBox = new(37.45, 126.82, 37.68, 127.15), SuggestedNiches = ["K-Beauty & Cosmetic Clinics", "E-Commerce Superapps", "FinTech & Digital Banking", "Entertainment & K-Content Studios"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Gyeonggi-do",
+                        Code = "41",
+                        Cities =
+                        [
+                            new() { Name = "Seongnam", Latitude = 37.4200, Longitude = 127.1265, BoundingBox = new(37.35, 127.05, 37.48, 127.18), SuggestedNiches = ["Pangyo Techno Valley (SaaS & AI)", "Gaming Giants & Metaverse", "Cloud Systems"] },
+                            new() { Name = "Suwon", Latitude = 37.2636, Longitude = 127.0286, BoundingBox = new(37.22, 126.96, 37.32, 127.08), SuggestedNiches = ["Semiconductor Research", "Electronics Engineering", "Display Technologies"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Busan Metropolitan City",
+                        Code = "26",
+                        Cities =
+                        [
+                            new() { Name = "Busan", Latitude = 35.1796, Longitude = 129.0756, BoundingBox = new(35.08, 128.98, 35.25, 129.18), SuggestedNiches = ["Maritime Logistics & Shipbuilding", "Blockchain Regulatory Free Zone", "Film & Tourism"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Incheon Metropolitan City",
+                        Code = "28",
+                        Cities =
+                        [
+                            new() { Name = "Incheon", Latitude = 37.4563, Longitude = 126.7052, BoundingBox = new(37.38, 126.60, 37.55, 126.78), SuggestedNiches = ["Songdo International Smart City", "Biologics Manufacturing (CDMO)", "Air Cargo Logistics"] }
+                        ]
+                    }
+                ]
+            },
+
+            // 28. Hong Kong
+            new()
+            {
+                Code = "HK",
+                Name = "Hong Kong",
+                FlagEmoji = "🇭🇰",
+                States =
+                [
+                    new()
+                    {
+                        Name = "Hong Kong Island",
+                        Code = "HKI",
+                        Cities =
+                        [
+                            new() { Name = "Central", Latitude = 22.2819, Longitude = 114.1581, BoundingBox = new(22.25, 114.12, 22.30, 114.20), SuggestedNiches = ["Global Investment Banking & Hedge Funds", "Corporate Law & Arbitration", "Family Office Services"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Kowloon",
+                        Code = "KLN",
+                        Cities =
+                        [
+                            new() { Name = "Kowloon", Latitude = 22.3193, Longitude = 114.1694, BoundingBox = new(22.28, 114.14, 22.36, 114.22), SuggestedNiches = ["Electronics Trading & Wholesale", "Textile & Sourcing Agencies", "Hospitality & Retail"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "New Territories",
+                        Code = "NT",
+                        Cities =
+                        [
+                            new() { Name = "Sha Tin", Latitude = 22.3771, Longitude = 114.1974, BoundingBox = new(22.34, 114.15, 22.42, 114.24), SuggestedNiches = ["Hong Kong Science Park Tech Hub", "Biotech Research", "Robotics & Logistics"] }
+                        ]
+                    }
+                ]
+            },
+
+            // 29. Estonia
+            new()
+            {
+                Code = "EE",
+                Name = "Estonia",
+                FlagEmoji = "🇪🇪",
+                States =
+                [
+                    new()
+                    {
+                        Name = "Harju County",
+                        Code = "37",
+                        Cities =
+                        [
+                            new() { Name = "Tallinn", Latitude = 59.4370, Longitude = 24.7536, BoundingBox = new(59.38, 24.62, 59.50, 24.88), SuggestedNiches = ["e-Residency & Digital Incorporation", "Cybersecurity & Defense Tech", "Global B2B SaaS Startups", "FinTech & Digital Identity"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Tartu County",
+                        Code = "78",
+                        Cities =
+                        [
+                            new() { Name = "Tartu", Latitude = 58.3780, Longitude = 26.7290, BoundingBox = new(58.34, 26.65, 58.42, 26.78), SuggestedNiches = ["University Tech Spin-offs", "Bio-Engineering", "Software Development Labs"] }
+                        ]
+                    }
+                ]
+            },
+
+            // 30. Poland
+            new()
+            {
+                Code = "PL",
+                Name = "Poland",
+                FlagEmoji = "🇵🇱",
+                States =
+                [
+                    new()
+                    {
+                        Name = "Masovian",
+                        Code = "MZ",
+                        Cities =
+                        [
+                            new() { Name = "Warsaw", Latitude = 52.2297, Longitude = 21.0122, BoundingBox = new(52.15, 20.88, 52.32, 21.15), SuggestedNiches = ["Central European FinTech HQ", "IT Software Development Houses", "Commercial Real Estate", "E-Commerce Fulfillment"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Lesser Poland",
+                        Code = "MA",
+                        Cities =
+                        [
+                            new() { Name = "Krakow", Latitude = 50.0647, Longitude = 19.9450, BoundingBox = new(50.00, 19.85, 50.12, 20.05), SuggestedNiches = ["International Tech R&D Centers", "Gaming & Interactive Studios", "Specialty Medical Diagnostics"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Lower Silesian",
+                        Code = "DS",
+                        Cities =
+                        [
+                            new() { Name = "Wroclaw", Latitude = 51.1079, Longitude = 17.0385, BoundingBox = new(51.05, 16.92, 51.18, 17.15), SuggestedNiches = ["Silicon Lower Silesia Software", "AI & Cloud Engineering", "Electric Mobility"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Pomeranian",
+                        Code = "PM",
+                        Cities =
+                        [
+                            new() { Name = "Gdansk", Latitude = 54.3520, Longitude = 18.6466, BoundingBox = new(54.30, 18.52, 54.42, 18.75), SuggestedNiches = ["Baltic Maritime & Deep Sea Port", "Bio-Tech Parks", "Renewable Offshore Energy"] }
+                        ]
+                    }
+                ]
+            },
+
+            // 31. South Africa
+            new()
+            {
+                Code = "ZA",
+                Name = "South Africa",
+                FlagEmoji = "🇿🇦",
+                States =
+                [
+                    new()
+                    {
+                        Name = "Gauteng",
+                        Code = "GT",
+                        Cities =
+                        [
+                            new() { Name = "Johannesburg", Latitude = -26.2041, Longitude = 28.0473, BoundingBox = new(-26.30, 27.92, -26.10, 28.18), SuggestedNiches = ["FinTech & African Financial Hub", "Mining & Engineering Corporates", "Commercial Law Practices", "E-Commerce Retail Logistics"] },
+                            new() { Name = "Pretoria", Latitude = -25.7479, Longitude = 28.2293, BoundingBox = new(-25.82, 28.15, -25.68, 28.32), SuggestedNiches = ["GovTech Consulting", "Automotive Manufacturing", "Research & Higher Education"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Western Cape",
+                        Code = "WC",
+                        Cities =
+                        [
+                            new() { Name = "Cape Town", Latitude = -33.9249, Longitude = 18.4241, BoundingBox = new(-34.02, 18.35, -33.85, 18.55), SuggestedNiches = ["Silicon Cape Tech Hub", "Digital Agencies & Web Studios", "Specialty Wine E-Commerce", "Coastal Tourism & Luxury Lodges"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "KwaZulu-Natal",
+                        Code = "NL",
+                        Cities =
+                        [
+                            new() { Name = "Durban", Latitude = -29.8587, Longitude = 31.0218, BoundingBox = new(-29.95, 30.92, -29.78, 31.10), SuggestedNiches = ["Largest Container Port in Africa", "Sugar & Agri Processing", "Manufacturing & Textiles"] }
+                        ]
+                    }
+                ]
+            },
+
+            // 32. India
+            new()
+            {
+                Code = "IN",
+                Name = "India",
+                FlagEmoji = "🇮🇳",
+                States =
+                [
+                    new()
+                    {
+                        Name = "Karnataka",
+                        Code = "KA",
+                        Cities =
+                        [
+                            new() { Name = "Bengaluru", Latitude = 12.9716, Longitude = 77.5946, BoundingBox = new(12.85, 77.48, 13.12, 77.75), SuggestedNiches = ["Silicon Valley of India (SaaS, AI, Tech)", "Global Capability Centers (GCC)", "FinTech Unicorns", "HealthTech & Diagnostics"] },
+                            new() { Name = "Mysuru", Latitude = 12.2958, Longitude = 76.6394, BoundingBox = new(12.25, 76.58, 12.35, 76.70), SuggestedNiches = ["IT Services & Outsourcing", "Silk & Handicrafts", "Education Tech"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Maharashtra",
+                        Code = "MH",
+                        Cities =
+                        [
+                            new() { Name = "Mumbai", Latitude = 19.0760, Longitude = 72.8777, BoundingBox = new(18.90, 72.75, 19.25, 73.00), SuggestedNiches = ["Financial Capital & Stock Exchanges", "Entertainment & Bollywood Media", "Corporate Legal & Tax Firms", "Commercial Real Estate"] },
+                            new() { Name = "Pune", Latitude = 18.5204, Longitude = 73.8567, BoundingBox = new(18.42, 73.75, 18.62, 73.98), SuggestedNiches = ["Automotive Hub & EV", "Software Engineering Centers", "Biotech R&D"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Delhi NCR",
+                        Code = "DL",
+                        Cities =
+                        [
+                            new() { Name = "New Delhi", Latitude = 28.6139, Longitude = 77.2090, BoundingBox = new(28.48, 77.05, 28.75, 77.35), SuggestedNiches = ["Government & Policy Consulting", "E-Commerce Startups", "Healthcare Networks & Hospitals", "Corporate Advisory"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Haryana",
+                        Code = "HR",
+                        Cities =
+                        [
+                            new() { Name = "Gurugram", Latitude = 28.4595, Longitude = 77.0266, BoundingBox = new(28.38, 76.95, 28.52, 77.10), SuggestedNiches = ["Fortune 500 Corporate HQs", "B2B SaaS & Tech", "FinTech & Banking Centers"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Uttar Pradesh",
+                        Code = "UP",
+                        Cities =
+                        [
+                            new() { Name = "Noida", Latitude = 28.5355, Longitude = 77.3910, BoundingBox = new(28.46, 77.30, 28.62, 77.48), SuggestedNiches = ["Mobile Phone Manufacturing Hub", "Media & Broadcasting Studios", "IT Data Centers"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Telangana",
+                        Code = "TG",
+                        Cities =
+                        [
+                            new() { Name = "Hyderabad", Latitude = 17.3850, Longitude = 78.4867, BoundingBox = new(17.28, 78.32, 17.50, 78.60), SuggestedNiches = ["Genome Valley (Pharma & Biotech)", "HITEC City Software Campuses", "Defense & Aerospace"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Tamil Nadu",
+                        Code = "TN",
+                        Cities =
+                        [
+                            new() { Name = "Chennai", Latitude = 13.0827, Longitude = 80.2707, BoundingBox = new(12.95, 80.15, 13.20, 80.35), SuggestedNiches = ["Detroit of South Asia (Automotive)", "SaaS & Product Tech", "Medical Tourism & Healthcare"] }
+                        ]
+                    },
+                    new()
+                    {
+                        Name = "Gujarat",
+                        Code = "GJ",
+                        Cities =
+                        [
+                            new() { Name = "Ahmedabad", Latitude = 23.0225, Longitude = 72.5714, BoundingBox = new(22.92, 22.45, 23.12, 72.68), SuggestedNiches = ["Textiles & Chemicals", "Pharmaceuticals", "GIFT City FinTech"] }
+                        ]
+                    }
+                ]
+            }
+
         ];
     }
 }

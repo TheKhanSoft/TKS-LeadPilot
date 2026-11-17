@@ -20,18 +20,22 @@ public partial class MainViewModel : ViewModelBase
 
     public bool IsDashboardActive => ActiveTab == "Dashboard";
     public bool IsBusinessesActive => ActiveTab == "Businesses";
+    public bool IsDiscoveryActive => ActiveTab == "Discovery";
     public bool IsAuditsActive => ActiveTab == "Audits";
     public bool IsPipelineActive => ActiveTab == "Pipeline";
     public bool IsMessagesActive => ActiveTab == "Messages" || ActiveTab == "Outreach";
+    public bool IsLandingStudioActive => ActiveTab == "LandingStudio" || ActiveTab == "Studio";
     public bool IsSettingsActive => ActiveTab == "Settings";
 
     partial void OnActiveTabChanged(string value)
     {
         OnPropertyChanged(nameof(IsDashboardActive));
         OnPropertyChanged(nameof(IsBusinessesActive));
+        OnPropertyChanged(nameof(IsDiscoveryActive));
         OnPropertyChanged(nameof(IsAuditsActive));
         OnPropertyChanged(nameof(IsPipelineActive));
         OnPropertyChanged(nameof(IsMessagesActive));
+        OnPropertyChanged(nameof(IsLandingStudioActive));
         OnPropertyChanged(nameof(IsSettingsActive));
     }
 
@@ -53,6 +57,8 @@ public partial class MainViewModel : ViewModelBase
         _businessRepository = businessRepository;
         _secretVault = secretVault;
         _currentView = _serviceProvider.GetRequiredService<DashboardViewModel>();
+
+        BusinessesViewModel.GlobalNavigationRequested += dest => Navigate(dest);
     }
 
     [RelayCommand]
@@ -63,10 +69,11 @@ public partial class MainViewModel : ViewModelBase
         CurrentView = destination switch
         {
             "Dashboard" => _serviceProvider.GetRequiredService<DashboardViewModel>(),
-            "Businesses" => _serviceProvider.GetRequiredService<BusinessesViewModel>(),
+            "Businesses" or "Discovery" => _serviceProvider.GetRequiredService<BusinessesViewModel>(),
             "Audits" => _serviceProvider.GetRequiredService<AuditsViewModel>(),
             "Pipeline" => _serviceProvider.GetRequiredService<PipelineViewModel>(),
             "Messages" or "Outreach" => _serviceProvider.GetRequiredService<MessageStudioViewModel>(),
+            "LandingStudio" or "Studio" => _serviceProvider.GetRequiredService<LandingPageStudioViewModel>(),
             "Settings" => _serviceProvider.GetRequiredService<SettingsViewModel>(),
             _ => _serviceProvider.GetRequiredService<DashboardViewModel>()
         };

@@ -114,6 +114,13 @@ public interface IAiProposalSynthesizer
     Task<List<Business>> DiscoverBusinessesAiAsync(string city, string country, string category, int count = 25, CancellationToken ct = default);
 }
 
+public interface ILandingPageGeneratorService
+{
+    Task<LandingPageGenerationResult> GenerateLandingPageAsync(LandingPageGenerationRequest request, CancellationToken ct = default);
+    LandingPageGenerationResult GenerateDeterministicLandingPage(LandingPageGenerationRequest request);
+    IReadOnlyList<LandingPageModuleOption> GetAvailableModules();
+}
+
 public interface IAuditComparisonService
 {
     AuditComparisonResult CompareAudits(WebsiteAudit baseline, WebsiteAudit target);

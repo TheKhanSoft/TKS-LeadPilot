@@ -16,6 +16,7 @@ public class GeoLocationServiceTests
         var countries = _service.GetAllCountries();
 
         countries.Should().NotBeNullOrEmpty();
+        countries.Count.Should().BeGreaterOrEqualTo(30);
         countries.Select(c => c.Name).Should().Contain(new[]
         {
             "Pakistan",
@@ -25,17 +26,40 @@ public class GeoLocationServiceTests
             "Canada",
             "Saudi Arabia",
             "Australia",
-            "Germany"
+            "Germany",
+            "Switzerland",
+            "France",
+            "Sweden",
+            "Denmark",
+            "Norway",
+            "New Zealand",
+            "Spain",
+            "Italy",
+            "Japan",
+            "South Korea",
+            "Hong Kong",
+            "Estonia",
+            "Poland",
+            "South Africa",
+            "India"
         });
     }
 
     [Theory]
     [InlineData("Pakistan", "Punjab", "Lahore")]
-    [InlineData("Pakistan", "Sindh", "Karachi")]
+    [InlineData("Pakistan", "Khyber Pakhtunkhwa", "Peshawar")]
+    [InlineData("Pakistan", "Khyber Pakhtunkhwa", "Haripur")]
     [InlineData("United States", "California", "Los Angeles")]
     [InlineData("United States", "New York", "New York City")]
     [InlineData("United Kingdom", "England", "London")]
     [InlineData("United Arab Emirates", "Dubai", "Dubai")]
+    [InlineData("Switzerland", "Zurich", "Zurich")]
+    [InlineData("Switzerland", "Zug", "Zug")]
+    [InlineData("France", "Île-de-France", "Paris")]
+    [InlineData("Sweden", "Stockholm County", "Stockholm")]
+    [InlineData("Japan", "Tokyo Metropolis", "Tokyo")]
+    [InlineData("Estonia", "Harju County", "Tallinn")]
+    [InlineData("India", "Karnataka", "Bengaluru")]
     public void CascadingHierarchies_CountryStateCity_BindCorrectly(string countryName, string stateName, string expectedCity)
     {
         var states = _service.GetStatesForCountry(countryName);

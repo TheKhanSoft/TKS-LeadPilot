@@ -24,7 +24,10 @@
 
                 <!-- Right Action Buttons (Wraps gracefully on smaller windows) -->
                 <WrapPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
-                    <Button Content="🛰️ Discover Leads (OSM)" Command="{Binding OpenDiscoveryModalCommand}" Classes="btn-accent" IsEnabled="{Binding !IsLoading}" Margin="0,0,8,4"/>
+                    <Button Content="⚡ Lead Discovery Station" 
+                            Command="{Binding OpenDiscoveryStationCommand}" 
+                            Classes="btn-accent" IsEnabled="{Binding !IsLoading}" Margin="0,0,8,4"
+                            ToolTip.Tip="Launch dedicated multi-source lead discovery station"/>
                     <Button Content="+ Add Business" Command="{Binding OpenAddBusinessModalCommand}" Classes="btn-primary" IsEnabled="{Binding !IsLoading}" Margin="0,0,8,4"/>
                     <Button Content="📥 Import CSV" Click="OnPickCsvFileClick" Classes="btn-secondary" IsEnabled="{Binding !IsLoading}" Margin="0,0,8,4"/>
                     <Button Content="📤 Export CSV" Command="{Binding ExportCsvCommand}" Classes="btn-secondary" IsEnabled="{Binding !IsLoading}" Margin="0,0,8,4"/>
@@ -310,6 +313,9 @@
                                 <Button Content="📋 Copy Tailored Pitch" 
                                         Command="{Binding ((vm:BusinessesViewModel)DataContext).CopyQuickPitchCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                                         Classes="btn-accent" HorizontalAlignment="Stretch"/>
+                                <Button Content="🎨 AI Landing Page Studio" 
+                                        Command="{Binding ((vm:BusinessesViewModel)DataContext).OpenLandingPageStudioCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                        Classes="btn-accent" HorizontalAlignment="Stretch" ToolTip.Tip="Open AI Landing Page Studio window pre-filled with this business"/>
                                 <Button Content="🌐 Launch Website in Browser" 
                                         Command="{Binding ((vm:BusinessesViewModel)DataContext).OpenWebsiteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                                         Classes="btn-primary" HorizontalAlignment="Stretch"

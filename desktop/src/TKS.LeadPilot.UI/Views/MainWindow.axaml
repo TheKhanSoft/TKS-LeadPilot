@@ -129,6 +129,14 @@
                             </StackPanel>
                         </Button>
 
+                        <Button Classes="nav" Classes.active="{Binding IsDiscoveryActive}"
+                                Command="{Binding NavigateCommand}" CommandParameter="Discovery">
+                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                <TextBlock Text="⚡" FontSize="14" VerticalAlignment="Center"/>
+                                <TextBlock Text="Lead Discovery Station" FontSize="13" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
                         <TextBlock Text="INTELLIGENCE &amp; CRM" FontSize="10" FontWeight="Bold" Foreground="#475569" Margin="10,14,0,6" LetterSpacing="0.8"/>
 
                         <Button Classes="nav" Classes.active="{Binding IsAuditsActive}"
@@ -154,6 +162,16 @@
                             <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
                                 <TextBlock Text="✉️" FontSize="14" VerticalAlignment="Center"/>
                                 <TextBlock Text="Message Studio" FontSize="13" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <TextBlock Text="AI CREATIVE &amp; PAGES" FontSize="10" FontWeight="Bold" Foreground="#475569" Margin="10,14,0,6" LetterSpacing="0.8"/>
+
+                        <Button Classes="nav" Classes.active="{Binding IsLandingStudioActive}"
+                                Command="{Binding NavigateCommand}" CommandParameter="LandingStudio">
+                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                <TextBlock Text="🎨" FontSize="14" VerticalAlignment="Center"/>
+                                <TextBlock Text="AI Landing Page Studio" FontSize="13" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 

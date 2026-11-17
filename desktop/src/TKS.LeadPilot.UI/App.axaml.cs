@@ -84,6 +84,7 @@ public partial class App : Application
         services.AddScoped<IWebsiteAuditEngine, WebsiteAuditEngine>();
         services.AddScoped<IGooglePlacesEnrichmentService, GooglePlacesEnrichmentService>();
         services.AddScoped<IAiProposalSynthesizer, AiProposalSynthesizer>();
+        services.AddScoped<ILandingPageGeneratorService, AiLandingPageGeneratorService>();
         services.AddScoped<IAuditComparisonService, AuditComparisonService>();
         services.AddScoped<ILeadScoringEngine, LeadScoringEngine>();
         services.AddScoped<LeadScoringEngine.ILeadScoreStore, EfLeadScoreStore>();
@@ -102,6 +103,7 @@ public partial class App : Application
         services.AddTransient<AuditsViewModel>();
         services.AddTransient<PipelineViewModel>();
         services.AddTransient<MessageStudioViewModel>();
+        services.AddTransient<LandingPageStudioViewModel>();
         services.AddTransient<SettingsViewModel>();
     }
 }

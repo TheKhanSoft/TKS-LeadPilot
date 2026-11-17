@@ -8,14 +8,24 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using TKS.LeadPilot.Core.Enums;
 using TKS.LeadPilot.Core.Interfaces;
 using TKS.LeadPilot.Core.Models;
+using TKS.LeadPilot.UI.Views;
 
 namespace TKS.LeadPilot.UI.ViewModels;
 
 public partial class BusinessesViewModel : ViewModelBase
 {
+    public static event Action<string>? GlobalNavigationRequested;
+
+    [RelayCommand]
+    public void OpenDiscoveryStation()
+    {
+        GlobalNavigationRequested?.Invoke("Discovery");
+    }
+
     private readonly IBusinessRepository _businessRepository;
     private readonly IPipelineStageRepository _pipelineStageRepository;
     private readonly ICsvImporterService _csvImporterService;
@@ -23,6 +33,7 @@ public partial class BusinessesViewModel : ViewModelBase
     private readonly IDiscoveryService _discoveryService;
     private readonly IGooglePlacesEnrichmentService _placesService;
     private readonly IGeoLocationService _geoLocationService;
+    private readonly IServiceProvider _serviceProvider;
 
     // Collections
     [ObservableProperty]
@@ -283,7 +294,8 @@ public partial class BusinessesViewModel : ViewModelBase
         IDeduplicationService deduplicationService,
         IDiscoveryService discoveryService,
         IGooglePlacesEnrichmentService placesService,
-        IGeoLocationService geoLocationService)
+        IGeoLocationService geoLocationService,
+        IServiceProvider serviceProvider)
     {
         _businessRepository = businessRepository;
         _pipelineStageRepository = pipelineStageRepository;
@@ -292,6 +304,7 @@ public partial class BusinessesViewModel : ViewModelBase
         _discoveryService = discoveryService;
         _placesService = placesService;
         _geoLocationService = geoLocationService;
+        _serviceProvider = serviceProvider;
 
         _ = InitializeAsync();
     }
@@ -316,13 +329,20 @@ public partial class BusinessesViewModel : ViewModelBase
             var mergedCategories = new HashSet<string>(catList.Concat(presetCategories), StringComparer.OrdinalIgnoreCase).OrderBy(c => c);
             Categories = new ObservableCollection<string>(new[] { "All Categories" }.Concat(mergedCategories));
 
-            // Discovery presets
+            // Discovery presets & countries
+            var allCountryNames = _geoLocationService.GetAllCountries().Select(c => c.Name).ToList();
+            DiscoveryCountries = new ObservableCollection<string>(allCountryNames);
+            if (!DiscoveryCountries.Contains(SelectedDiscoveryCountry))
+            {
+                SelectedDiscoveryCountry = DiscoveryCountries.FirstOrDefault() ?? "Pakistan";
+            }
+
             DiscoveryCategoryPresets = new ObservableCollection<string>(_discoveryService.GetPresetCategories().Keys);
-            SelectedDiscoveryCategoryPreset = DiscoveryCategoryPresets.FirstOrDefault() ?? "Healthcare & Dental";
+            SelectedDiscoveryCategoryPreset = DiscoveryCategoryPresets.FirstOrDefault() ?? "⭐ All Commercial Businesses & Enterprises";
 
             // Initialize Discovery Locations
-            UpdateDiscoveryStates("Pakistan");
-            UpdateDiscoveryCities("Pakistan", "Punjab");
+            UpdateDiscoveryStates(SelectedDiscoveryCountry);
+            UpdateDiscoveryCities(SelectedDiscoveryCountry, SelectedDiscoveryState);
 
             // Populate Initial Cascades
             await RefreshStatesForCountryAsync(SelectedCountry);
@@ -343,9 +363,11 @@ public partial class BusinessesViewModel : ViewModelBase
     }
 
     // --- Cascading Change Handlers for Main View ---
+    private bool _isSuppressingLocationCascades = false;
 
     partial void OnSelectedCountryChanged(string value)
     {
+        if (_isSuppressingLocationCascades) return;
         _ = Task.Run(async () =>
         {
             await RefreshStatesForCountryAsync(value);
@@ -357,6 +379,7 @@ public partial class BusinessesViewModel : ViewModelBase
 
     partial void OnSelectedStateChanged(string value)
     {
+        if (_isSuppressingLocationCascades) return;
         _ = Task.Run(async () =>
         {
             await RefreshCitiesForStateAsync(SelectedCountry, value);
@@ -367,6 +390,7 @@ public partial class BusinessesViewModel : ViewModelBase
 
     partial void OnSelectedCityChanged(string value)
     {
+        if (_isSuppressingLocationCascades) return;
         RefreshSuggestedNiches();
         _ = ApplyFiltersAsync();
     }
@@ -519,37 +543,48 @@ public partial class BusinessesViewModel : ViewModelBase
         try
         {
             IsDetectingLocation = true;
-            StatusMessage = "📍 Detecting your approximate location...";
+            StatusMessage = "📍 Detecting your live network location...";
 
             var nearby = await _geoLocationService.DetectNearbyLocationAsync(NearbyRadiusKm);
             IsNearbyActive = true;
 
-            // Select Country, State, City
-            var matchedCountry = Countries.FirstOrDefault(c => c.Contains(nearby.Country, StringComparison.OrdinalIgnoreCase));
+            _isSuppressingLocationCascades = true;
+
+            // 1. Match and set Country
+            var matchedCountry = Countries.FirstOrDefault(c => c.Contains(nearby.Country, StringComparison.OrdinalIgnoreCase))
+                                 ?? Countries.FirstOrDefault(c => nearby.Country.Contains(ExtractCountryName(c), StringComparison.OrdinalIgnoreCase));
             if (matchedCountry != null)
             {
                 SelectedCountry = matchedCountry;
             }
 
+            // 2. Populate States and match State
             await RefreshStatesForCountryAsync(nearby.Country);
-            var matchedState = States.FirstOrDefault(s => s.Equals(nearby.StateProvince, StringComparison.OrdinalIgnoreCase));
+            var matchedState = States.FirstOrDefault(s => s.Equals(nearby.StateProvince, StringComparison.OrdinalIgnoreCase))
+                               ?? States.FirstOrDefault(s => s.Contains(nearby.StateProvince, StringComparison.OrdinalIgnoreCase));
             if (matchedState != null)
             {
                 SelectedState = matchedState;
             }
 
+            // 3. Populate Cities and match City
             await RefreshCitiesForStateAsync(nearby.Country, nearby.StateProvince);
-            var matchedCity = Cities.FirstOrDefault(c => c.Equals(nearby.City, StringComparison.OrdinalIgnoreCase));
+            var matchedCity = Cities.FirstOrDefault(c => c.Equals(nearby.City, StringComparison.OrdinalIgnoreCase))
+                              ?? Cities.FirstOrDefault(c => c.Contains(nearby.City, StringComparison.OrdinalIgnoreCase));
             if (matchedCity != null)
             {
                 SelectedCity = matchedCity;
             }
+
+            RefreshSuggestedNiches();
+            _isSuppressingLocationCascades = false;
 
             StatusMessage = $"📍 Proximity Mode: within {nearby.RadiusKm} km of {nearby.City}, {nearby.StateProvince} ({nearby.Country})";
             await ApplyFiltersAsync();
         }
         catch (Exception ex)
         {
+            _isSuppressingLocationCascades = false;
             StatusMessage = $"Nearby Error: {ex.Message}";
         }
         finally
@@ -847,6 +882,27 @@ public partial class BusinessesViewModel : ViewModelBase
 
             await CopyToClipboardAsync(pitch);
             StatusMessage = $"📋 Tailored outreach pitch for {SelectedBusiness.Name} copied to clipboard!";
+        }
+    }
+
+    [RelayCommand]
+    public void OpenLandingPageStudio()
+    {
+        if (SelectedBusiness == null) return;
+        try
+        {
+            var studioVm = _serviceProvider.GetRequiredService<LandingPageStudioViewModel>();
+            studioVm.PopulateFromBusiness(SelectedBusiness);
+            var window = new LandingPageStudioWindow
+            {
+                DataContext = studioVm
+            };
+            window.Show();
+            StatusMessage = $"🎨 Launched AI Landing Page Studio window for '{SelectedBusiness.Name}'.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Studio Launch Error: {ex.Message}";
         }
     }
 

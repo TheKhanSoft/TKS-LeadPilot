@@ -1,0 +1,14 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:TKS.LeadPilot.UI.ViewModels"
+        xmlns:views="using:TKS.LeadPilot.UI.Views"
+        x:Class="TKS.LeadPilot.UI.Views.LandingPageStudioWindow"
+        x:DataType="vm:LandingPageStudioViewModel"
+        Title="AI Landing Page &amp; Website Studio — TheKhanSoft LeadPilot"
+        Width="1320" Height="860"
+        MinWidth="1000" MinHeight="680"
+        WindowStartupLocation="CenterScreen"
+        Background="#080C14">
+
+    <views:LandingPageStudioView />
+</Window>

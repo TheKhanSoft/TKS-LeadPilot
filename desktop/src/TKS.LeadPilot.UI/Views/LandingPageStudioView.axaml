@@ -1,0 +1,382 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TKS.LeadPilot.UI.ViewModels"
+             xmlns:m="using:TKS.LeadPilot.Core.Models"
+             x:Class="TKS.LeadPilot.UI.Views.LandingPageStudioView"
+             x:DataType="vm:LandingPageStudioViewModel"
+             Background="#080C14">
+
+    <Grid ColumnDefinitions="440,*" Margin="16">
+        <!-- ================================================================= -->
+        <!-- LEFT PANEL: CONFIGURATION & PROMPT INSTRUCTION STUDIO             -->
+        <!-- ================================================================= -->
+        <Border Grid.Column="0" Background="#0C1422" BorderBrush="#1F2F47" BorderThickness="1" CornerRadius="12" Padding="18" Margin="0,0,14,0">
+            <Grid RowDefinitions="Auto,*,Auto">
+                <!-- Header -->
+                <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,12">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="🎨" FontSize="18" VerticalAlignment="Center"/>
+                                <TextBlock Text="AI Landing Page Studio" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC"/>
+                            </StackPanel>
+                            <TextBlock Text="Synthesize bespoke landing pages, module architectures, and Tailwind code with Gemini AI." FontSize="11" Foreground="#94A3B8"/>
+                        </StackPanel>
+                        <Button Grid.Column="1" Content="🪟 Detach Window" Command="{Binding OpenStandaloneWindowCommand}" Classes="btn-secondary" Padding="8,5" FontSize="11" ToolTip.Tip="Open as separate desktop window"/>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Scrollable Form Inputs -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,-8,0" Padding="0,0,8,0">
+                    <StackPanel Spacing="14">
+                        <!-- Lead Selector (Pre-fill) -->
+                        <Border Background="#131F33" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="8" Padding="10">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="🏢 PRE-FILL FROM SAVED LEAD:" FontSize="10" FontWeight="Bold" Foreground="#38BDF8"/>
+                                <ComboBox HorizontalAlignment="Stretch"
+                                          ItemsSource="{Binding SavedBusinesses}"
+                                          SelectedItem="{Binding SelectedSavedBusiness}"
+                                          PlaceholderText="Select business from database...">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="m:Business">
+                                            <TextBlock Text="{Binding Name, StringFormat='{}{0}'}" Foreground="#F8FAFC"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Business Core Information -->
+                        <Border Background="#10192A" BorderBrush="#1A273D" BorderThickness="1" CornerRadius="8" Padding="12">
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="1. BUSINESS PROFILE &amp; LOCATION" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" LetterSpacing="0.6"/>
+
+                                <Grid ColumnDefinitions="*,*">
+                                    <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                                        <TextBlock Text="Business Name *" FontSize="11" Foreground="#CBD5E1" Margin="0,0,0,3"/>
+                                        <TextBox Text="{Binding BusinessName}" PlaceholderText="e.g. Apex Clinic"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="5,0,0,0">
+                                        <TextBlock Text="Industry / Niche *" FontSize="11" Foreground="#CBD5E1" Margin="0,0,0,3"/>
+                                        <TextBox Text="{Binding Category}" PlaceholderText="e.g. Healthcare"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,*">
+                                    <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                                        <TextBlock Text="Target City *" FontSize="11" Foreground="#CBD5E1" Margin="0,0,0,3"/>
+                                        <TextBox Text="{Binding City}" PlaceholderText="e.g. Islamabad"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="5,0,0,0">
+                                        <TextBlock Text="Country *" FontSize="11" Foreground="#CBD5E1" Margin="0,0,0,3"/>
+                                        <TextBox Text="{Binding Country}" PlaceholderText="e.g. Pakistan"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,*">
+                                    <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                                        <TextBlock Text="Phone / WhatsApp" FontSize="11" Foreground="#CBD5E1" Margin="0,0,0,3"/>
+                                        <TextBox Text="{Binding PhonePrimary}" PlaceholderText="+92 300 ..."/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="5,0,0,0">
+                                        <TextBlock Text="Email Address" FontSize="11" Foreground="#CBD5E1" Margin="0,0,0,3"/>
+                                        <TextBox Text="{Binding EmailPrimary}" PlaceholderText="info@..."/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <StackPanel>
+                                    <TextBlock Text="Target Audience Persona" FontSize="11" Foreground="#CBD5E1" Margin="0,0,0,3"/>
+                                    <TextBox Text="{Binding TargetAudience}" PlaceholderText="e.g. Local families, busy executives..."/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Archetype & Design Style -->
+                        <Border Background="#10192A" BorderBrush="#1A273D" BorderThickness="1" CornerRadius="8" Padding="12">
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="2. CONVERSION ARCHETYPE &amp; THEME" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" LetterSpacing="0.6"/>
+
+                                <StackPanel>
+                                    <TextBlock Text="Page Goal / Archetype" FontSize="11" Foreground="#CBD5E1" Margin="0,0,0,3"/>
+                                    <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding Archetypes}" SelectedItem="{Binding SelectedArchetype}"/>
+                                </StackPanel>
+
+                                <StackPanel>
+                                    <TextBlock Text="Design Palette &amp; Vibe" FontSize="11" Foreground="#CBD5E1" Margin="0,0,0,3"/>
+                                    <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding DesignStyles}" SelectedItem="{Binding SelectedDesignStyle}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Custom AI Prompt & Presets -->
+                        <Border Background="#10192A" BorderBrush="#1A273D" BorderThickness="1" CornerRadius="8" Padding="12">
+                            <StackPanel Spacing="10">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Text="3. AI PROMPT &amp; SPECIAL DIRECTIVES" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" LetterSpacing="0.6"/>
+                                    <TextBlock Grid.Column="1" Text="💡 INSTRUCTION ENGINE" FontSize="9" FontWeight="Bold" Foreground="#F59E0B"/>
+                                </Grid>
+
+                                <!-- Quick Presets -->
+                                <WrapPanel Margin="0,0,0,4">
+                                    <Button Content="🏥 Dental Clinic" Command="{Binding SelectIdeaPresetCommand}" CommandParameter="DentalClinic" Classes="niche-pill" Margin="0,0,5,5" FontSize="10"/>
+                                    <Button Content="⚖️ Corporate Law" Command="{Binding SelectIdeaPresetCommand}" CommandParameter="CorporateLaw" Classes="niche-pill" Margin="0,0,5,5" FontSize="10"/>
+                                    <Button Content="☀️ Solar Energy" Command="{Binding SelectIdeaPresetCommand}" CommandParameter="SolarEnergy" Classes="niche-pill" Margin="0,0,5,5" FontSize="10"/>
+                                    <Button Content="🚀 SaaS Cloud" Command="{Binding SelectIdeaPresetCommand}" CommandParameter="SaaSAgency" Classes="niche-pill" Margin="0,0,5,5" FontSize="10"/>
+                                    <Button Content="🏢 Luxury Living" Command="{Binding SelectIdeaPresetCommand}" CommandParameter="LuxuryRealEstate" Classes="niche-pill" Margin="0,0,5,5" FontSize="10"/>
+                                </WrapPanel>
+
+                                <TextBox Text="{Binding CustomInstructions}"
+                                         AcceptsReturn="True"
+                                         TextWrapping="Wrap"
+                                         Height="85"
+                                         PlaceholderText="Instruct the AI: e.g. 'Highlight doctor's 15-year UK experience, include teeth whitening offer, 0% installments, interactive booking calendar, patient reviews, WhatsApp CTA...'"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Required Modules Checklist -->
+                        <Border Background="#10192A" BorderBrush="#1A273D" BorderThickness="1" CornerRadius="8" Padding="12">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="4. REQUIRED PAGE MODULES" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" LetterSpacing="0.6"/>
+                                <ItemsControl ItemsSource="{Binding AvailableModules}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="m:LandingPageModuleOption">
+                                            <CheckBox IsChecked="{Binding IsSelected}" Margin="0,2,0,2">
+                                                <StackPanel Spacing="1">
+                                                    <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                                                    <TextBlock Text="{Binding Description}" FontSize="10" Foreground="#64748B" TextTrimming="CharacterEllipsis"/>
+                                                </StackPanel>
+                                            </CheckBox>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Footer Generation Action -->
+                <StackPanel Grid.Row="2" Spacing="8" Margin="0,12,0,0">
+                    <ProgressBar IsIndeterminate="True" Height="3" IsVisible="{Binding IsGenerating}" Foreground="#06B6D4"/>
+                    <Button Content="⚡ Generate Landing Page &amp; Blueprint"
+                            Command="{Binding GenerateLandingPageCommand}"
+                            Classes="btn-accent"
+                            IsEnabled="{Binding !IsGenerating}"
+                            Padding="16,12"
+                            FontSize="13"
+                            FontWeight="Bold"
+                            HorizontalAlignment="Stretch"/>
+                    <TextBlock Text="{Binding StatusMessage}" FontSize="11" Foreground="#38BDF8" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ================================================================= -->
+        <!-- RIGHT PANEL: PREVIEW, BLUEPRINT, HTML & PROMPTS WORKSPACE         -->
+        <!-- ================================================================= -->
+        <Border Grid.Column="1" Background="#0C1422" BorderBrush="#1F2F47" BorderThickness="1" CornerRadius="12" Padding="20">
+            <Grid RowDefinitions="Auto,Auto,*">
+                <!-- Top Header & Action Controls -->
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="{Binding CurrentResult.BusinessName, FallbackValue='Landing Page Studio Workspace'}" FontSize="20" FontWeight="ExtraBold" Foreground="#F8FAFC"/>
+                            <Border Background="#064E3B" CornerRadius="4" Padding="6,2" VerticalAlignment="Center" IsVisible="{Binding CurrentResult, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                <TextBlock Text="{Binding CurrentResult.ConversionScore, StringFormat='Score: {0}/100'}" FontSize="10" FontWeight="Bold" Foreground="#34D399"/>
+                            </Border>
+                            <Border Background="#1E293B" CornerRadius="4" Padding="6,2" VerticalAlignment="Center" IsVisible="{Binding CurrentResult, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                <TextBlock Text="{Binding CurrentResult.Provider}" FontSize="10" Foreground="#94A3B8"/>
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Text="{Binding CurrentResult.Headline, FallbackValue='Configure business parameters on the left and trigger AI synthesis to generate production-ready code.'}" FontSize="12" Foreground="#94A3B8" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+
+                    <!-- Fast Action Toolbar -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <Button Content="🌐 Open in Web Browser" Command="{Binding OpenInBrowserCommand}" Classes="btn-success" Padding="14,8" ToolTip.Tip="Launch generated HTML in your default browser"/>
+                        <Button Content="📋 Copy HTML" Command="{Binding CopyHtmlCommand}" Classes="btn-secondary" Padding="10,8"/>
+                        <Button Content="📄 Copy Blueprint" Command="{Binding CopyBlueprintCommand}" Classes="btn-secondary" Padding="10,8"/>
+                        <Button Content="💾 Save .html" Command="{Binding SaveHtmlFileCommand}" Classes="btn-secondary" Padding="10,8"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Navigation Tabs -->
+                <Border Grid.Row="1" Background="#10192A" BorderBrush="#1F2F47" BorderThickness="1" CornerRadius="8" Padding="4" Margin="0,0,0,14">
+                    <Grid ColumnDefinitions="*,*,*,*">
+                        <Button Grid.Column="0" Content="🌐 Visual Preview &amp; Launch" Command="{Binding SetTabCommand}" CommandParameter="Preview"
+                                Classes="tab-btn" Classes.active="{Binding IsPreviewTab}" Margin="2,0"/>
+                        <Button Grid.Column="1" Content="📐 Architecture Blueprint" Command="{Binding SetTabCommand}" CommandParameter="Blueprint"
+                                Classes="tab-btn" Classes.active="{Binding IsBlueprintTab}" Margin="2,0"/>
+                        <Button Grid.Column="2" Content="💻 Production HTML5 Code" Command="{Binding SetTabCommand}" CommandParameter="Html"
+                                Classes="tab-btn" Classes.active="{Binding IsHtmlTab}" Margin="2,0"/>
+                        <Button Grid.Column="3" Content="🤖 AI Prompts &amp; Ad Copy" Command="{Binding SetTabCommand}" CommandParameter="Prompts"
+                                Classes="tab-btn" Classes.active="{Binding IsPromptsTab}" Margin="2,0"/>
+                    </Grid>
+                </Border>
+
+                <!-- Tab 1: Visual Overview & Browser Launcher -->
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" IsVisible="{Binding IsPreviewTab}">
+                    <StackPanel Spacing="16">
+                        <!-- Big Browser Preview Launch Card -->
+                        <Border Background="#131F33" BorderBrush="#0284C7" BorderThickness="1" CornerRadius="12" Padding="20">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" Spacing="6">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="🚀" FontSize="20" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Live Standalone HTML5 + Tailwind CSS Preview" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC"/>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding HtmlPreviewNotice}" FontSize="12" Foreground="#CBD5E1" TextWrapping="Wrap"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="14" Margin="0,6,0,0">
+                                        <TextBlock Text="✓ Google Fonts (Plus Jakarta Sans)" FontSize="11" Foreground="#34D399"/>
+                                        <TextBlock Text="✓ Tailwind CDN Active" FontSize="11" Foreground="#34D399"/>
+                                        <TextBlock Text="✓ Responsive Mobile &amp; Desktop" FontSize="11" Foreground="#34D399"/>
+                                        <TextBlock Text="✓ Floating WhatsApp" FontSize="11" Foreground="#34D399"/>
+                                    </StackPanel>
+                                </StackPanel>
+                                <Button Grid.Column="1" Content="🌐 Open in Web Browser" Command="{Binding OpenInBrowserCommand}" Classes="btn-accent" Padding="20,14" FontSize="13" FontWeight="Bold" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Simulated Layout Structure Cards -->
+                        <TextBlock Text="SYNTHESIZED PAGE MODULES &amp; FLOW" FontSize="11" FontWeight="Bold" Foreground="#64748B" LetterSpacing="0.8"/>
+                        <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" Margin="0,0,0,10">
+                            <Border Grid.Row="0" Grid.Column="0" Background="#10192A" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,6,8">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="01. Hero &amp; Value Proposition" FontWeight="Bold" FontSize="12" Foreground="#38BDF8"/>
+                                    <TextBlock Text="{Binding CurrentResult.Headline, FallbackValue='Headline tailored to high-converting local intent'}" FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Row="0" Grid.Column="1" Background="#10192A" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="8" Padding="14" Margin="3,0,3,8">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="02. Trust &amp; Certification Bar" FontWeight="Bold" FontSize="12" Foreground="#38BDF8"/>
+                                    <TextBlock Text="Google Guaranteed, ISO 9001, Chamber of Commerce badges" FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Row="0" Grid.Column="2" Background="#10192A" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="8" Padding="14" Margin="6,0,0,8">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="03. Solutions Grid" FontWeight="Bold" FontSize="12" Foreground="#38BDF8"/>
+                                    <TextBlock Text="Core offerings tailored to local customer demand and pain points" FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Row="1" Grid.Column="0" Background="#10192A" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,6,0">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="04. Testimonials &amp; Social Proof" FontWeight="Bold" FontSize="12" Foreground="#38BDF8"/>
+                                    <TextBlock Text="4.9★ composite review score with verified regional customer quotes" FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Row="1" Grid.Column="1" Background="#10192A" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="8" Padding="14" Margin="3,0,3,0">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="05. Interactive FAQ Accordion" FontWeight="Bold" FontSize="12" Foreground="#38BDF8"/>
+                                    <TextBlock Text="Expandable objection-handling resolving pricing and timeline hesitation" FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Row="1" Grid.Column="2" Background="#10192A" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="8" Padding="14" Margin="6,0,0,0">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="06. Conversion Form &amp; WhatsApp" FontWeight="Bold" FontSize="12" Foreground="#38BDF8"/>
+                                    <TextBlock Text="Low-friction lead capture modal + persistent sticky WhatsApp button" FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- Callout: Pitching this to the Client -->
+                        <Border Background="#1E1B4B" BorderBrush="#4338CA" BorderThickness="1" CornerRadius="10" Padding="16">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="💡 AGENCY CONSULTING PITCH STRATEGY:" FontSize="11" FontWeight="Bold" Foreground="#C7D2FE"/>
+                                <TextBlock Text="You can immediately send the client the live preview URL or HTML screenshot. Showing them a functioning, modern version of their landing page before they even sign a contract dramatically increases close rates (often 3x higher)!" FontSize="12" Foreground="#E0E7FF" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Tab 2: Architecture Blueprint (Markdown Text) -->
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" IsVisible="{Binding IsBlueprintTab}">
+                    <Border Background="#090E17" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="8" Padding="18">
+                        <TextBox Text="{Binding CurrentResult.ArchitectureBlueprintMarkdown, FallbackValue='Generate a landing page to inspect the architectural blueprint.'}"
+                                 IsReadOnly="True"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 FontFamily="Consolas, Cascadia Code, Menlo, monospace"
+                                 FontSize="12"
+                                 Foreground="#E2E8F0"
+                                 Background="Transparent"
+                                 BorderThickness="0"/>
+                    </Border>
+                </ScrollViewer>
+
+                <!-- Tab 3: Full Production HTML5 Code -->
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" IsVisible="{Binding IsHtmlTab}">
+                    <Border Background="#090E17" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="8" Padding="18">
+                        <TextBox Text="{Binding CurrentResult.GeneratedHtml, FallbackValue='Generate a landing page to inspect the full HTML source code.'}"
+                                 IsReadOnly="True"
+                                 AcceptsReturn="True"
+                                 TextWrapping="NoWrap"
+                                 FontFamily="Consolas, Cascadia Code, Menlo, monospace"
+                                 FontSize="11"
+                                 Foreground="#38BDF8"
+                                 Background="Transparent"
+                                 BorderThickness="0"/>
+                    </Border>
+                </ScrollViewer>
+
+                <!-- Tab 4: AI Prompts & Marketing Ads -->
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" IsVisible="{Binding IsPromptsTab}">
+                    <StackPanel Spacing="16">
+                        <!-- Midjourney Visual Prompts -->
+                        <Border Background="#10192A" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="8" Padding="16">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="📸 MIDJOURNEY &amp; DALL-E PHOTO PROMPTS" FontSize="11" FontWeight="Bold" Foreground="#F59E0B" LetterSpacing="0.6"/>
+                                <TextBlock Text="Copy these prompts into Midjourney to generate bespoke, ultra-realistic commercial assets for this business:" FontSize="12" Foreground="#94A3B8"/>
+                                <ItemsControl ItemsSource="{Binding CurrentResult.MidjourneyPrompts}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="x:String">
+                                            <Border Background="#090E17" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,3">
+                                                <TextBlock Text="{Binding}" FontSize="11" FontFamily="Consolas, monospace" Foreground="#E2E8F0" TextWrapping="Wrap"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Developer Next.js / React Prompts -->
+                        <Border Background="#10192A" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="8" Padding="16">
+                            <StackPanel Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Text="💻 FRONTEND DEVELOPER SPECIFICATION PROMPT" FontSize="11" FontWeight="Bold" Foreground="#38BDF8" LetterSpacing="0.6"/>
+                                    <Button Grid.Column="1" Content="📋 Copy Prompt" Command="{Binding CopyDeveloperPromptCommand}" Classes="btn-secondary" Padding="8,4" FontSize="10"/>
+                                </Grid>
+                                <TextBox Text="{Binding CurrentResult.DeveloperPrompts}"
+                                         IsReadOnly="True"
+                                         AcceptsReturn="True"
+                                         TextWrapping="Wrap"
+                                         FontFamily="Consolas, monospace"
+                                         FontSize="11"
+                                         Foreground="#CBD5E1"
+                                         Background="#090E17"
+                                         BorderBrush="#1E2E48"
+                                         Height="100"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Ad Copy Variants -->
+                        <Border Background="#10192A" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="8" Padding="16">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="📢 GOOGLE &amp; META ADS COPYWRITING" FontSize="11" FontWeight="Bold" Foreground="#34D399" LetterSpacing="0.6"/>
+                                <TextBox Text="{Binding CurrentResult.AdCopyPrompts}"
+                                         IsReadOnly="True"
+                                         AcceptsReturn="True"
+                                         TextWrapping="Wrap"
+                                         FontFamily="Consolas, monospace"
+                                         FontSize="11"
+                                         Foreground="#CBD5E1"
+                                         Background="#090E17"
+                                         BorderBrush="#1E2E48"
+                                         Height="120"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
