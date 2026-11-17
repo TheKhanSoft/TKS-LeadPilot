@@ -6,6 +6,35 @@ All notable changes to the TKS LeadPilot project will be documented in this file
 
 ## [Unreleased]
 
+### [0.11.0] — Stage 11: Central Headless Laravel API & Delta Synchronization Protocol — 2026-11-17
+#### Added
+- Central Headless Laravel 13 API Backend (`backend/`):
+  - Strictly headless REST API architecture (zero Blade/Livewire/React web dashboards).
+  - Laravel Sanctum authentication with Bearer tokens and per-device tokens.
+  - Complete multi-device registration system (`Device` model tracking `device_id`, `device_name`, `platform`, `last_synced_at`).
+  - System health monitor endpoint (`GET /api/v1/health`) returning server status, API version, and database connectivity.
+- Unified Bidirectional Delta Synchronization Protocol (Module 14):
+  - Universal UUIDv4 primary keys preserved across clients and server.
+  - Monotonic revision versioning (`sync_version`) for conflict detection.
+  - Soft-delete tombstone propagation across SQLite and central backend (`deleted_at` + `is_deleted` payload flag).
+  - Batch idempotent push endpoint (`POST /api/v1/sync/push` and `/api/v1/dev-sync/push`):
+    - Upserts client changes across 8 synced domains (Businesses, Contacts, Audits, Stages, Tasks, Notes, Outreach Templates, Outreach Messages).
+    - Last-Write-Wins (LWW) conflict engine with automatic snapshot logging to `sync_conflicts` table whenever a stale client attempts to overwrite a higher server version.
+  - Timestamp-based delta pull endpoint (`GET /api/v1/sync/pull` and `/api/v1/dev-sync/pull`):
+    - Efficient cursor-based queries filtering by `since` ISO 8601 UTC timestamp.
+    - Synchronizes newly added, updated, and soft-deleted entities.
+  - Summary sync metrics endpoint (`GET /api/v1/sync/status`).
+- Desktop Client Sync Integration (`TKS.LeadPilot.Data`):
+  - Implemented `ISyncService` and `SyncService`:
+    - Secure storage of API token via DPAPI secret vault (`SYNC_BEARER_TOKEN`).
+    - Local sync cursor management in `AppSettings`.
+    - Bidirectional synchronization (`PushLocalChangesAsync`, `PullRemoteChangesAsync`, `SynchronizeAsync`).
+  - Added Central Laravel Synchronization section to `SettingsView.axaml` and `SettingsViewModel.cs` with endpoint URL configuration, Sanctum token input, live API status badge, and manual "Sync Now" trigger.
+- Verification & Test Suites:
+  - 7 automated feature tests in Laravel (`SyncApiTest.php` passing all 33 assertions: Health, Auth, Idempotent Push, Delta Pull with Tombstones, Server-Wins Conflict Detection).
+  - 5 new automated unit tests in .NET (`SyncServiceTests.cs` verifying default configs, DPAPI vault token saving, online status checks, push payloads, and remote delta pull integration).
+  - Full desktop test suite passing at **95/95 unit tests** (0 failures).
+
 ### [0.10.0] — Stage 10: Message Studio & Multi-Channel Outreach Engine + Premium UI/UX Polish — 2026-11-17
 #### Added
 - Outreach Domain Entities & Enums:
