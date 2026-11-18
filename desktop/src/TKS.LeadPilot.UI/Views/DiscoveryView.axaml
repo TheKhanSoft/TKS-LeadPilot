@@ -127,19 +127,19 @@
                     </WrapPanel>
 
                     <!-- Deck 3: Modern Target Constraints & Regional Niches -->
-                    <Grid ColumnDefinitions="Auto,*">
+                    <WrapPanel VerticalAlignment="Center">
                         <!-- Modern Interactive Toggle Chips -->
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="0,0,12,0">
-                            <TextBlock Text="CONSTRAINTS &amp; TUNING:" FontSize="10" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                            <ToggleButton Classes="toggle-chip" IsChecked="{Binding IsDeepScan}" IsEnabled="{Binding !IsScanning}" Content="🔬 Deep Multi-Pass" ToolTip.Tip="Enable multi-pass keyword query expansion, synonym permutations, and secondary spatial analysis"/>
-                            <ToggleButton Classes="toggle-chip" IsChecked="{Binding IsStrictMatch}" IsEnabled="{Binding !IsScanning}" Content="🎯 Strict Targeting" ToolTip.Tip="Focus strictly on target niche and filter out unrelated businesses"/>
-                            <ToggleButton Classes="toggle-chip" IsChecked="{Binding TargetMissingWebsite}" IsEnabled="{Binding !IsScanning}" Content="🌐 Missing Website Only" ToolTip.Tip="Focus on businesses without any registered web domain"/>
-                            <ToggleButton Classes="toggle-chip" IsChecked="{Binding TargetMissingGmb}" IsEnabled="{Binding !IsScanning}" Content="📍 Missing GMB Profile" ToolTip.Tip="Focus on businesses without a claimed Google Business Profile"/>
-                            <ToggleButton Classes="toggle-chip" IsChecked="{Binding RequirePhone}" IsEnabled="{Binding !IsScanning}" Content="📞 Verified Phone Required" ToolTip.Tip="Require verified phone number for cold outreach"/>
-                        </StackPanel>
+                        <WrapPanel VerticalAlignment="Center" Margin="0,0,12,4">
+                            <TextBlock Text="CONSTRAINTS &amp; TUNING:" FontSize="10" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <ToggleButton Classes="toggle-chip" IsChecked="{Binding IsDeepScan}" IsEnabled="{Binding !IsScanning}" Content="🔬 Deep Multi-Pass" ToolTip.Tip="Enable multi-pass keyword query expansion, synonym permutations, and secondary spatial analysis" Margin="0,0,4,2"/>
+                            <ToggleButton Classes="toggle-chip" IsChecked="{Binding IsStrictMatch}" IsEnabled="{Binding !IsScanning}" Content="🎯 Strict Targeting" ToolTip.Tip="Focus strictly on target niche and filter out unrelated businesses" Margin="0,0,4,2"/>
+                            <ToggleButton Classes="toggle-chip" IsChecked="{Binding TargetMissingWebsite}" IsEnabled="{Binding !IsScanning}" Content="🌐 Missing Website Only" ToolTip.Tip="Focus on businesses without any registered web domain" Margin="0,0,4,2"/>
+                            <ToggleButton Classes="toggle-chip" IsChecked="{Binding TargetMissingGmb}" IsEnabled="{Binding !IsScanning}" Content="📍 Missing GMB Profile" ToolTip.Tip="Focus on businesses without a claimed Google Business Profile" Margin="0,0,4,2"/>
+                            <ToggleButton Classes="toggle-chip" IsChecked="{Binding RequirePhone}" IsEnabled="{Binding !IsScanning}" Content="📞 Verified Phone Required" ToolTip.Tip="Require verified phone number for cold outreach" Margin="0,0,4,2"/>
+                        </WrapPanel>
 
                         <!-- Suggested Regional Business Niches (Scrollable strip) -->
-                        <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" AllowAutoHide="True" IsVisible="{Binding SuggestedNiches.Count}">
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" AllowAutoHide="True" IsVisible="{Binding SuggestedNiches.Count}" Margin="0,0,0,4">
                             <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
                                 <TextBlock Text="💡 NICHES:" FontSize="10" FontWeight="Bold" Foreground="#F59E0B" VerticalAlignment="Center" Margin="0,0,2,0"/>
                                 <ItemsControl ItemsSource="{Binding SuggestedNiches}">
@@ -162,7 +162,7 @@
                                 </ItemsControl>
                             </StackPanel>
                         </ScrollViewer>
-                    </Grid>
+                    </WrapPanel>
 
                     <!-- Scanning Progress Bar Indicator -->
                     <ProgressBar IsIndeterminate="True" Height="2" Background="#1E293B" Foreground="#38BDF8" IsVisible="{Binding IsScanning}" Margin="0,-2,0,0"/>
@@ -498,9 +498,9 @@
             <!-- 4. Sticky Bottom Action Strip (The Single, Authoritative CRM Import Action) -->
             <Border Grid.Row="3" Background="#0C1322" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="16,12" Margin="0,10,0,0">
                 <Grid ColumnDefinitions="*,Auto">
-                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
-                        <TextBlock Text="Ready to persist selected leads into local SQLite database for CRM pipelining, audits, and outreach." FontSize="12" Foreground="#94A3B8"/>
-                        <TextBlock Text="Duplicates are automatically skipped using phonetic &amp; geographic deduplication to maintain clean records." FontSize="11" Foreground="#64748B"/>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2" Margin="0,0,14,0">
+                        <TextBlock Text="Ready to persist selected leads into local SQLite database for CRM pipelining, audits, and outreach." FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                        <TextBlock Text="Duplicates are automatically skipped using phonetic &amp; geographic deduplication to maintain clean records." FontSize="11" Foreground="#64748B" TextWrapping="Wrap"/>
                     </StackPanel>
 
                     <Button Grid.Column="1" 
