@@ -86,6 +86,13 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isSerperEnabled = false;
 
+    // Brave Search API Settings (Free Tier - 2,000 Queries/Mo)
+    [ObservableProperty]
+    private string _braveApiKey = string.Empty;
+
+    [ObservableProperty]
+    private bool _isBraveEnabled = true;
+
     // Central Laravel Sync Settings (Stage 11)
     [ObservableProperty]
     private string _syncApiBaseUrl = "http://127.0.0.1:8000/api/v1";
@@ -183,6 +190,14 @@ public partial class SettingsViewModel : ViewModelBase
         {
             SerperApiKey = serperKey.Length > 10 ? $"{serperKey[..6]}...{serperKey[^4..]}" : "********";
             IsSerperEnabled = true;
+        }
+
+        // Brave Search Settings
+        var braveKey = _secretVault.GetSecret("BRAVE_API_KEY");
+        if (!string.IsNullOrEmpty(braveKey))
+        {
+            BraveApiKey = braveKey.Length > 10 ? $"{braveKey[..6]}...{braveKey[^4..]}" : "********";
+            IsBraveEnabled = true;
         }
 
         // Load Sync Settings (Stage 11)
@@ -421,6 +436,58 @@ public partial class SettingsViewModel : ViewModelBase
         catch (Exception ex)
         {
             StatusMessage = $"Serper test failed: {ex.Message}";
+        }
+    }
+
+    // Brave Search Commands (2,000 Free Queries/Mo)
+    [RelayCommand]
+    public async Task SaveBraveSettings()
+    {
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(BraveApiKey) && !BraveApiKey.Contains("..."))
+            {
+                _secretVault.SaveSecret("BRAVE_API_KEY", BraveApiKey.Trim());
+            }
+            StatusMessage = "✅ Brave Search API key saved to secure vault successfully.";
+            await LoadSettingsAsync();
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error saving Brave settings: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public async Task TestBraveConnection()
+    {
+        var key = _secretVault.GetSecret("BRAVE_API_KEY");
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            StatusMessage = "❌ No Brave API key in vault. Please save a key from api.search.brave.com first.";
+            return;
+        }
+
+        StatusMessage = "Testing Brave Search connection...";
+        try
+        {
+            using var client = new System.Net.Http.HttpClient();
+            using var req = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Get, "https://api.search.brave.com/res/v1/web/search?q=test&count=1");
+            req.Headers.Add("Accept", "application/json");
+            req.Headers.Add("X-Subscription-Token", key);
+            var resp = await client.SendAsync(req);
+            if (resp.IsSuccessStatusCode)
+            {
+                StatusMessage = "✅ Brave Search API connection verified! 2,000 free monthly queries active.";
+            }
+            else
+            {
+                StatusMessage = $"⚠️ Brave Search responded with status: {resp.StatusCode}. Please check your API key.";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Brave Search test failed: {ex.Message}";
         }
     }
 

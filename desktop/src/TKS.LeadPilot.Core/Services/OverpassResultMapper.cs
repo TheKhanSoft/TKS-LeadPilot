@@ -613,6 +613,116 @@ public static class OverpassResultMapper
         try
         {
             using var doc = JsonDocument.Parse(jsonContent);
+
+            // 1. Support MediaWiki Entities API format (action=wbgetentities)
+            if (doc.RootElement.TryGetProperty("entities", out var entitiesObj) &&
+                entitiesObj.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var entityProp in entitiesObj.EnumerateObject())
+                {
+                    var ent = entityProp.Value;
+                    var qid = entityProp.Name;
+
+                    string? name = null;
+                    if (ent.TryGetProperty("labels", out var labels) &&
+                        labels.TryGetProperty("en", out var enLabel) &&
+                        enLabel.TryGetProperty("value", out var nameVal))
+                    {
+                        name = nameVal.GetString();
+                    }
+                    if (string.IsNullOrWhiteSpace(name)) continue;
+
+                    string? desc = null;
+                    if (ent.TryGetProperty("descriptions", out var descs) &&
+                        descs.TryGetProperty("en", out var enDesc) &&
+                        enDesc.TryGetProperty("value", out var descVal))
+                    {
+                        desc = descVal.GetString();
+                    }
+
+                    string? website = null;
+                    string? phone = null;
+                    double? lat = null;
+                    double? lon = null;
+
+                    if (ent.TryGetProperty("claims", out var claims) && claims.ValueKind == JsonValueKind.Object)
+                    {
+                        // P856: official website
+                        if (claims.TryGetProperty("P856", out var p856) && p856.ValueKind == JsonValueKind.Array)
+                        {
+                            foreach (var stmt in p856.EnumerateArray())
+                            {
+                                if (stmt.TryGetProperty("mainsnak", out var snak) &&
+                                    snak.TryGetProperty("datavalue", out var dv) &&
+                                    dv.TryGetProperty("value", out var valProp))
+                                {
+                                    website = valProp.GetString();
+                                    if (!string.IsNullOrWhiteSpace(website)) break;
+                                }
+                            }
+                        }
+
+                        // P1329: phone number
+                        if (claims.TryGetProperty("P1329", out var p1329) && p1329.ValueKind == JsonValueKind.Array)
+                        {
+                            foreach (var stmt in p1329.EnumerateArray())
+                            {
+                                if (stmt.TryGetProperty("mainsnak", out var snak) &&
+                                    snak.TryGetProperty("datavalue", out var dv) &&
+                                    dv.TryGetProperty("value", out var valProp))
+                                {
+                                    phone = valProp.GetString();
+                                    if (!string.IsNullOrWhiteSpace(phone)) break;
+                                }
+                            }
+                        }
+
+                        // P625: coordinate location
+                        if (claims.TryGetProperty("P625", out var p625) && p625.ValueKind == JsonValueKind.Array)
+                        {
+                            foreach (var stmt in p625.EnumerateArray())
+                            {
+                                if (stmt.TryGetProperty("mainsnak", out var snak) &&
+                                    snak.TryGetProperty("datavalue", out var dv) &&
+                                    dv.TryGetProperty("value", out var valProp) &&
+                                    valProp.ValueKind == JsonValueKind.Object)
+                                {
+                                    if (valProp.TryGetProperty("latitude", out var latProp) && latProp.TryGetDouble(out var lVal)) lat = lVal;
+                                    if (valProp.TryGetProperty("longitude", out var lonProp) && lonProp.TryGetDouble(out var loVal)) lon = loVal;
+                                    if (lat != null && lon != null) break;
+                                }
+                            }
+                        }
+                    }
+
+                    results.Add(new Business
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Name = name.Trim(),
+                        Category = !string.IsNullOrWhiteSpace(desc) ? desc.Trim() : defaultCategory,
+                        City = defaultCity,
+                        StateProvince = defaultState,
+                        Country = defaultCountry,
+                        AddressLine1 = $"{defaultCity}, {defaultCountry}",
+                        PhonePrimary = phone?.Trim(),
+                        WebsiteUrl = website?.Trim(),
+                        WebsiteStatus = !string.IsNullOrWhiteSpace(website) ? WebsiteStatus.ActiveWebsite : WebsiteStatus.NoWebsite,
+                        Latitude = lat,
+                        Longitude = lon,
+                        PipelineStageId = "stage-discovered",
+                        LeadStatus = LeadStatus.Discovered,
+                        SourceProvider = "Wikidata Global Commercial Graph",
+                        SourceReferenceId = $"https://www.wikidata.org/wiki/{qid}",
+                        Tags = $"Wikidata, Commercial Entity, {defaultCategory}",
+                        CreatedAtUtc = DateTime.UtcNow,
+                        UpdatedAtUtc = DateTime.UtcNow
+                    });
+                }
+
+                if (results.Count > 0) return results;
+            }
+
+            // 2. Support SPARQL JSON bindings format
             if (!doc.RootElement.TryGetProperty("results", out var resObj) ||
                 !resObj.TryGetProperty("bindings", out var bindings) ||
                 bindings.ValueKind != JsonValueKind.Array)

@@ -130,7 +130,9 @@
                     <Grid ColumnDefinitions="Auto,*">
                         <!-- Modern Interactive Toggle Chips -->
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="0,0,12,0">
-                            <TextBlock Text="CONSTRAINTS:" FontSize="10" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBlock Text="CONSTRAINTS &amp; TUNING:" FontSize="10" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <ToggleButton Classes="toggle-chip" IsChecked="{Binding IsDeepScan}" IsEnabled="{Binding !IsScanning}" Content="🔬 Deep Multi-Pass" ToolTip.Tip="Enable multi-pass keyword query expansion, synonym permutations, and secondary spatial analysis"/>
+                            <ToggleButton Classes="toggle-chip" IsChecked="{Binding IsStrictMatch}" IsEnabled="{Binding !IsScanning}" Content="🎯 Strict Targeting" ToolTip.Tip="Focus strictly on target niche and filter out unrelated businesses"/>
                             <ToggleButton Classes="toggle-chip" IsChecked="{Binding TargetMissingWebsite}" IsEnabled="{Binding !IsScanning}" Content="🌐 Missing Website Only" ToolTip.Tip="Focus on businesses without any registered web domain"/>
                             <ToggleButton Classes="toggle-chip" IsChecked="{Binding TargetMissingGmb}" IsEnabled="{Binding !IsScanning}" Content="📍 Missing GMB Profile" ToolTip.Tip="Focus on businesses without a claimed Google Business Profile"/>
                             <ToggleButton Classes="toggle-chip" IsChecked="{Binding RequirePhone}" IsEnabled="{Binding !IsScanning}" Content="📞 Verified Phone Required" ToolTip.Tip="Require verified phone number for cold outreach"/>
@@ -359,10 +361,21 @@
                                 </DataGridTemplateColumn>
 
                                 <!-- Business Name -->
-                                <DataGridTemplateColumn Header="Business Name" Width="230">
+                                <DataGridTemplateColumn Header="Business Name" Width="210">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="m:DiscoveredLead">
                                             <TextBlock Text="{Binding Business.Name}" FontWeight="SemiBold" Foreground="#F8FAFC" FontSize="12" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- Relevance & Specificity Match -->
+                                <DataGridTemplateColumn Header="Relevance" Width="145">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate x:DataType="m:DiscoveredLead">
+                                            <Border Background="#162235" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding RelevanceBadge}" FontSize="10" FontWeight="SemiBold" Foreground="#38BDF8"/>
+                                            </Border>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>

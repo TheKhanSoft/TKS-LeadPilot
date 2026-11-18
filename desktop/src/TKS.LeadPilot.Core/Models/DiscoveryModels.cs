@@ -78,6 +78,27 @@ public class DiscoveredLead : System.ComponentModel.INotifyPropertyChanged
         ? $"⚠️ Duplicate ({DuplicateMatch?.MatchReason ?? "Already in database"})"
         : "✅ New Lead";
 
+    private int _relevanceScore = 100;
+    public int RelevanceScore
+    {
+        get => _relevanceScore;
+        set
+        {
+            if (_relevanceScore != value)
+            {
+                _relevanceScore = value;
+                OnPropertyChanged(nameof(RelevanceScore));
+                OnPropertyChanged(nameof(RelevanceBadge));
+            }
+        }
+    }
+
+    public string RelevanceBadge => RelevanceScore >= 85
+        ? $"🎯 Exact Match ({RelevanceScore}%)"
+        : RelevanceScore >= 50
+            ? $"⭐ Niche Match ({RelevanceScore}%)"
+            : $"🏢 Commercial ({RelevanceScore}%)";
+
     public bool IsSelectedForImport
     {
         get => _isSelectedForImport;

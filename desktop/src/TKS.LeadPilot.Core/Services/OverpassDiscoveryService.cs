@@ -158,7 +158,29 @@ public class OverpassDiscoveryService : IDiscoveryService
             }
         }
 
-        // 5. Groq Cloud AI Engine (100% Free Fast Llama-3 via console.groq.com)
+        // 5. Wikidata Global Commercial Graph (100% Free - Verified Entities)
+        if (isAggregator || engine.Contains("Wikidata", StringComparison.OrdinalIgnoreCase))
+        {
+            var wikiLeads = await QueryWikidataAsync(query, ct);
+            if (wikiLeads.Count > 0)
+            {
+                combinedBusinesses.AddRange(wikiLeads);
+                activeSources.Add($"Wikidata Global ({wikiLeads.Count})");
+            }
+        }
+
+        // 6. Brave Search Local & Web Discovery (Free Tier - 2,000 Queries)
+        if (isAggregator || engine.Contains("Brave", StringComparison.OrdinalIgnoreCase))
+        {
+            var braveLeads = await QueryBraveSearchAsync(query, ct);
+            if (braveLeads.Count > 0)
+            {
+                combinedBusinesses.AddRange(braveLeads);
+                activeSources.Add($"Brave Search ({braveLeads.Count})");
+            }
+        }
+
+        // 7. Groq Cloud AI Engine (100% Free Fast Llama-3 via console.groq.com)
         if (isAggregator || engine.Contains("Groq", StringComparison.OrdinalIgnoreCase))
         {
             var groqLeads = await QueryGroqAiAsync(query, ct);
@@ -169,7 +191,7 @@ public class OverpassDiscoveryService : IDiscoveryService
             }
         }
 
-        // 6. Serper.dev Google Places (2,500 Free Queries via serper.dev)
+        // 8. Serper.dev Google Places (2,500 Free Queries via serper.dev)
         if (isAggregator || engine.Contains("Serper", StringComparison.OrdinalIgnoreCase))
         {
             var serperLeads = await QuerySerperPlacesAsync(query, ct);
@@ -180,7 +202,7 @@ public class OverpassDiscoveryService : IDiscoveryService
             }
         }
 
-        // 7. Google Places / Google My Business Discovery ($200 Monthly Free Credit)
+        // 9. Google Places / Google My Business Discovery ($200 Monthly Free Credit)
         if (isAggregator || engine.Contains("Google Places", StringComparison.OrdinalIgnoreCase))
         {
             var gmbLeads = await QueryGooglePlacesAsync(query, ct);
@@ -191,7 +213,7 @@ public class OverpassDiscoveryService : IDiscoveryService
             }
         }
 
-        // 8. Google Gemini Free Tier AI Discovery (1,500 req/day free)
+        // 10. Google Gemini Free Tier AI Discovery (1,500 req/day free)
         if (isAggregator || engine.Contains("Gemini", StringComparison.OrdinalIgnoreCase))
         {
             var aiLeads = await QueryGeminiAiAsync(query, ct);
@@ -202,7 +224,7 @@ public class OverpassDiscoveryService : IDiscoveryService
             }
         }
 
-        // 9. High-Density Verified Local Catalog Fallback (or explicit offline choice)
+        // 11. High-Density Verified Local Catalog Fallback (or explicit offline choice)
         if (combinedBusinesses.Count == 0 || engine.Contains("Offline", StringComparison.OrdinalIgnoreCase) || engine.Contains("Vault", StringComparison.OrdinalIgnoreCase))
         {
             var catalogLeads = OsmOfflineCache.GetCachedLeads(query.City, query.Country, query.TargetAmenities, Math.Max(query.Limit, 35));
@@ -220,8 +242,13 @@ public class OverpassDiscoveryService : IDiscoveryService
             return result;
         }
 
-        // Deduplicate gathered leads internally (across the different engines)
+        // Deduplicate gathered leads internally (across the different engines) & apply specificity filter
         var deduplicatedLeads = new List<Business>();
+        var relevanceScores = new Dictionary<string, int>();
+
+        bool hasSpecificNiche = !string.IsNullOrWhiteSpace(query.CustomSearchTerm) ||
+                                (!string.IsNullOrWhiteSpace(query.CategoryPreset) && !query.CategoryPreset.Contains("All Commercial", StringComparison.OrdinalIgnoreCase));
+
         foreach (var candidate in combinedBusinesses)
         {
             if (string.IsNullOrWhiteSpace(candidate.Name)) continue;
@@ -231,12 +258,33 @@ public class OverpassDiscoveryService : IDiscoveryService
             if (query.TargetMissingWebsiteOnly && !string.IsNullOrWhiteSpace(candidate.WebsiteUrl)) continue;
             if (query.TargetMissingGmbOnly && (candidate.IsGoogleVerified || !string.IsNullOrWhiteSpace(candidate.GooglePlaceId))) continue;
 
+            // Strict specificity filter: if searching for specific keyword or niche, discard 0-relevance entries
+            var relevance = CalculateRelevanceScore(candidate, query);
+            if (query.StrictKeywordFilter && hasSpecificNiche && relevance <= 0)
+            {
+                continue;
+            }
+
             var dupCheck = _dedupService.CheckDuplicate(candidate, deduplicatedLeads);
             if (!dupCheck.IsDuplicate)
             {
                 deduplicatedLeads.Add(candidate);
+                relevanceScores[candidate.Id] = relevance;
             }
         }
+
+        if (deduplicatedLeads.Count == 0)
+        {
+            result.ErrorMessage = $"No matching businesses found matching \"{query.CustomSearchTerm ?? query.CategoryPreset}\" in {query.City}, {query.Country}. Try disabling strict match or broadening search keyword.";
+            result.ExecutionDuration = sw.Elapsed;
+            return result;
+        }
+
+        // Sort candidates by relevance descending, placing targeted leads first
+        var sortedLeads = deduplicatedLeads
+            .OrderByDescending(b => relevanceScores.GetValueOrDefault(b.Id, 50))
+            .ThenByDescending(b => !string.IsNullOrEmpty(b.WebsiteUrl))
+            .ToList();
 
         // Fetch existing database records to flag already imported leads
         var existing = await _repository.GetAllAsync(ct: ct);
@@ -244,7 +292,7 @@ public class OverpassDiscoveryService : IDiscoveryService
         int newCount = 0;
         int dupCount = 0;
 
-        foreach (var b in deduplicatedLeads.Take(query.Limit))
+        foreach (var b in sortedLeads.Take(query.Limit))
         {
             var dedupMatch = _dedupService.CheckDuplicate(b, existing);
             var isDup = dedupMatch.IsDuplicate;
@@ -252,11 +300,14 @@ public class OverpassDiscoveryService : IDiscoveryService
             if (isDup) dupCount++;
             else newCount++;
 
+            var score = relevanceScores.GetValueOrDefault(b.Id, 75);
+
             result.Leads.Add(new DiscoveredLead
             {
                 Business = b,
                 DuplicateMatch = isDup ? dedupMatch : null,
-                IsSelectedForImport = !isDup
+                IsSelectedForImport = !isDup,
+                RelevanceScore = score
             });
         }
 
@@ -278,7 +329,15 @@ public class OverpassDiscoveryService : IDiscoveryService
 
         if (!string.IsNullOrWhiteSpace(query.CustomSearchTerm))
         {
-            searchKeywords.Add(query.CustomSearchTerm.Trim());
+            var term = query.CustomSearchTerm.Trim();
+            searchKeywords.Add(term);
+
+            // Deep Scan multi-pass query expansion
+            if (query.DeepScan)
+            {
+                searchKeywords.Add($"{term} company");
+                searchKeywords.Add($"{term} services");
+            }
         }
         else if (isAllCommercial)
         {
@@ -289,7 +348,7 @@ public class OverpassDiscoveryService : IDiscoveryService
             var cleanKeywords = presetKeywords
                 .Where(k => !k.Equals("all_commercial", StringComparison.OrdinalIgnoreCase) && !k.Equals("all", StringComparison.OrdinalIgnoreCase))
                 .Select(k => k.Replace("_", " "))
-                .Take(4)
+                .Take(query.DeepScan ? 6 : 4)
                 .ToList();
 
             if (cleanKeywords.Count > 0)
@@ -420,34 +479,44 @@ public class OverpassDiscoveryService : IDiscoveryService
             ? query.CustomSearchTerm.Trim()
             : (query.CategoryPreset?.Replace("&", "and") ?? "commercial");
 
-        try
+        var queriesToExecute = new List<string> { $"{searchTerm} {query.City}" };
+        if (query.DeepScan && !string.IsNullOrWhiteSpace(query.CustomSearchTerm))
         {
-            var queryString = $"{searchTerm} {query.City}";
-            if (!string.IsNullOrWhiteSpace(query.Country)) queryString += $", {query.Country}";
-
-            var url = $"https://photon.komoot.io/api/?q={Uri.EscapeDataString(queryString)}&limit=30";
-            if (query.BBox != null)
-            {
-                var centerLat = (query.BBox.North + query.BBox.South) / 2.0;
-                var centerLon = (query.BBox.East + query.BBox.West) / 2.0;
-                url += $"&lat={centerLat:F4}&lon={centerLon:F4}";
-            }
-
-            using var req = new HttpRequestMessage(HttpMethod.Get, url);
-            req.Headers.Add("User-Agent", "TKS-LeadPilot/1.0 (contact: info@thekhansoft.com)");
-
-            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            cts.CancelAfter(TimeSpan.FromSeconds(8));
-
-            var resp = await _httpClient.SendAsync(req, cts.Token);
-            if (resp.IsSuccessStatusCode)
-            {
-                var json = await resp.Content.ReadAsStringAsync(ct);
-                var mapped = OverpassResultMapper.MapPhotonToBusinesses(json, query.City, query.Country, query.StateProvince);
-                list.AddRange(mapped);
-            }
+            queriesToExecute.Add($"{searchTerm} company {query.City}");
+            queriesToExecute.Add($"{searchTerm} clinic {query.City}");
         }
-        catch { }
+
+        foreach (var qText in queriesToExecute)
+        {
+            try
+            {
+                var queryString = qText;
+                if (!string.IsNullOrWhiteSpace(query.Country)) queryString += $", {query.Country}";
+
+                var url = $"https://photon.komoot.io/api/?q={Uri.EscapeDataString(queryString)}&limit=30";
+                if (query.BBox != null)
+                {
+                    var centerLat = (query.BBox.North + query.BBox.South) / 2.0;
+                    var centerLon = (query.BBox.East + query.BBox.West) / 2.0;
+                    url += $"&lat={centerLat:F4}&lon={centerLon:F4}";
+                }
+
+                using var req = new HttpRequestMessage(HttpMethod.Get, url);
+                req.Headers.Add("User-Agent", "TKS-LeadPilot/1.0 (contact: info@thekhansoft.com)");
+
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                cts.CancelAfter(TimeSpan.FromSeconds(8));
+
+                var resp = await _httpClient.SendAsync(req, cts.Token);
+                if (resp.IsSuccessStatusCode)
+                {
+                    var json = await resp.Content.ReadAsStringAsync(ct);
+                    var mapped = OverpassResultMapper.MapPhotonToBusinesses(json, query.City, query.Country, query.StateProvince);
+                    list.AddRange(mapped);
+                }
+            }
+            catch { }
+        }
 
         return list;
     }
@@ -589,6 +658,179 @@ public class OverpassDiscoveryService : IDiscoveryService
         catch { }
 
         return list;
+    }
+
+    private async Task<List<Business>> QueryWikidataAsync(DiscoveryQuery query, CancellationToken ct)
+    {
+        var list = new List<Business>();
+        var searchTerm = !string.IsNullOrWhiteSpace(query.CustomSearchTerm)
+            ? query.CustomSearchTerm.Trim()
+            : (query.CategoryPreset?.Replace("&", "and") ?? "company");
+
+        if (searchTerm.Contains("All Commercial", StringComparison.OrdinalIgnoreCase))
+        {
+            searchTerm = "company";
+        }
+
+        try
+        {
+            var searchPhrase = $"{searchTerm} {query.City}";
+            var searchUrl = $"https://www.wikidata.org/w/api.php?action=query&list=search&srsearch={Uri.EscapeDataString(searchPhrase)}&format=json&srlimit=25";
+
+            using var searchReq = new HttpRequestMessage(HttpMethod.Get, searchUrl);
+            searchReq.Headers.Add("User-Agent", "TKS-LeadPilot/1.0 (contact: info@thekhansoft.com)");
+
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            cts.CancelAfter(TimeSpan.FromSeconds(8));
+
+            var searchResp = await _httpClient.SendAsync(searchReq, cts.Token);
+            if (!searchResp.IsSuccessStatusCode) return list;
+
+            var searchJson = await searchResp.Content.ReadAsStringAsync(ct);
+            using var searchDoc = System.Text.Json.JsonDocument.Parse(searchJson);
+
+            var qids = new List<string>();
+            if (searchDoc.RootElement.TryGetProperty("query", out var queryObj) &&
+                queryObj.TryGetProperty("search", out var searchArr) &&
+                searchArr.ValueKind == System.Text.Json.JsonValueKind.Array)
+            {
+                foreach (var item in searchArr.EnumerateArray())
+                {
+                    if (item.TryGetProperty("title", out var titleProp))
+                    {
+                        var t = titleProp.GetString();
+                        if (!string.IsNullOrWhiteSpace(t) && t.StartsWith("Q", StringComparison.OrdinalIgnoreCase))
+                        {
+                            qids.Add(t);
+                        }
+                    }
+                }
+            }
+
+            if (qids.Count == 0) return list;
+
+            // Fetch entity claims in one batch
+            var idsParam = string.Join("|", qids.Take(25));
+            var entitiesUrl = $"https://www.wikidata.org/w/api.php?action=wbgetentities&ids={idsParam}&languages=en&props=labels|descriptions|claims&format=json";
+
+            using var entitiesReq = new HttpRequestMessage(HttpMethod.Get, entitiesUrl);
+            entitiesReq.Headers.Add("User-Agent", "TKS-LeadPilot/1.0 (contact: info@thekhansoft.com)");
+
+            using var cts2 = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            cts2.CancelAfter(TimeSpan.FromSeconds(8));
+
+            var entitiesResp = await _httpClient.SendAsync(entitiesReq, cts2.Token);
+            if (entitiesResp.IsSuccessStatusCode)
+            {
+                var entitiesJson = await entitiesResp.Content.ReadAsStringAsync(ct);
+                var mapped = OverpassResultMapper.MapWikidataToBusinesses(entitiesJson, searchTerm, query.City, query.Country, query.StateProvince);
+                list.AddRange(mapped);
+            }
+        }
+        catch { }
+
+        return list;
+    }
+
+    private async Task<List<Business>> QueryBraveSearchAsync(DiscoveryQuery query, CancellationToken ct)
+    {
+        var apiKey = _secretVault?.GetSecret("BRAVE_API_KEY");
+        if (string.IsNullOrWhiteSpace(apiKey)) return [];
+
+        var list = new List<Business>();
+        var searchTerm = !string.IsNullOrWhiteSpace(query.CustomSearchTerm)
+            ? query.CustomSearchTerm.Trim()
+            : (query.CategoryPreset?.Replace("&", "and") ?? "commercial businesses");
+
+        try
+        {
+            var q = $"{searchTerm} in {query.City} {query.Country} contact phone address";
+            var url = $"https://api.search.brave.com/res/v1/web/search?q={Uri.EscapeDataString(q)}&count=20";
+
+            using var req = new HttpRequestMessage(HttpMethod.Get, url);
+            req.Headers.Add("Accept", "application/json");
+            req.Headers.Add("X-Subscription-Token", apiKey);
+
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            cts.CancelAfter(TimeSpan.FromSeconds(8));
+
+            var resp = await _httpClient.SendAsync(req, cts.Token);
+            if (resp.IsSuccessStatusCode)
+            {
+                var json = await resp.Content.ReadAsStringAsync(ct);
+                var mapped = OverpassResultMapper.MapBraveSearchToBusinesses(json, searchTerm, query.City, query.Country, query.StateProvince);
+                list.AddRange(mapped);
+            }
+        }
+        catch { }
+
+        return list;
+    }
+
+    public static int CalculateRelevanceScore(Business candidate, DiscoveryQuery query)
+    {
+        var custom = query.CustomSearchTerm?.Trim();
+        var preset = query.CategoryPreset?.Trim();
+        bool isAllCommercial = string.IsNullOrWhiteSpace(preset) || preset.Contains("All Commercial", StringComparison.OrdinalIgnoreCase);
+
+        // If no custom keyword and All Commercial preset, general commercial score
+        if (string.IsNullOrWhiteSpace(custom) && isAllCommercial)
+        {
+            return 75;
+        }
+
+        int score = 0;
+        var nameLower = (candidate.Name ?? string.Empty).ToLowerInvariant();
+        var catLower = (candidate.Category ?? string.Empty).ToLowerInvariant();
+        var subcatLower = (candidate.Subcategory ?? string.Empty).ToLowerInvariant();
+        var tagsLower = (candidate.Tags ?? string.Empty).ToLowerInvariant();
+        var descLower = (candidate.Description ?? string.Empty).ToLowerInvariant();
+        var urlLower = (candidate.WebsiteUrl ?? string.Empty).ToLowerInvariant();
+
+        if (!string.IsNullOrWhiteSpace(custom))
+        {
+            var customLower = custom.ToLowerInvariant();
+
+            // Direct full phrase match in name
+            if (nameLower.Contains(customLower))
+            {
+                score += 65;
+            }
+
+            var tokens = customLower.Split([' ', ',', '-', '/', '&'], StringSplitOptions.RemoveEmptyEntries)
+                .Where(t => t.Length >= 3)
+                .ToList();
+
+            foreach (var tok in tokens)
+            {
+                if (nameLower.Contains(tok)) score += 30;
+                if (catLower.Contains(tok) || subcatLower.Contains(tok)) score += 25;
+                if (tagsLower.Contains(tok) || descLower.Contains(tok)) score += 20;
+                if (urlLower.Contains(tok)) score += 15;
+            }
+        }
+
+        if (!isAllCommercial && !string.IsNullOrWhiteSpace(preset))
+        {
+            var presetLower = preset.ToLowerInvariant();
+            if (catLower.Contains(presetLower) || nameLower.Contains(presetLower))
+            {
+                score += 40;
+            }
+
+            var presetTokens = presetLower.Split([' ', ',', '-', '/', '&', '⭐'], StringSplitOptions.RemoveEmptyEntries)
+                .Where(t => t.Length >= 4 && t != "commercial" && t != "businesses" && t != "enterprises")
+                .ToList();
+
+            foreach (var ptok in presetTokens)
+            {
+                if (catLower.Contains(ptok) || subcatLower.Contains(ptok)) score += 25;
+                if (nameLower.Contains(ptok)) score += 20;
+                if (tagsLower.Contains(ptok)) score += 15;
+            }
+        }
+
+        return Math.Min(100, score);
     }
 
     public async Task<ImportExecutionResult> ImportDiscoveredLeadsAsync(

@@ -199,6 +199,136 @@ public class OverpassDiscoveryServiceTests
         ql.Should().Contain("33.9500,71.4500,34.0500,71.6000");
     }
 
+    [Fact]
+    public void OverpassQueryBuilder_WithCustomSearchKeyword_InjectsRegexTags()
+    {
+        var query = new DiscoveryQuery
+        {
+            City = "Lahore",
+            Country = "Pakistan",
+            CustomSearchTerm = "Solar Energy",
+            DeepScan = true
+        };
+
+        var ql = OverpassQueryBuilder.BuildQuery(query);
+
+        ql.Should().Contain("node[\"name\"~\"Solar Energy\",i]");
+        ql.Should().Contain("node[\"shop\"~\"Solar Energy\",i]");
+        ql.Should().Contain("node[\"office\"~\"Solar Energy\",i]");
+    }
+
+    [Fact]
+    public void CalculateRelevanceScore_ScoresTargetMatchesAccurately()
+    {
+        var dentistBusiness = new Business
+        {
+            Name = "Apex Dental Implant Clinic",
+            Category = "Healthcare & Dental",
+            City = "Lahore",
+            WebsiteUrl = "https://apexdental.pk",
+            Tags = "dentist, teeth cleaning, implants"
+        };
+
+        var groceryBusiness = new Business
+        {
+            Name = "Al-Madina General Store",
+            Category = "Retail & Grocery",
+            City = "Lahore",
+            WebsiteUrl = "https://almadinastore.pk",
+            Tags = "grocery, fruits"
+        };
+
+        var query = new DiscoveryQuery
+        {
+            City = "Lahore",
+            CustomSearchTerm = "dentist",
+            CategoryPreset = "Healthcare & Dental",
+            StrictKeywordFilter = true
+        };
+
+        var dentistScore = OverpassDiscoveryService.CalculateRelevanceScore(dentistBusiness, query);
+        var groceryScore = OverpassDiscoveryService.CalculateRelevanceScore(groceryBusiness, query);
+
+        dentistScore.Should().BeGreaterThanOrEqualTo(80);
+        groceryScore.Should().Be(0, "unrelated grocery store should have 0 relevance for dentist search");
+    }
+
+    [Fact]
+    public void MapWikidataToBusinesses_ParsesMediaWikiEntitiesFormat()
+    {
+        var wikidataJson = """
+        {
+          "entities": {
+            "Q7455839": {
+              "type": "item",
+              "id": "Q7455839",
+              "labels": {
+                "en": { "language": "en", "value": "Services Hospital" }
+              },
+              "descriptions": {
+                "en": { "language": "en", "value": "hospital in Lahore, Pakistan" }
+              },
+              "claims": {
+                "P856": [
+                  {
+                    "mainsnak": {
+                      "datavalue": { "value": "http://sims.edu.pk/shl.aspx" }
+                    }
+                  }
+                ],
+                "P625": [
+                  {
+                    "mainsnak": {
+                      "datavalue": {
+                        "value": { "latitude": 31.5412, "longitude": 74.3330 }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+        """;
+
+        var businesses = OverpassResultMapper.MapWikidataToBusinesses(wikidataJson, "Healthcare", "Lahore", "Pakistan");
+
+        businesses.Should().HaveCount(1);
+        var b = businesses[0];
+        b.Name.Should().Be("Services Hospital");
+        b.WebsiteUrl.Should().Be("http://sims.edu.pk/shl.aspx");
+        b.Latitude.Should().BeApproximately(31.5412, 0.001);
+        b.Longitude.Should().BeApproximately(74.3330, 0.001);
+        b.SourceProvider.Should().Be("Wikidata Global Commercial Graph");
+    }
+
+    [Fact]
+    public void MapBraveSearchToBusinesses_ParsesWebSearchResultsAndExtractsPhone()
+    {
+        var braveJson = """
+        {
+          "web": {
+            "results": [
+              {
+                "title": "Ziauddin Hospital - Best Medical Services in Karachi",
+                "url": "https://ziauddinhospital.com",
+                "description": "Call us at +92 21 35862937 for 24/7 emergency and specialist appointments in Clifton Karachi."
+              }
+            ]
+          }
+        }
+        """;
+
+        var businesses = OverpassResultMapper.MapBraveSearchToBusinesses(braveJson, "Healthcare", "Karachi", "Pakistan");
+
+        businesses.Should().HaveCount(1);
+        var b = businesses[0];
+        b.Name.Should().Be("Ziauddin Hospital");
+        b.WebsiteUrl.Should().Be("https://ziauddinhospital.com");
+        b.PhonePrimary.Should().Contain("92 21 35862937");
+        b.SourceProvider.Should().Be("Brave Search Local Discovery");
+    }
+
     private class MockHttpMessageHandler(string responseContent) : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

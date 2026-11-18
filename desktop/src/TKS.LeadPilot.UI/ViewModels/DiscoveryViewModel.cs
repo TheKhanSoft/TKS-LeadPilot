@@ -71,13 +71,15 @@ public partial class DiscoveryViewModel : ViewModelBase
     public ObservableCollection<string> AvailableEngines { get; } =
     [
         "🌐 Unified Multi-Engine Aggregator (All Active)",
+        "🏛️ Wikidata Global Commercial Graph (100% Free - Verified Entities)",
+        "🦁 Brave Search Local & Web Discovery (Free Tier - 2,000 Queries)",
         "⚡ Photon Geosearch (Komoot OpenPOI - 100% Free)",
         "🦆 DuckDuckGo Commercial Web Directory (100% Free)",
         "🛰️ OpenStreetMap Live Overpass (Geospatial QL)",
         "🗺️ OSM Nominatim (Natural POI Search)",
-        "✨ Google Gemini AI Discovery (Free 1,500 RPD)",
+        "✨ Google Gemini AI Discovery (Free Tier - Gemini 3.8 Flash)",
         "⚡ Groq Cloud AI Engine (Free Fast Llama-3)",
-        "📍 Google Places API (Direct Commercial)",
+        "📍 Google Places API (New) (Direct Commercial)",
         "🔎 Serper.dev Google Places (Free 2,500 Queries)",
         "💾 High-Density Offline Enterprise Vault"
     ];
@@ -94,7 +96,7 @@ public partial class DiscoveryViewModel : ViewModelBase
     [ObservableProperty]
     private string _customSearchKeyword = string.Empty;
 
-    // Filter toggles
+    // Filter toggles & deep scan options
     [ObservableProperty]
     private bool _targetMissingWebsite = false;
 
@@ -103,6 +105,12 @@ public partial class DiscoveryViewModel : ViewModelBase
 
     [ObservableProperty]
     private bool _requirePhone = false;
+
+    [ObservableProperty]
+    private bool _isDeepScan = true;
+
+    [ObservableProperty]
+    private bool _isStrictMatch = true;
 
     // =========================================================================
     // 4. SCAN TELEMETRY & RESULTS
@@ -409,6 +417,8 @@ public partial class DiscoveryViewModel : ViewModelBase
                 TargetMissingWebsiteOnly = TargetMissingWebsite,
                 TargetMissingGmbOnly = TargetMissingGmb,
                 RequirePhone = RequirePhone,
+                DeepScan = IsDeepScan,
+                StrictKeywordFilter = IsStrictMatch,
                 Limit = 60,
                 TimeoutSeconds = 30
             };
@@ -643,6 +653,8 @@ public partial class DiscoveryViewModel : ViewModelBase
         TargetMissingWebsite = false;
         TargetMissingGmb = false;
         RequirePhone = false;
+        IsDeepScan = true;
+        IsStrictMatch = true;
         ExecutionDurationText = string.Empty;
         SelectedLead = null;
         ClearNearby();
@@ -698,6 +710,8 @@ public partial class DiscoveryViewModel : ViewModelBase
         TargetMissingWebsite = false;
         TargetMissingGmb = false;
         RequirePhone = false;
+        IsDeepScan = true;
+        IsStrictMatch = true;
         ExecutionDurationText = string.Empty;
         SelectedLead = null;
         ClearNearby();

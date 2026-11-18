@@ -186,6 +186,33 @@
                 </StackPanel>
             </Border>
 
+            <!-- Brave Search Local & Web Discovery (Free Tier - 2,000 Queries/Mo) -->
+            <Border Background="#0E1626" BorderBrush="#1C283F" BorderThickness="1" CornerRadius="10" Padding="20">
+                <StackPanel Spacing="16">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="🦁 Brave Search Local &amp; Web Discovery API" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC"/>
+                                <Border Background="#451A03" BorderBrush="#D97706" BorderThickness="1" CornerRadius="10" Padding="8,2" VerticalAlignment="Center">
+                                    <TextBlock Text="2,000 FREE / MO" FontSize="10" FontWeight="Bold" Foreground="#FBBF24"/>
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Text="Global independent web and local index with 2,000 free queries/month at api.search.brave.com. Excellent for discovering authentic business websites, phone numbers, and local directories." FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Brave Search API Key (Subscription Token from api.search.brave.com)" FontSize="12" FontWeight="SemiBold" Foreground="#64748B"/>
+                        <TextBox Text="{Binding BraveApiKey}" PlaceholderText="BSA..." PasswordChar="●" Background="#0B1322" Foreground="#F8FAFC" BorderBrush="#22324A" CornerRadius="7" Padding="12,8"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <Button Content="💾 Save Brave Settings" Command="{Binding SaveBraveSettingsCommand}" Classes="btn-primary" Padding="16,8"/>
+                        <Button Content="🔍 Test Brave Key" Command="{Binding TestBraveConnectionCommand}" Classes="btn-secondary" Padding="16,8"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
             <!-- Zero-Configuration Free Discovery Engines Status Card -->
             <Border Background="#0B1322" BorderBrush="#162235" BorderThickness="1" CornerRadius="10" Padding="18">
                 <StackPanel Spacing="10">
@@ -197,7 +224,7 @@
                     </StackPanel>
                     <TextBlock Text="The following engines run autonomously with 100% free open APIs and require ZERO api keys or tokens:" FontSize="12" Foreground="#94A3B8"/>
 
-                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto">
+                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto">
                         <Border Grid.Row="0" Grid.Column="0" Background="#111A2C" CornerRadius="6" Padding="10,8" Margin="3">
                             <StackPanel Spacing="2">
                                 <TextBlock Text="⚡ Photon Geosearch (Komoot)" FontWeight="Bold" Foreground="#38BDF8" FontSize="11.5"/>
@@ -223,6 +250,20 @@
                             <StackPanel Spacing="2">
                                 <TextBlock Text="🗺️ OSM Nominatim Geocoder" FontWeight="Bold" Foreground="#A78BFA" FontSize="11.5"/>
                                 <TextBlock Text="Natural language geographic and commercial point queries." FontSize="10.5" Foreground="#64748B"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="2" Grid.Column="0" Background="#111A2C" CornerRadius="6" Padding="10,8" Margin="3">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="🏛️ Wikidata Global Commercial Graph" FontWeight="Bold" Foreground="#EC4899" FontSize="11.5"/>
+                                <TextBlock Text="Wikimedia linked graph: 100M+ registered enterprises, clinics &amp; official domains." FontSize="10.5" Foreground="#64748B"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="2" Grid.Column="1" Background="#111A2C" CornerRadius="6" Padding="10,8" Margin="3">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="💾 High-Density Offline Enterprise Vault" FontWeight="Bold" Foreground="#FCD34D" FontSize="11.5"/>
+                                <TextBlock Text="Instant verified offline business records for fail-safe resilience." FontSize="10.5" Foreground="#64748B"/>
                             </StackPanel>
                         </Border>
                     </Grid>
