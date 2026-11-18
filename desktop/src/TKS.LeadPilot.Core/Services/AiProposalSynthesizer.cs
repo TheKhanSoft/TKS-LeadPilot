@@ -19,7 +19,7 @@ public partial class AiProposalSynthesizer : IAiProposalSynthesizer
     private readonly HttpClient _httpClient;
     private readonly ISecretVault _secretVault;
 
-    private static GeminiConfig _config = new();
+    private static GeminiConfig _config = new() { ModelName = "gemini-3.8-flash" };
     private static readonly SemaphoreSlim ConfigLock = new(1, 1);
     private static readonly Queue<DateTime> RequestWindow = new();
 
@@ -64,7 +64,12 @@ public partial class AiProposalSynthesizer : IAiProposalSynthesizer
         try
         {
             _config.IsEnabled = config.IsEnabled;
-            _config.ModelName = !string.IsNullOrWhiteSpace(config.ModelName) ? config.ModelName.Trim() : "gemini-1.5-flash";
+            var chosen = !string.IsNullOrWhiteSpace(config.ModelName) ? config.ModelName.Trim() : "gemini-3.8-flash";
+            if (chosen.Contains("1.5-flash") || chosen.Contains("2.5-flash"))
+            {
+                chosen = "gemini-3.8-flash";
+            }
+            _config.ModelName = chosen;
             _config.DailyRequestCeiling = Math.Max(10, Math.Min(1500, config.DailyRequestCeiling));
             _config.RpmLimit = Math.Max(1, Math.Min(15, config.RpmLimit));
 

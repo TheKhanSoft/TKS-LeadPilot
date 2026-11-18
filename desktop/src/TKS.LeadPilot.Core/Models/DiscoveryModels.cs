@@ -38,6 +38,8 @@ public class DiscoveryQuery
     public bool RequirePhone { get; set; } = false;
     public bool TargetMissingWebsiteOnly { get; set; } = false;
     public bool TargetMissingGmbOnly { get; set; } = false;
+    public bool DeepScan { get; set; } = true;
+    public bool StrictKeywordFilter { get; set; } = true;
 }
 
 public class DiscoveredLead : System.ComponentModel.INotifyPropertyChanged

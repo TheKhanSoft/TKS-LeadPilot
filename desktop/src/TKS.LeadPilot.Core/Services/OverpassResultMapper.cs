@@ -601,4 +601,186 @@ public static class OverpassResultMapper
         }
         return null;
     }
+
+    private static readonly Regex PointCoordRegex = new(@"Point\((?<lon>[-+]?[0-9]*\.?[0-9]+)\s+(?<lat>[-+]?[0-9]*\.?[0-9]+)\)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex PhoneExtractionRegex = new(@"(?:\+?\d{1,4}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,4}", RegexOptions.Compiled);
+
+    public static List<Business> MapWikidataToBusinesses(string jsonContent, string defaultCategory, string defaultCity = "Karachi", string defaultCountry = "Pakistan", string? defaultState = null)
+    {
+        var results = new List<Business>();
+        if (string.IsNullOrWhiteSpace(jsonContent)) return results;
+
+        try
+        {
+            using var doc = JsonDocument.Parse(jsonContent);
+            if (!doc.RootElement.TryGetProperty("results", out var resObj) ||
+                !resObj.TryGetProperty("bindings", out var bindings) ||
+                bindings.ValueKind != JsonValueKind.Array)
+            {
+                return results;
+            }
+
+            foreach (var b in bindings.EnumerateArray())
+            {
+                string? name = null;
+                if (b.TryGetProperty("itemLabel", out var nl) && nl.TryGetProperty("value", out var nv))
+                {
+                    name = nv.GetString();
+                }
+
+                if (string.IsNullOrWhiteSpace(name) || name.StartsWith("Q", StringComparison.OrdinalIgnoreCase) && int.TryParse(name[1..], out _))
+                {
+                    continue; // Skip raw Q-identifiers if untranslated
+                }
+
+                string? desc = null;
+                if (b.TryGetProperty("itemDescription", out var dl) && dl.TryGetProperty("value", out var dv))
+                {
+                    desc = dv.GetString();
+                }
+
+                string? website = null;
+                if (b.TryGetProperty("website", out var wl) && wl.TryGetProperty("value", out var wv))
+                {
+                    website = wv.GetString();
+                }
+
+                string? phone = null;
+                if (b.TryGetProperty("phone", out var pl) && pl.TryGetProperty("value", out var pv))
+                {
+                    phone = pv.GetString();
+                }
+
+                string? entityUri = null;
+                if (b.TryGetProperty("item", out var il) && il.TryGetProperty("value", out var iv))
+                {
+                    entityUri = iv.GetString();
+                }
+
+                double? lat = null;
+                double? lon = null;
+                if (b.TryGetProperty("coord", out var cl) && cl.TryGetProperty("value", out var cv))
+                {
+                    var coordStr = cv.GetString();
+                    if (!string.IsNullOrWhiteSpace(coordStr))
+                    {
+                        var m = PointCoordRegex.Match(coordStr);
+                        if (m.Success &&
+                            double.TryParse(m.Groups["lat"].Value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var parsedLat) &&
+                            double.TryParse(m.Groups["lon"].Value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var parsedLon))
+                        {
+                            lat = parsedLat;
+                            lon = parsedLon;
+                        }
+                    }
+                }
+
+                var cat = !string.IsNullOrWhiteSpace(desc) ? desc : defaultCategory;
+
+                results.Add(new Business
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = name.Trim(),
+                    Category = cat,
+                    City = defaultCity,
+                    StateProvince = defaultState,
+                    Country = defaultCountry,
+                    AddressLine1 = $"{defaultCity}, {defaultCountry}",
+                    PhonePrimary = phone?.Trim(),
+                    WebsiteUrl = website?.Trim(),
+                    WebsiteStatus = !string.IsNullOrWhiteSpace(website) ? WebsiteStatus.ActiveWebsite : WebsiteStatus.NoWebsite,
+                    Latitude = lat,
+                    Longitude = lon,
+                    PipelineStageId = "stage-discovered",
+                    LeadStatus = LeadStatus.Discovered,
+                    SourceProvider = "Wikidata Global Commercial Graph",
+                    SourceReferenceId = entityUri ?? Guid.NewGuid().ToString("N"),
+                    Tags = $"Wikidata, Commercial Entity, {defaultCategory}",
+                    CreatedAtUtc = DateTime.UtcNow,
+                    UpdatedAtUtc = DateTime.UtcNow
+                });
+            }
+        }
+        catch { }
+
+        return results;
+    }
+
+    public static List<Business> MapBraveSearchToBusinesses(string jsonContent, string defaultCategory, string defaultCity = "Karachi", string defaultCountry = "Pakistan", string? defaultState = null)
+    {
+        var results = new List<Business>();
+        if (string.IsNullOrWhiteSpace(jsonContent)) return results;
+
+        try
+        {
+            using var doc = JsonDocument.Parse(jsonContent);
+            if (!doc.RootElement.TryGetProperty("web", out var webObj) ||
+                !webObj.TryGetProperty("results", out var webResults) ||
+                webResults.ValueKind != JsonValueKind.Array)
+            {
+                return results;
+            }
+
+            foreach (var item in webResults.EnumerateArray())
+            {
+                var title = item.TryGetProperty("title", out var tp) ? tp.GetString() : null;
+                var url = item.TryGetProperty("url", out var up) ? up.GetString() : null;
+                var desc = item.TryGetProperty("description", out var dp) ? dp.GetString() : null;
+
+                if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(url)) continue;
+
+                var cleanName = CleanWebTitleToBusinessName(title);
+                if (string.IsNullOrWhiteSpace(cleanName)) continue;
+
+                string? phone = null;
+                if (!string.IsNullOrWhiteSpace(desc))
+                {
+                    var phoneMatch = PhoneExtractionRegex.Match(desc);
+                    if (phoneMatch.Success && phoneMatch.Value.Length >= 8)
+                    {
+                        phone = phoneMatch.Value.Trim();
+                    }
+                }
+
+                results.Add(new Business
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = cleanName,
+                    Category = defaultCategory,
+                    City = defaultCity,
+                    StateProvince = defaultState,
+                    Country = defaultCountry,
+                    AddressLine1 = $"{defaultCity}, {defaultCountry}",
+                    PhonePrimary = phone,
+                    WebsiteUrl = url.Trim(),
+                    WebsiteStatus = WebsiteStatus.ActiveWebsite,
+                    PipelineStageId = "stage-discovered",
+                    LeadStatus = LeadStatus.Discovered,
+                    SourceProvider = "Brave Search Local Discovery",
+                    SourceReferenceId = $"brave:{Guid.NewGuid():N}",
+                    Tags = $"Brave Search, {defaultCategory}",
+                    CreatedAtUtc = DateTime.UtcNow,
+                    UpdatedAtUtc = DateTime.UtcNow
+                });
+            }
+        }
+        catch { }
+
+        return results;
+    }
+
+    private static string CleanWebTitleToBusinessName(string rawTitle)
+    {
+        var clean = Regex.Replace(rawTitle, @"<[^>]+>", "").Trim();
+        var separators = new[] { " - ", " | ", " : ", " • ", " — ", " – " };
+        foreach (var sep in separators)
+        {
+            var idx = clean.IndexOf(sep, StringComparison.Ordinal);
+            if (idx > 2)
+            {
+                clean = clean[..idx].Trim();
+            }
+        }
+        return clean.Trim();
+    }
 }

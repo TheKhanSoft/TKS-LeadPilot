@@ -134,88 +134,96 @@ public class AiLandingPageGeneratorService(
 
         if (string.IsNullOrWhiteSpace(apiKey))
         {
-            var fallback = GenerateDeterministicLandingPage(request);
-            fallback.Provider = "TKS Local Neural Synthesizer (Offline Engine)";
-            fallback.ErrorMessage = "No Gemini API Key found in Settings & Vault. Generated ultra-high-fidelity offline landing page and architecture.";
-            fallback.ExecutionDuration = sw.Elapsed;
-            return fallback;
+            var noKeyFallback = GenerateDeterministicLandingPage(request);
+            noKeyFallback.Provider = "TKS Local Neural Synthesizer (Offline Engine)";
+            noKeyFallback.ErrorMessage = "No Gemini API Key found in Settings & Vault. Generated ultra-high-fidelity offline landing page and architecture.";
+            noKeyFallback.ExecutionDuration = sw.Elapsed;
+            return noKeyFallback;
         }
 
         // 2. Build Gemini Prompt
         var prompt = BuildGeminiPrompt(request);
 
-        try
+        // Candidate model fallback chain: Google-recommended gemini-3.8-flash, backed by gemini-3.5-flash
+        var candidateModels = new[] { "gemini-3.8-flash", "gemini-3.5-flash" };
+        HttpResponseMessage? lastResponse = null;
+        string lastErrorDetail = string.Empty;
+
+        foreach (var modelName in candidateModels)
         {
-            var modelName = "gemini-1.5-flash";
-            var requestUri = $"https://generativelanguage.googleapis.com/v1beta/models/{modelName}:generateContent?key={apiKey}";
-
-            var requestBody = new
-            {
-                contents = new[]
-                {
-                    new
-                    {
-                        parts = new[]
-                        {
-                            new { text = prompt }
-                        }
-                    }
-                },
-                generationConfig = new
-                {
-                    temperature = 0.5,
-                    topK = 40,
-                    topP = 0.95,
-                    maxOutputTokens = 8192
-                }
-            };
-
-            var jsonContent = new StringContent(
-                JsonSerializer.Serialize(requestBody),
-                Encoding.UTF8,
-                "application/json");
-
-            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            cts.CancelAfter(TimeSpan.FromSeconds(45));
-
-            var response = await _httpClient.PostAsync(requestUri, jsonContent, cts.Token);
-
-            await ConfigLock.WaitAsync(ct);
             try
             {
-                _dailyRequestsUsed++;
+                var requestUri = $"https://generativelanguage.googleapis.com/v1beta/models/{modelName}:generateContent?key={apiKey}";
+
+                var requestBody = new
+                {
+                    contents = new[]
+                    {
+                        new
+                        {
+                            parts = new[]
+                            {
+                                new { text = prompt }
+                            }
+                        }
+                    },
+                    generationConfig = new
+                    {
+                        temperature = 0.5,
+                        topK = 40,
+                        topP = 0.95,
+                        maxOutputTokens = 8192
+                    }
+                };
+
+                var jsonContent = new StringContent(
+                    JsonSerializer.Serialize(requestBody),
+                    Encoding.UTF8,
+                    "application/json");
+
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                cts.CancelAfter(TimeSpan.FromSeconds(45));
+
+                var response = await _httpClient.PostAsync(requestUri, jsonContent, cts.Token);
+                lastResponse = response;
+
+                await ConfigLock.WaitAsync(ct);
+                try
+                {
+                    _dailyRequestsUsed++;
+                }
+                finally
+                {
+                    ConfigLock.Release();
+                }
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseJson = await response.Content.ReadAsStringAsync(ct);
+                    var parsed = ParseGeminiResponse(responseJson, request);
+                    parsed.Provider = $"Google Gemini Free Tier ({modelName})";
+                    parsed.ExecutionDuration = sw.Elapsed;
+                    parsed.RequestsUsedToday = _dailyRequestsUsed;
+                    return parsed;
+                }
+
+                lastErrorDetail = await response.Content.ReadAsStringAsync(ct);
             }
-            finally
+            catch (Exception ex)
             {
-                ConfigLock.Release();
+                lastErrorDetail = ex.Message;
             }
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var fallback = GenerateDeterministicLandingPage(request);
-                fallback.Provider = $"TKS Local Neural Synthesizer (Gemini HTTP {response.StatusCode} Fallback)";
-                fallback.ErrorMessage = $"Gemini API returned status code {response.StatusCode}. Instant offline blueprint deployed.";
-                fallback.ExecutionDuration = sw.Elapsed;
-                fallback.RequestsUsedToday = _dailyRequestsUsed;
-                return fallback;
-            }
-
-            var responseJson = await response.Content.ReadAsStringAsync(ct);
-            var parsed = ParseGeminiResponse(responseJson, request);
-
-            parsed.ExecutionDuration = sw.Elapsed;
-            parsed.RequestsUsedToday = _dailyRequestsUsed;
-            return parsed;
         }
-        catch (Exception ex)
-        {
-            var fallback = GenerateDeterministicLandingPage(request);
-            fallback.Provider = "TKS Local Neural Synthesizer (Network Exception Fallback)";
-            fallback.ErrorMessage = $"AI connection notice: {ex.Message}. Local deterministic landing page generated.";
-            fallback.ExecutionDuration = sw.Elapsed;
-            fallback.RequestsUsedToday = _dailyRequestsUsed;
-            return fallback;
-        }
+
+        var fallback = GenerateDeterministicLandingPage(request);
+        var statusStr = lastResponse != null ? lastResponse.StatusCode.ToString() : "NetworkError";
+        fallback.Provider = $"TKS Local Neural Synthesizer (Gemini HTTP {statusStr} Fallback)";
+        fallback.ErrorMessage = !string.IsNullOrWhiteSpace(lastErrorDetail)
+            ? $"Gemini returned HTTP {statusStr}: {lastErrorDetail}"
+            : $"Gemini API returned status code {statusStr}. Instant offline blueprint deployed.";
+        fallback.ExecutionDuration = sw.Elapsed;
+        fallback.RequestsUsedToday = _dailyRequestsUsed;
+        return fallback;
     }
 
     private static string BuildGeminiPrompt(LandingPageGenerationRequest request)

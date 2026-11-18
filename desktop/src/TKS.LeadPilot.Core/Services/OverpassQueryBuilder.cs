@@ -637,9 +637,19 @@ public static class OverpassQueryBuilder
             bbox = cityBbox;
         }
 
-        var amenities = (query.TargetAmenities != null && query.TargetAmenities.Count > 0)
-            ? query.TargetAmenities
-            : ["clinic", "dentist", "pharmacy"];
+        List<string> amenities;
+        if (query.TargetAmenities != null && query.TargetAmenities.Count > 0)
+        {
+            amenities = query.TargetAmenities;
+        }
+        else if (!string.IsNullOrWhiteSpace(query.CategoryPreset) && CategoryPresets.TryGetValue(query.CategoryPreset, out var presetList))
+        {
+            amenities = presetList;
+        }
+        else
+        {
+            amenities = ["clinic", "dentist", "pharmacy"];
+        }
 
         var isAllCommercial = amenities.Any(a => a.Equals("all_commercial", StringComparison.OrdinalIgnoreCase) || a.Equals("all", StringComparison.OrdinalIgnoreCase));
 
@@ -647,6 +657,22 @@ public static class OverpassQueryBuilder
         {
             var bboxStr = $"{bbox.South:F4},{bbox.West:F4},{bbox.North:F4},{bbox.East:F4}";
             sb.AppendLine("(");
+
+            // Deep specific keyword search using name, shop, office, craft, amenity regex matching
+            if (!string.IsNullOrWhiteSpace(query.CustomSearchTerm))
+            {
+                var customEscaped = query.CustomSearchTerm.Trim().Replace("\"", "\\\"");
+                sb.AppendLine($"  node[\"name\"~\"{customEscaped}\",i]({bboxStr});");
+                sb.AppendLine($"  way[\"name\"~\"{customEscaped}\",i]({bboxStr});");
+                sb.AppendLine($"  node[\"shop\"~\"{customEscaped}\",i]({bboxStr});");
+                sb.AppendLine($"  way[\"shop\"~\"{customEscaped}\",i]({bboxStr});");
+                sb.AppendLine($"  node[\"office\"~\"{customEscaped}\",i]({bboxStr});");
+                sb.AppendLine($"  way[\"office\"~\"{customEscaped}\",i]({bboxStr});");
+                sb.AppendLine($"  node[\"craft\"~\"{customEscaped}\",i]({bboxStr});");
+                sb.AppendLine($"  way[\"craft\"~\"{customEscaped}\",i]({bboxStr});");
+                sb.AppendLine($"  node[\"amenity\"~\"{customEscaped}\",i]({bboxStr});");
+                sb.AppendLine($"  way[\"amenity\"~\"{customEscaped}\",i]({bboxStr});");
+            }
 
             if (isAllCommercial)
             {
@@ -692,6 +718,21 @@ public static class OverpassQueryBuilder
             var cityEscaped = query.City.Trim().Replace("\"", "\\\"");
             sb.AppendLine($"area[\"name\"=\"{cityEscaped}\"]->.searchArea;");
             sb.AppendLine("(");
+
+            if (!string.IsNullOrWhiteSpace(query.CustomSearchTerm))
+            {
+                var customEscaped = query.CustomSearchTerm.Trim().Replace("\"", "\\\"");
+                sb.AppendLine($"  node[\"name\"~\"{customEscaped}\",i](area.searchArea);");
+                sb.AppendLine($"  way[\"name\"~\"{customEscaped}\",i](area.searchArea);");
+                sb.AppendLine($"  node[\"shop\"~\"{customEscaped}\",i](area.searchArea);");
+                sb.AppendLine($"  way[\"shop\"~\"{customEscaped}\",i](area.searchArea);");
+                sb.AppendLine($"  node[\"office\"~\"{customEscaped}\",i](area.searchArea);");
+                sb.AppendLine($"  way[\"office\"~\"{customEscaped}\",i](area.searchArea);");
+                sb.AppendLine($"  node[\"craft\"~\"{customEscaped}\",i](area.searchArea);");
+                sb.AppendLine($"  way[\"craft\"~\"{customEscaped}\",i](area.searchArea);");
+                sb.AppendLine($"  node[\"amenity\"~\"{customEscaped}\",i](area.searchArea);");
+                sb.AppendLine($"  way[\"amenity\"~\"{customEscaped}\",i](area.searchArea);");
+            }
 
             if (isAllCommercial)
             {
