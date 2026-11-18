@@ -550,20 +550,25 @@
 
                     <!-- Clean Workspace Prompt -->
                     <Border Background="#0C1322" BorderBrush="#38BDF8" BorderThickness="1" CornerRadius="8" Padding="14,10">
-                        <StackPanel Spacing="4">
+                        <StackPanel Spacing="6">
                             <TextBlock Text="Next Step: Manage Discovery Station Workspace" FontSize="12.5" FontWeight="Bold" Foreground="#38BDF8"/>
-                            <TextBlock Text="Would you like to clear the imported/duplicate leads from this Discovery table to keep your station clean for the next search, or keep them visible with 'IN DATABASE' badges?"
+                            <TextBlock Text="Would you like to clear the imported leads from the grid and reset the search fields for a clean workspace, or keep them visible in the discovery table?"
                                        FontSize="11.5"
                                        Foreground="#94A3B8"
                                        TextWrapping="Wrap"
                                        LineHeight="16"/>
+                            <CheckBox IsChecked="{Binding ResetLocationOnClear}"
+                                      Content="Also reset location (Country, State &amp; City) to 'All'"
+                                      Foreground="#CBD5E1"
+                                      FontSize="11"
+                                      Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
 
                     <!-- Choice Action Buttons -->
                     <Grid ColumnDefinitions="*,*">
                         <Button Grid.Column="0"
-                                Content="🧹 Clear Imported Leads"
+                                Content="🧹 Clear Imported Leads &amp; Grid"
                                 Command="{Binding ClearImportedFromDiscoveryCommand}"
                                 Classes="btn-accent"
                                 HorizontalAlignment="Stretch"
@@ -572,7 +577,7 @@
                                 FontSize="12.5"
                                 FontWeight="Bold"
                                 Margin="0,0,6,0"
-                                ToolTip.Tip="Removes newly imported and duplicate leads from the table to leave a clean workspace"/>
+                                ToolTip.Tip="Removes imported leads from the results grid and resets search fields for a clean workspace"/>
 
                         <Button Grid.Column="1"
                                 Content="Keep in Discovery List"

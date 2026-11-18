@@ -643,7 +643,7 @@ public partial class DiscoveryViewModel : ViewModelBase
         TargetMissingWebsite = false;
         TargetMissingGmb = false;
         RequirePhone = false;
-        ScanTimingSummary = string.Empty;
+        ExecutionDurationText = string.Empty;
         SelectedLead = null;
         ClearNearby();
 
@@ -698,7 +698,7 @@ public partial class DiscoveryViewModel : ViewModelBase
         TargetMissingWebsite = false;
         TargetMissingGmb = false;
         RequirePhone = false;
-        ScanTimingSummary = string.Empty;
+        ExecutionDurationText = string.Empty;
         SelectedLead = null;
         ClearNearby();
 
