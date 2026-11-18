@@ -158,6 +158,12 @@ public partial class DiscoveryViewModel : ViewModelBase
     [ObservableProperty]
     private DiscoveredLead? _selectedLead;
 
+    [ObservableProperty]
+    private bool _resetLocationOnClear = false;
+
+    private readonly HashSet<string> _recentlyImportedIds = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _recentlyImportedPlaceIds = new(StringComparer.OrdinalIgnoreCase);
+
     public DiscoveryViewModel(
         IDiscoveryService discoveryService,
         IGeoLocationService geoLocationService,
@@ -519,6 +525,19 @@ public partial class DiscoveryViewModel : ViewModelBase
             return;
         }
 
+        // Record keys of selected leads for reliable workspace clearing
+        foreach (var lead in selected)
+        {
+            if (!string.IsNullOrWhiteSpace(lead.Business.Id))
+            {
+                _recentlyImportedIds.Add(lead.Business.Id);
+            }
+            if (!string.IsNullOrWhiteSpace(lead.Business.GooglePlaceId))
+            {
+                _recentlyImportedPlaceIds.Add(lead.Business.GooglePlaceId);
+            }
+        }
+
         IsImporting = true;
         StatusMessage = $"Importing {selected.Count} leads into local SQLite database...";
 
@@ -527,15 +546,61 @@ public partial class DiscoveryViewModel : ViewModelBase
             var res = await _discoveryService.ImportDiscoveredLeadsAsync(selected, DeduplicationStrategy.Skip);
             StatusMessage = $"✅ Successfully imported {res.CreatedCount} new leads ({res.SkippedCount} skipped as duplicates) into SQLite database!";
 
-            // Refresh duplicate flags
+            // Refresh duplicate flags by checking existing database records
             var existing = await _businessRepository.GetAllAsync();
+            var existingIds = new HashSet<string>(existing.Select(b => b.Id), StringComparer.OrdinalIgnoreCase);
+            var existingPlaceIds = new HashSet<string>(existing.Where(b => !string.IsNullOrEmpty(b.GooglePlaceId)).Select(b => b.GooglePlaceId!), StringComparer.OrdinalIgnoreCase);
+            var existingDomains = new HashSet<string>(existing.Select(b => _dedupService.NormalizeDomain(b.WebsiteUrl)).Where(d => !string.IsNullOrEmpty(d)), StringComparer.OrdinalIgnoreCase);
+            var existingPhones = new HashSet<string>(existing.Select(b => _dedupService.NormalizePhone(b.PhonePrimary)).Where(p => !string.IsNullOrEmpty(p)), StringComparer.OrdinalIgnoreCase);
+            var existingNamesCities = new HashSet<string>(existing.Select(b => $"{_dedupService.NormalizeName(b.Name)}|{(b.City ?? "").Trim().ToLowerInvariant()}"), StringComparer.OrdinalIgnoreCase);
+
             foreach (var lead in DiscoveredLeads)
             {
-                var dup = _dedupService.CheckDuplicate(lead.Business, existing);
-                lead.DuplicateMatch = dup.IsDuplicate ? dup : null;
-                if (dup.IsDuplicate)
+                bool isInDb = _recentlyImportedIds.Contains(lead.Business.Id) || existingIds.Contains(lead.Business.Id);
+
+                if (!isInDb && !string.IsNullOrWhiteSpace(lead.Business.GooglePlaceId) && (existingPlaceIds.Contains(lead.Business.GooglePlaceId) || _recentlyImportedPlaceIds.Contains(lead.Business.GooglePlaceId)))
                 {
+                    isInDb = true;
+                }
+
+                var domain = _dedupService.NormalizeDomain(lead.Business.WebsiteUrl);
+                if (!isInDb && !string.IsNullOrWhiteSpace(domain) && existingDomains.Contains(domain))
+                {
+                    isInDb = true;
+                }
+
+                var phone = _dedupService.NormalizePhone(lead.Business.PhonePrimary);
+                if (!isInDb && !string.IsNullOrWhiteSpace(phone) && existingPhones.Contains(phone))
+                {
+                    isInDb = true;
+                }
+
+                var nameCity = $"{_dedupService.NormalizeName(lead.Business.Name)}|{(lead.Business.City ?? "").Trim().ToLowerInvariant()}";
+                if (!isInDb && existingNamesCities.Contains(nameCity))
+                {
+                    isInDb = true;
+                }
+
+                if (isInDb)
+                {
+                    _recentlyImportedIds.Add(lead.Business.Id);
+                    lead.DuplicateMatch = new DuplicateMatchResult
+                    {
+                        IncomingBusiness = lead.Business,
+                        MatchType = DuplicateMatchType.ExactWebsite,
+                        ConfidenceScore = 100,
+                        MatchReason = "Saved in local database"
+                    };
                     lead.IsSelectedForImport = false;
+                }
+                else
+                {
+                    var dup = _dedupService.CheckDuplicate(lead.Business, existing);
+                    lead.DuplicateMatch = dup.IsDuplicate ? dup : null;
+                    if (dup.IsDuplicate)
+                    {
+                        lead.IsSelectedForImport = false;
+                    }
                 }
             }
 
@@ -573,18 +638,89 @@ public partial class DiscoveryViewModel : ViewModelBase
     [RelayCommand]
     public void ClearImportedFromDiscovery()
     {
-        // Remove leads that are now in the database
-        var remaining = DiscoveredLeads.Where(l => !l.IsDuplicate && l.DuplicateMatch == null).ToList();
+        // 1. Reset search input fields and filter toggles
+        CustomSearchKeyword = string.Empty;
+        TargetMissingWebsite = false;
+        TargetMissingGmb = false;
+        RequirePhone = false;
+        ScanTimingSummary = string.Empty;
+        SelectedLead = null;
+        ClearNearby();
+
+        if (ResetLocationOnClear)
+        {
+            SelectedCountry = "All Countries";
+            SelectedState = "All States/Provinces";
+            SelectedCity = "All Cities";
+            SelectedCategory = Categories.FirstOrDefault() ?? "🌟 All Commercial Businesses & Enterprises";
+        }
+
+        // 2. Remove leads that are now in the database
+        var remaining = DiscoveredLeads
+            .Where(l => !_recentlyImportedIds.Contains(l.Business.Id) &&
+                        (string.IsNullOrEmpty(l.Business.GooglePlaceId) || !_recentlyImportedPlaceIds.Contains(l.Business.GooglePlaceId)) &&
+                        !l.IsDuplicate &&
+                        l.DuplicateMatch == null)
+            .ToList();
+
         var removedCount = DiscoveredLeads.Count - remaining.Count;
 
-        DiscoveredLeads = new ObservableCollection<DiscoveredLead>(remaining);
+        DiscoveredLeads.Clear();
+        foreach (var lead in remaining)
+        {
+            DiscoveredLeads.Add(lead);
+        }
+
         TotalFoundCount = DiscoveredLeads.Count;
         NewLeadsCount = DiscoveredLeads.Count(l => !l.IsDuplicate);
-        DuplicateLeadsCount = 0;
+        DuplicateLeadsCount = DiscoveredLeads.Count(l => l.IsDuplicate);
         UpdateSelectionCount();
 
+        OnPropertyChanged(nameof(HasDiscoveredLeads));
+        OnPropertyChanged(nameof(HasNoDiscoveredLeads));
+
         IsImportSuccessAlertOpen = false;
-        StatusMessage = $"🧹 Workspace cleared. Removed {removedCount} imported/existing lead(s). {remaining.Count} unimported lead(s) remain in discovery view.";
+
+        if (DiscoveredLeads.Count == 0)
+        {
+            StatusMessage = $"🧹 Workspace cleared. All {removedCount} imported lead(s) removed from grid and search fields reset.";
+        }
+        else
+        {
+            StatusMessage = $"🧹 Workspace cleared. Removed {removedCount} imported lead(s); {remaining.Count} unimported lead(s) remain in grid. Search fields reset.";
+        }
+    }
+
+    [RelayCommand]
+    public void ResetAllFields()
+    {
+        CustomSearchKeyword = string.Empty;
+        TargetMissingWebsite = false;
+        TargetMissingGmb = false;
+        RequirePhone = false;
+        ScanTimingSummary = string.Empty;
+        SelectedLead = null;
+        ClearNearby();
+
+        SelectedCountry = "All Countries";
+        SelectedState = "All States/Provinces";
+        SelectedCity = "All Cities";
+        SelectedCategory = Categories.FirstOrDefault() ?? "🌟 All Commercial Businesses & Enterprises";
+        SelectedEngine = AvailableEngines.FirstOrDefault() ?? "🌐 Unified Multi-Engine Aggregator (All Active)";
+
+        DiscoveredLeads.Clear();
+        _recentlyImportedIds.Clear();
+        _recentlyImportedPlaceIds.Clear();
+
+        TotalFoundCount = 0;
+        NewLeadsCount = 0;
+        DuplicateLeadsCount = 0;
+        SelectedForImportCount = 0;
+
+        OnPropertyChanged(nameof(HasDiscoveredLeads));
+        OnPropertyChanged(nameof(HasNoDiscoveredLeads));
+
+        StatusMessage = "🧹 Discovery Station reset: all location, category, keyword fields, and results grid cleared.";
     }
 
     [RelayCommand]

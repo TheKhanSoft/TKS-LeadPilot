@@ -208,7 +208,20 @@ public class BusinessRepository : IBusinessRepository
         }
         else
         {
-            _context.Businesses.Update(business);
+            var stageNav = business.PipelineStage;
+            try
+            {
+                var trackedStage = _context.ChangeTracker.Entries<PipelineStage>().FirstOrDefault(e => e.Entity.Id == business.PipelineStageId);
+                if (trackedStage != null && stageNav != null && !ReferenceEquals(trackedStage.Entity, stageNav))
+                {
+                    business.PipelineStage = null;
+                }
+                _context.Businesses.Update(business);
+            }
+            finally
+            {
+                business.PipelineStage = stageNav;
+            }
         }
 
         await _context.SaveChangesAsync(ct);
@@ -232,7 +245,20 @@ public class BusinessRepository : IBusinessRepository
             }
             else
             {
-                _context.Businesses.Update(b);
+                var stageNav = b.PipelineStage;
+                try
+                {
+                    var trackedStage = _context.ChangeTracker.Entries<PipelineStage>().FirstOrDefault(e => e.Entity.Id == b.PipelineStageId);
+                    if (trackedStage != null && stageNav != null && !ReferenceEquals(trackedStage.Entity, stageNav))
+                    {
+                        b.PipelineStage = null;
+                    }
+                    _context.Businesses.Update(b);
+                }
+                finally
+                {
+                    b.PipelineStage = stageNav;
+                }
             }
         }
         await _context.SaveChangesAsync(ct);
