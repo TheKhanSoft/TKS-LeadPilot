@@ -126,9 +126,58 @@ public class BespokeContentPayload
     public List<BespokeFaqItem> Faqs { get; set; } = [];
     public string LeadFormTitle { get; set; } = string.Empty;
     public string LeadFormSubtitle { get; set; } = string.Empty;
+    public List<BespokePricingPlan> PricingPlans { get; set; } = [];
+    public List<BespokeCaseStudy> CaseStudies { get; set; } = [];
+    public BespokeLeaderBio? LeaderBio { get; set; }
+    public BespokeCalculatorConfig? Calculator { get; set; }
     public int ConversionScore { get; set; } = 94;
     public string ArchitectureBlueprintMarkdown { get; set; } = string.Empty;
     public string DeveloperPrompts { get; set; } = string.Empty;
     public string AdCopyPrompts { get; set; } = string.Empty;
     public List<string> MidjourneyPrompts { get; set; } = [];
+}
+
+public class BespokePricingPlan
+{
+    public string Name { get; set; } = string.Empty;
+    public string Price { get; set; } = string.Empty;
+    public string Period { get; set; } = "/month";
+    public string Badge { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public List<string> Features { get; set; } = [];
+    public string Cta { get; set; } = "Get Started";
+    public bool IsPopular { get; set; } = false;
+}
+
+public class BespokeCaseStudy
+{
+    public string ClientName { get; set; } = string.Empty;
+    public string Challenge { get; set; } = string.Empty;
+    public string Solution { get; set; } = string.Empty;
+    public string ResultMetric { get; set; } = string.Empty;
+    public string ResultDescription { get; set; } = string.Empty;
+}
+
+public class BespokeLeaderBio
+{
+    public string Name { get; set; } = string.Empty;
+    public string Role { get; set; } = string.Empty;
+    public string Credentials { get; set; } = string.Empty;
+    public string Bio { get; set; } = string.Empty;
+    public string Quote { get; set; } = string.Empty;
+    public string AvatarInitials { get; set; } = "MD";
+}
+
+public class BespokeCalculatorConfig
+{
+    public string Title { get; set; } = "Interactive ROI / Cost Estimator";
+    public string Subtitle { get; set; } = "Adjust the slider to estimate your potential savings and performance gains.";
+    public string SliderLabel { get; set; } = "Monthly Volume / Investment";
+    public string Unit { get; set; } = "$";
+    public int Min { get; set; } = 1000;
+    public int Max { get; set; } = 50000;
+    public int DefaultValue { get; set; } = 10000;
+    public double Multiplier { get; set; } = 2.8;
+    public string ResultLabel { get; set; } = "Estimated Annual Value Generated";
+    public string ResultSuffix { get; set; } = " / year";
 }

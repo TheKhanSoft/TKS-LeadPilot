@@ -176,4 +176,63 @@ public class AiLandingPageGeneratorServiceTests
         healthResult.GeneratedHtml.Should().NotContain("Premium Healthcare & Urgent Care Delivery");
         techResult.GeneratedHtml.Should().NotContain("Premium Software Company & IT Services Delivery");
     }
+
+    [Fact]
+    public void GenerateDeterministicLandingPage_SupportsArchetypeSpecificLayoutsAndAll12Modules()
+    {
+        var vault = new MockSecretVault();
+        var sut = new AiLandingPageGeneratorService(new HttpClient(), vault);
+
+        // 1. LocalServiceBooking Archetype
+        var clinicReq = new LandingPageGenerationRequest
+        {
+            BusinessName = "Capital Urgent Care",
+            Category = "Healthcare & Walk-In Clinic",
+            City = "Albany",
+            Archetype = LandingPageArchetype.LocalServiceBooking,
+            SelectedModules = ["mod-hero", "mod-services", "mod-pricing", "mod-team", "mod-before-after", "mod-calculator", "mod-faq", "mod-lead-form"]
+        };
+
+        var clinicResult = sut.GenerateDeterministicLandingPage(clinicReq);
+        clinicResult.GeneratedHtml.Should().Contain("Priority Appointment");
+        clinicResult.GeneratedHtml.Should().Contain("Open Now");
+        clinicResult.GeneratedHtml.Should().Contain("Preferred Time Window");
+        clinicResult.GeneratedHtml.Should().Contain("Monday – Sunday: 8:00 AM – 9:00 PM");
+
+        // Verify all advanced modules rendered
+        clinicResult.GeneratedHtml.Should().Contain("Case Studies &amp; Transformation");
+        clinicResult.GeneratedHtml.Should().Contain("Measurable Results Delivered Across Albany");
+        clinicResult.GeneratedHtml.Should().Contain("Leadership &amp; Professional Authority");
+        clinicResult.GeneratedHtml.Should().Contain("Pricing &amp; Packages");
+        clinicResult.GeneratedHtml.Should().Contain("updateCalculator");
+
+        // 2. ModernSaaSTech Archetype
+        var saasReq = new LandingPageGenerationRequest
+        {
+            BusinessName = "CloudStream AI",
+            Category = "Software & IT Services",
+            City = "Seattle",
+            Archetype = LandingPageArchetype.ModernSaaSTech
+        };
+
+        var saasResult = sut.GenerateDeterministicLandingPage(saasReq);
+        saasResult.GeneratedHtml.Should().Contain("api.thekhansoft.io");
+        saasResult.GeneratedHtml.Should().Contain("99.99% SLA");
+        saasResult.GeneratedHtml.Should().Contain("EnterpriseCluster");
+
+        // 3. LuxuryBrandShowcase Archetype
+        var luxuryReq = new LandingPageGenerationRequest
+        {
+            BusinessName = "Aura Private Concierge",
+            Category = "Luxury Real Estate & Advisory",
+            City = "Geneva",
+            Archetype = LandingPageArchetype.LuxuryBrandShowcase,
+            DesignStyle = LandingPageDesignStyle.MidnightLuxuryGold
+        };
+
+        var luxuryResult = sut.GenerateDeterministicLandingPage(luxuryReq);
+        luxuryResult.GeneratedHtml.Should().Contain("Playfair Display");
+        luxuryResult.GeneratedHtml.Should().Contain("Exclusive Bespoke Experience");
+        luxuryResult.GeneratedHtml.Should().Contain("Explore Collection");
+    }
 }

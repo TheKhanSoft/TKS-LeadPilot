@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -250,10 +251,10 @@ public class AiLandingPageGeneratorService(
     {
         var modulesList = request.SelectedModules.Count > 0
             ? string.Join(", ", request.SelectedModules)
-            : "Hero Banner, Trust Badges, Services Grid, Testimonials, FAQ Accordion, Lead Capture Form, WhatsApp Float, SEO Schema";
+            : "Hero Banner, Trust Badges, Services Grid, Case Studies, Leadership Bio, Pricing Matrix, Testimonials, FAQ Accordion, Lead Capture Form, WhatsApp Float, SEO Schema";
 
         var sb = new StringBuilder();
-        sb.AppendLine("You are TheKhanSoft's Principal Conversion Rate Optimization (CRO) Architect and Lead Copywriter.");
+        sb.AppendLine("You are TheKhanSoft's Principal Conversion Rate Optimization (CRO) Architect and Senior Lead Copywriter.");
         sb.AppendLine("Generate completely bespoke, unique, highly specific commercial landing page content and marketing architecture for the following client:");
         sb.AppendLine();
         sb.AppendLine($"- Business Name: {request.BusinessName}");
@@ -274,12 +275,14 @@ public class AiLandingPageGeneratorService(
         }
 
         sb.AppendLine();
-        sb.AppendLine("CRITICAL INSTRUCTIONS FOR BESPOKE GENERATION:");
+        sb.AppendLine("CRITICAL INSTRUCTIONS FOR BESPOKE ARCHITECTURE & CONTENT:");
         sb.AppendLine("1. NEVER generate generic placeholders like 'Premium Delivery', 'Specialized Diagnostics & Audit', or fake corporate filler.");
         sb.AppendLine("2. The services must be 4 to 6 REAL, CONCRETE, bespoke commercial offerings tailored to this exact business and niche.");
         sb.AppendLine($"3. Testimonials must be 3 REALISTIC reviews featuring actual local customer names, neighborhood/title context in {request.City}, and specific authentic situations.");
         sb.AppendLine("4. FAQs must resolve 4 to 5 genuine customer objections regarding turnaround, pricing, scope, and process for this exact trade.");
-        sb.AppendLine("5. Output MUST be strictly valid JSON conforming to the following structure:");
+        sb.AppendLine("5. Pricing must be 3 realistic commercial tiers with pricing amounts, period, and feature lists appropriate for this trade.");
+        sb.AppendLine("6. Case Studies must feature 2-3 measurable before-and-after client transformations.");
+        sb.AppendLine("7. Output MUST be strictly valid JSON conforming to the following structure:");
         sb.AppendLine();
         sb.AppendLine("{");
         sb.AppendLine("  \"headline\": \"Punchy, benefit-driven hero headline tailored to this business in this city\",");
@@ -309,6 +312,47 @@ public class AiLandingPageGeneratorService(
         sb.AppendLine("      \"description\": \"Concrete explanation of why this client outperforms competitors.\"");
         sb.AppendLine("    }");
         sb.AppendLine("  ],");
+        sb.AppendLine("  \"case_studies\": [");
+        sb.AppendLine("    {");
+        sb.AppendLine("      \"client_name\": \"Client or Project in {City}\",");
+        sb.AppendLine("      \"challenge\": \"Problem or bottleneck faced\",");
+        sb.AppendLine("      \"solution\": \"How this business resolved it\",");
+        sb.AppendLine("      \"result_metric\": \"+340% Growth / 0-Min Wait / $42k Saved\",");
+        sb.AppendLine("      \"result_description\": \"Detailed impact summary\"");
+        sb.AppendLine("    }");
+        sb.AppendLine("  ],");
+        sb.AppendLine("  \"pricing_plans\": [");
+        sb.AppendLine("    {");
+        sb.AppendLine("      \"name\": \"Starter / Essential\",");
+        sb.AppendLine("      \"price\": \"$89\",");
+        sb.AppendLine("      \"period\": \"/visit\",");
+        sb.AppendLine("      \"badge\": \"\",");
+        sb.AppendLine("      \"description\": \"Ideal for straightforward needs\",");
+        sb.AppendLine("      \"features\": [\"Feature 1\", \"Feature 2\", \"Feature 3\", \"Feature 4\"],");
+        sb.AppendLine("      \"cta\": \"Select Plan\",");
+        sb.AppendLine("      \"is_popular\": false");
+        sb.AppendLine("    }");
+        sb.AppendLine("  ],");
+        sb.AppendLine("  \"leader_bio\": {");
+        sb.AppendLine("    \"name\": \"Executive / Founder Full Name\",");
+        sb.AppendLine("    \"role\": \"Professional Title & Experience\",");
+        sb.AppendLine("    \"credentials\": \"Certifications, Degrees & Affiliations\",");
+        sb.AppendLine("    \"bio\": \"Inspiring background story and commitment to quality in {City}.\",");
+        sb.AppendLine("    \"quote\": \"Personal leadership philosophy\",");
+        sb.AppendLine("    \"avatar_initials\": \"Two capital letters\"");
+        sb.AppendLine("  },");
+        sb.AppendLine("  \"calculator\": {");
+        sb.AppendLine("    \"title\": \"Interactive ROI / Cost Estimator\",");
+        sb.AppendLine("    \"subtitle\": \"Adjust the slider to preview your estimated value and returns.\",");
+        sb.AppendLine("    \"slider_label\": \"Monthly Volume / Scope\",");
+        sb.AppendLine("    \"unit\": \"$\",");
+        sb.AppendLine("    \"min\": 1000,");
+        sb.AppendLine("    \"max\": 50000,");
+        sb.AppendLine("    \"default_value\": 10000,");
+        sb.AppendLine("    \"multiplier\": 2.8,");
+        sb.AppendLine("    \"result_label\": \"Estimated Annual Impact / Savings\",");
+        sb.AppendLine("    \"result_suffix\": \" / year\"");
+        sb.AppendLine("  },");
         sb.AppendLine("  \"testimonials\": [");
         sb.AppendLine("    {");
         sb.AppendLine("      \"quote\": \"Detailed, authentic customer quote describing a real experience and measurable result.\",");
@@ -501,6 +545,113 @@ public class AiLandingPageGeneratorService(
             }
             if (payload.Differentiators.Count == 0) payload.Differentiators = defaults.Differentiators;
 
+            // Case Studies / Before & After
+            if (obj.TryGetProperty("case_studies", out var csArr) && csArr.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in csArr.EnumerateArray())
+                {
+                    var cName = item.TryGetProperty("client_name", out var cn) ? cn.GetString() ?? string.Empty : string.Empty;
+                    var ch = item.TryGetProperty("challenge", out var chg) ? chg.GetString() ?? string.Empty : string.Empty;
+                    var sol = item.TryGetProperty("solution", out var sln) ? sln.GetString() ?? string.Empty : string.Empty;
+                    var rm = item.TryGetProperty("result_metric", out var rme) ? rme.GetString() ?? string.Empty : string.Empty;
+                    var rd = item.TryGetProperty("result_description", out var rde) ? rde.GetString() ?? string.Empty : string.Empty;
+
+                    if (!string.IsNullOrWhiteSpace(cName))
+                    {
+                        payload.CaseStudies.Add(new BespokeCaseStudy
+                        {
+                            ClientName = cName,
+                            Challenge = ch,
+                            Solution = sol,
+                            ResultMetric = rm,
+                            ResultDescription = rd
+                        });
+                    }
+                }
+            }
+            if (payload.CaseStudies.Count == 0) payload.CaseStudies = defaults.CaseStudies;
+
+            // Pricing Plans
+            if (obj.TryGetProperty("pricing_plans", out var plansArr) && plansArr.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in plansArr.EnumerateArray())
+                {
+                    var pName = item.TryGetProperty("name", out var pn) ? pn.GetString() ?? string.Empty : string.Empty;
+                    var pPrice = item.TryGetProperty("price", out var pp) ? pp.GetString() ?? "$99" : "$99";
+                    var pPeriod = item.TryGetProperty("period", out var pr) ? pr.GetString() ?? "/month" : "/month";
+                    var pBadge = item.TryGetProperty("badge", out var pb) ? pb.GetString() ?? string.Empty : string.Empty;
+                    var pDesc = item.TryGetProperty("description", out var pd) ? pd.GetString() ?? string.Empty : string.Empty;
+                    var pCta = item.TryGetProperty("cta", out var pc) ? pc.GetString() ?? "Get Started" : "Get Started";
+                    var pPop = item.TryGetProperty("is_popular", out var pop) && pop.GetBoolean();
+
+                    var feats = new List<string>();
+                    if (item.TryGetProperty("features", out var fArr) && fArr.ValueKind == JsonValueKind.Array)
+                    {
+                        foreach (var f in fArr.EnumerateArray())
+                        {
+                            var fStr = f.GetString();
+                            if (!string.IsNullOrWhiteSpace(fStr)) feats.Add(fStr);
+                        }
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(pName))
+                    {
+                        payload.PricingPlans.Add(new BespokePricingPlan
+                        {
+                            Name = pName,
+                            Price = pPrice,
+                            Period = pPeriod,
+                            Badge = pBadge,
+                            Description = pDesc,
+                            Features = feats,
+                            Cta = pCta,
+                            IsPopular = pPop
+                        });
+                    }
+                }
+            }
+            if (payload.PricingPlans.Count == 0) payload.PricingPlans = defaults.PricingPlans;
+
+            // Leader Bio
+            if (obj.TryGetProperty("leader_bio", out var lbEl) && lbEl.ValueKind == JsonValueKind.Object)
+            {
+                payload.LeaderBio = new BespokeLeaderBio
+                {
+                    Name = lbEl.TryGetProperty("name", out var lbn) ? lbn.GetString() ?? defaults.LeaderBio?.Name ?? string.Empty : defaults.LeaderBio?.Name ?? string.Empty,
+                    Role = lbEl.TryGetProperty("role", out var lbr) ? lbr.GetString() ?? defaults.LeaderBio?.Role ?? string.Empty : defaults.LeaderBio?.Role ?? string.Empty,
+                    Credentials = lbEl.TryGetProperty("credentials", out var lbc) ? lbc.GetString() ?? defaults.LeaderBio?.Credentials ?? string.Empty : defaults.LeaderBio?.Credentials ?? string.Empty,
+                    Bio = lbEl.TryGetProperty("bio", out var lbb) ? lbb.GetString() ?? defaults.LeaderBio?.Bio ?? string.Empty : defaults.LeaderBio?.Bio ?? string.Empty,
+                    Quote = lbEl.TryGetProperty("quote", out var lbq) ? lbq.GetString() ?? defaults.LeaderBio?.Quote ?? string.Empty : defaults.LeaderBio?.Quote ?? string.Empty,
+                    AvatarInitials = lbEl.TryGetProperty("avatar_initials", out var lbi) ? lbi.GetString() ?? defaults.LeaderBio?.AvatarInitials ?? "MD" : defaults.LeaderBio?.AvatarInitials ?? "MD"
+                };
+            }
+            else
+            {
+                payload.LeaderBio = defaults.LeaderBio;
+            }
+
+            // Calculator
+            if (obj.TryGetProperty("calculator", out var calcEl) && calcEl.ValueKind == JsonValueKind.Object)
+            {
+                payload.Calculator = new BespokeCalculatorConfig
+                {
+                    Title = calcEl.TryGetProperty("title", out var ct) ? ct.GetString() ?? defaults.Calculator?.Title ?? "ROI Estimator" : defaults.Calculator?.Title ?? "ROI Estimator",
+                    Subtitle = calcEl.TryGetProperty("subtitle", out var csb) ? csb.GetString() ?? defaults.Calculator?.Subtitle ?? string.Empty : defaults.Calculator?.Subtitle ?? string.Empty,
+                    SliderLabel = calcEl.TryGetProperty("slider_label", out var csl) ? csl.GetString() ?? defaults.Calculator?.SliderLabel ?? "Volume" : defaults.Calculator?.SliderLabel ?? "Volume",
+                    Unit = calcEl.TryGetProperty("unit", out var cu) ? cu.GetString() ?? "$" : "$",
+                    Min = calcEl.TryGetProperty("min", out var cmin) && cmin.TryGetInt32(out var minVal) ? minVal : defaults.Calculator?.Min ?? 1000,
+                    Max = calcEl.TryGetProperty("max", out var cmax) && cmax.TryGetInt32(out var maxVal) ? maxVal : defaults.Calculator?.Max ?? 50000,
+                    DefaultValue = calcEl.TryGetProperty("default_value", out var cdv) && cdv.TryGetInt32(out var defVal) ? defVal : defaults.Calculator?.DefaultValue ?? 10000,
+                    Multiplier = calcEl.TryGetProperty("multiplier", out var cmul) && cmul.TryGetDouble(out var mulVal) ? mulVal : defaults.Calculator?.Multiplier ?? 2.8,
+                    ResultLabel = calcEl.TryGetProperty("result_label", out var crl) ? crl.GetString() ?? defaults.Calculator?.ResultLabel ?? "Projected Annual Return" : defaults.Calculator?.ResultLabel ?? "Projected Annual Return",
+                    ResultSuffix = calcEl.TryGetProperty("result_suffix", out var crs) ? crs.GetString() ?? defaults.Calculator?.ResultSuffix ?? " / year" : defaults.Calculator?.ResultSuffix ?? " / year"
+                };
+            }
+            else
+            {
+                payload.Calculator = defaults.Calculator;
+            }
+
             // Testimonials
             if (obj.TryGetProperty("testimonials", out var testEl) && testEl.ValueKind == JsonValueKind.Array)
             {
@@ -659,7 +810,7 @@ public class AiLandingPageGeneratorService(
         var country = !string.IsNullOrWhiteSpace(request.Country) ? request.Country.Trim() : "Global";
         var phone = !string.IsNullOrWhiteSpace(request.PhonePrimary) ? request.PhonePrimary.Trim() : "+92 300 1234567";
         var email = !string.IsNullOrWhiteSpace(request.EmailPrimary) ? request.EmailPrimary.Trim() : $"contact@{bizName.ToLowerInvariant().Replace(" ", "")}.com";
-        var modules = request.SelectedModules.Count > 0 ? request.SelectedModules : ["mod-hero", "mod-trust-bar", "mod-services", "mod-testimonials", "mod-faq", "mod-lead-form", "mod-whatsapp", "mod-seo"];
+        var modules = request.SelectedModules.Count > 0 ? request.SelectedModules : ["mod-hero", "mod-trust-bar", "mod-services", "mod-before-after", "mod-team", "mod-testimonials", "mod-pricing", "mod-faq", "mod-lead-form", "mod-whatsapp", "mod-seo"];
 
         var sb = new StringBuilder();
         sb.AppendLine("<!DOCTYPE html>");
@@ -671,10 +822,28 @@ public class AiLandingPageGeneratorService(
         sb.AppendLine($"    <meta name=\"description\" content=\"{payload.Subheadline}\">");
         sb.AppendLine("    <!-- Tailwind CSS CDN -->");
         sb.AppendLine("    <script src=\"https://cdn.tailwindcss.com\"></script>");
-        sb.AppendLine("    <!-- Google Fonts: Plus Jakarta Sans & Inter -->");
+
+        // Google Fonts specific to design style and archetype
         sb.AppendLine("    <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">");
         sb.AppendLine("    <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>");
-        sb.AppendLine("    <link href=\"https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap\" rel=\"stylesheet\">");
+
+        if (request.DesignStyle == LandingPageDesignStyle.MidnightLuxuryGold || request.Archetype == LandingPageArchetype.LuxuryBrandShowcase)
+        {
+            sb.AppendLine("    <link href=\"https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap\" rel=\"stylesheet\">");
+        }
+        else if (request.DesignStyle == LandingPageDesignStyle.MinimalistMonochrome)
+        {
+            sb.AppendLine("    <link href=\"https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap\" rel=\"stylesheet\">");
+        }
+        else if (request.DesignStyle == LandingPageDesignStyle.BoldVibrantIndigo)
+        {
+            sb.AppendLine("    <link href=\"https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap\" rel=\"stylesheet\">");
+        }
+        else
+        {
+            sb.AppendLine("    <link href=\"https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap\" rel=\"stylesheet\">");
+        }
+
         sb.AppendLine("    <!-- FontAwesome 6 Icons CDN -->");
         sb.AppendLine("    <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css\">");
         sb.AppendLine("    <script>");
@@ -682,16 +851,29 @@ public class AiLandingPageGeneratorService(
         sb.AppendLine("            darkMode: 'class',");
         sb.AppendLine("            theme: {");
         sb.AppendLine("                extend: {");
-        sb.AppendLine("                    fontFamily: { sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'] },");
+        if (request.DesignStyle == LandingPageDesignStyle.MidnightLuxuryGold || request.Archetype == LandingPageArchetype.LuxuryBrandShowcase)
+        {
+            sb.AppendLine("                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'], serif: ['Playfair Display', 'serif'] },");
+        }
+        else if (request.DesignStyle == LandingPageDesignStyle.MinimalistMonochrome)
+        {
+            sb.AppendLine("                    fontFamily: { sans: ['Space Grotesk', 'sans-serif'], mono: ['Space Grotesk', 'monospace'] },");
+        }
+        else
+        {
+            sb.AppendLine("                    fontFamily: { sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'] },");
+        }
         sb.AppendLine($"                    colors: {{ brand: '{primaryHex}', brandAccent: '{accentHex}', brandDark: '{bgHex}', brandCard: '{cardBgHex}' }}");
         sb.AppendLine("                }");
         sb.AppendLine("            }");
         sb.AppendLine("        }");
         sb.AppendLine("    </script>");
         sb.AppendLine("    <style>");
-        sb.AppendLine($"        body {{ background-color: {bgHex}; color: {textHex}; font-family: 'Plus Jakarta Sans', sans-serif; }}");
-        sb.AppendLine("        .glow-accent { text-shadow: 0 0 20px rgba(6, 182, 212, 0.4); }");
-        sb.AppendLine("        .glass-card { background: rgba(19, 31, 51, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }");
+        var primaryFont = (request.DesignStyle == LandingPageDesignStyle.MidnightLuxuryGold || request.Archetype == LandingPageArchetype.LuxuryBrandShowcase) ? "Plus Jakarta Sans" : (request.DesignStyle == LandingPageDesignStyle.MinimalistMonochrome ? "Space Grotesk" : "Plus Jakarta Sans");
+        sb.AppendLine($"        body {{ background-color: {bgHex}; color: {textHex}; font-family: '{primaryFont}', sans-serif; }}");
+        sb.AppendLine("        .glass-card { background: rgba(19, 31, 51, 0.65); backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.08); }");
+        sb.AppendLine("        .luxury-card { background: rgba(15, 20, 30, 0.75); backdrop-filter: blur(14px); border: 1px solid rgba(217, 119, 6, 0.25); }");
+        sb.AppendLine("        .tab-active { border-color: " + accentHex + "; color: #ffffff; background: rgba(255,255,255,0.05); }");
         sb.AppendLine("    </style>");
 
         if (modules.Contains("mod-seo"))
@@ -722,6 +904,15 @@ public class AiLandingPageGeneratorService(
         sb.AppendLine("</head>");
         sb.AppendLine("<body class=\"antialiased min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-black\">");
 
+        // 1. Archetype Urgent Top Announcement Bar (for LocalServiceBooking)
+        if (request.Archetype == LandingPageArchetype.LocalServiceBooking)
+        {
+            sb.AppendLine($"    <div class=\"py-2 px-4 text-center text-xs font-semibold bg-emerald-500/15 border-b border-emerald-500/30 text-emerald-300 flex items-center justify-center space-x-2\">");
+            sb.AppendLine($"        <span class=\"w-2 h-2 rounded-full bg-emerald-400 animate-pulse\"></span>");
+            sb.AppendLine($"        <span>Same-Day Priority Slots Available Today in {city} • Hotline Active: <a href=\"tel:{phone}\" class=\"underline font-bold text-white\">{phone}</a></span>");
+            sb.AppendLine($"    </div>");
+        }
+
         // Top Navigation Bar
         sb.AppendLine("    <!-- Header Navigation -->");
         sb.AppendLine($"    <header class=\"sticky top-0 z-50 backdrop-blur-md bg-opacity-80 border-b border-slate-800/80\" style=\"background-color: {bgHex}D0;\">");
@@ -734,7 +925,8 @@ public class AiLandingPageGeneratorService(
         sb.AppendLine("            </div>");
         sb.AppendLine("            <nav class=\"hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300\">");
         sb.AppendLine("                <a href=\"#services\" class=\"hover:text-white transition\">Services</a>");
-        sb.AppendLine("                <a href=\"#why-us\" class=\"hover:text-white transition\">Why Choose Us</a>");
+        if (modules.Contains("mod-before-after")) sb.AppendLine("                <a href=\"#case-studies\" class=\"hover:text-white transition\">Case Studies</a>");
+        if (modules.Contains("mod-pricing")) sb.AppendLine("                <a href=\"#pricing\" class=\"hover:text-white transition\">Pricing</a>");
         sb.AppendLine("                <a href=\"#testimonials\" class=\"hover:text-white transition\">Reviews</a>");
         sb.AppendLine("                <a href=\"#faq\" class=\"hover:text-white transition\">FAQ</a>");
         sb.AppendLine("            </nav>");
@@ -746,49 +938,199 @@ public class AiLandingPageGeneratorService(
 
         sb.AppendLine("    <main class=\"flex-grow\">");
 
-        // Hero Section
+        // =========================================================================
+        // BESPOKE ARCHETYPE HERO SECTION
+        // =========================================================================
         if (modules.Contains("mod-hero"))
         {
-            sb.AppendLine("        <!-- Hero Section -->");
-            sb.AppendLine("        <section class=\"relative pt-20 pb-24 md:pt-28 md:pb-36 overflow-hidden\">");
-            sb.AppendLine($"            <div class=\"absolute -top-40 left-1/2 transform -translate-x-1/2 w-[800px] h-[500px] rounded-full blur-3xl opacity-20 pointer-events-none\" style=\"background: radial-gradient(circle, {accentHex}, transparent 70%);\"></div>");
-            sb.AppendLine("            <div class=\"max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10\">");
-            sb.AppendLine($"                <div class=\"inline-flex items-center space-x-2 px-4 py-1.5 rounded-full border border-slate-700/80 bg-slate-900/60 text-xs font-semibold uppercase tracking-wider mb-8 text-slate-300\">");
-            sb.AppendLine($"                    <span class=\"w-2 h-2 rounded-full animate-pulse\" style=\"background-color: {accentHex};\"></span>");
-            sb.AppendLine($"                    <span>{payload.HeroBadge}</span>");
-            sb.AppendLine("                </div>");
-            sb.AppendLine($"                <h1 class=\"text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white leading-[1.1] mb-6\">");
-            sb.AppendLine($"                    {payload.Headline}");
-            sb.AppendLine("                </h1>");
-            sb.AppendLine($"                <p class=\"max-w-3xl mx-auto text-lg sm:text-xl text-slate-300 font-normal leading-relaxed mb-10\">");
-            sb.AppendLine($"                    {payload.Subheadline}");
-            sb.AppendLine("                </p>");
-            sb.AppendLine("                <div class=\"flex flex-col sm:flex-row items-center justify-center gap-4\">");
-            sb.AppendLine($"                    <a href=\"#contact\" class=\"w-full sm:w-auto px-8 py-4 rounded-xl text-base shadow-2xl transition transform hover:scale-105 {buttonClass}\">");
-            sb.AppendLine($"                        <i class=\"fa-solid fa-calendar-check mr-2\"></i>{payload.CallToAction}");
-            sb.AppendLine("                    </a>");
-            sb.AppendLine($"                    <a href=\"tel:{phone}\" class=\"w-full sm:w-auto px-8 py-4 rounded-xl text-base font-semibold border border-slate-700 bg-slate-900/80 hover:bg-slate-800 text-white transition\">");
-            sb.AppendLine($"                        <i class=\"fa-solid fa-phone mr-2 text-cyan-400\"></i>{phone}");
-            sb.AppendLine("                    </a>");
-            sb.AppendLine("                </div>");
+            switch (request.Archetype)
+            {
+                case LandingPageArchetype.LocalServiceBooking:
+                    // 2-COLUMN LOCAL CLINIC / URGENT SERVICE HERO
+                    sb.AppendLine("        <!-- Local Service Booking 2-Column Hero -->");
+                    sb.AppendLine("        <section class=\"relative pt-16 pb-20 md:pt-24 md:pb-28 overflow-hidden\">");
+                    sb.AppendLine($"            <div class=\"absolute -top-40 left-1/2 transform -translate-x-1/2 w-[900px] h-[550px] rounded-full blur-3xl opacity-20 pointer-events-none\" style=\"background: radial-gradient(circle, {accentHex}, transparent 70%);\"></div>");
+                    sb.AppendLine("            <div class=\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10\">");
+                    sb.AppendLine("                <div class=\"grid grid-cols-1 lg:grid-cols-12 gap-12 items-center\">");
+                    sb.AppendLine("                    <div class=\"lg:col-span-7 text-left\">");
+                    sb.AppendLine($"                        <div class=\"inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full border border-emerald-500/40 bg-emerald-950/40 text-xs font-semibold uppercase tracking-wider mb-6 text-emerald-400\">");
+                    sb.AppendLine("                            <span class=\"w-2 h-2 rounded-full bg-emerald-400 animate-pulse\"></span>");
+                    sb.AppendLine($"                            <span>{payload.HeroBadge}</span>");
+                    sb.AppendLine("                        </div>");
+                    sb.AppendLine($"                        <h1 class=\"text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1] mb-6\">{payload.Headline}</h1>");
+                    sb.AppendLine($"                        <p class=\"text-base sm:text-lg text-slate-300 font-normal leading-relaxed mb-8\">{payload.Subheadline}</p>");
+                    sb.AppendLine("                        <div class=\"space-y-3 mb-8\">");
+                    sb.AppendLine($"                            <div class=\"flex items-center space-x-3 text-sm text-slate-200\"><i class=\"fa-solid fa-circle-check text-emerald-400\"></i><span>Zero waiting room queue with digital arrival check-in</span></div>");
+                    sb.AppendLine($"                            <div class=\"flex items-center space-x-3 text-sm text-slate-200\"><i class=\"fa-solid fa-circle-check text-emerald-400\"></i><span>100% Board-certified attending specialists on-site</span></div>");
+                    sb.AppendLine($"                            <div class=\"flex items-center space-x-3 text-sm text-slate-200\"><i class=\"fa-solid fa-circle-check text-emerald-400\"></i><span>Transparent upfront pricing &amp; direct insurance coordination</span></div>");
+                    sb.AppendLine("                        </div>");
+                    sb.AppendLine("                        <div class=\"flex flex-wrap items-center gap-4\">");
+                    sb.AppendLine($"                            <a href=\"#contact\" class=\"px-7 py-3.5 rounded-xl text-base shadow-xl {buttonClass} transition transform hover:scale-105\"><i class=\"fa-solid fa-calendar-check mr-2\"></i>{payload.CallToAction}</a>");
+                    sb.AppendLine($"                            <a href=\"tel:{phone}\" class=\"px-6 py-3.5 rounded-xl text-base font-semibold border border-slate-700 bg-slate-900/80 hover:bg-slate-800 text-white transition\"><i class=\"fa-solid fa-phone mr-2 text-emerald-400\"></i>{phone}</a>");
+                    sb.AppendLine("                        </div>");
+                    sb.AppendLine("                    </div>");
+
+                    // Right Column: Interactive Same-Day Slot Card
+                    sb.AppendLine("                    <div class=\"lg:col-span-5\">");
+                    sb.AppendLine("                        <div class=\"p-7 rounded-3xl glass-card border border-emerald-500/30 shadow-2xl\">");
+                    sb.AppendLine("                            <div class=\"flex items-center justify-between pb-4 border-b border-slate-800 mb-5\">");
+                    sb.AppendLine("                                <div><h3 class=\"text-lg font-bold text-white\">Priority Appointment</h3><p class=\"text-xs text-slate-400\">Reserve instant queue slot</p></div>");
+                    sb.AppendLine("                                <span class=\"px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-400 text-xs font-bold\">🟢 Open Now</span>");
+                    sb.AppendLine("                            </div>");
+                    sb.AppendLine("                            <form onsubmit=\"handleFormSubmit(event)\" class=\"space-y-4\">");
+                    sb.AppendLine("                                <div>");
+                    sb.AppendLine("                                    <label class=\"block text-xs uppercase text-slate-400 font-bold mb-1.5\">Service Requested</label>");
+                    sb.AppendLine("                                    <select class=\"w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs\">");
+                    foreach (var s in payload.Services) sb.AppendLine($"                                        <option value=\"{s.Title}\">{s.Title}</option>");
+                    sb.AppendLine("                                    </select>");
+                    sb.AppendLine("                                </div>");
+                    sb.AppendLine("                                <div>");
+                    sb.AppendLine("                                    <label class=\"block text-xs uppercase text-slate-400 font-bold mb-1.5\">Preferred Time Window</label>");
+                    sb.AppendLine("                                    <div class=\"grid grid-cols-3 gap-2\">");
+                    sb.AppendLine("                                        <button type=\"button\" onclick=\"selectSlot(this)\" class=\"slot-btn p-2 rounded-lg border border-slate-700 bg-slate-900/60 text-xs text-slate-300 hover:border-emerald-500 active-slot\">Morning<br><span class=\"text-[10px] text-slate-400\">8am - 12pm</span></button>");
+                    sb.AppendLine("                                        <button type=\"button\" onclick=\"selectSlot(this)\" class=\"slot-btn p-2 rounded-lg border border-slate-700 bg-slate-900/60 text-xs text-slate-300 hover:border-emerald-500\">Afternoon<br><span class=\"text-[10px] text-slate-400\">12pm - 5pm</span></button>");
+                    sb.AppendLine("                                        <button type=\"button\" onclick=\"selectSlot(this)\" class=\"slot-btn p-2 rounded-lg border border-slate-700 bg-slate-900/60 text-xs text-slate-300 hover:border-emerald-500\">Urgent Today<br><span class=\"text-[10px] text-emerald-400\">Next Available</span></button>");
+                    sb.AppendLine("                                    </div>");
+                    sb.AppendLine("                                </div>");
+                    sb.AppendLine($"                                <div><label class=\"block text-xs uppercase text-slate-400 font-bold mb-1.5\">Patient Name</label><input type=\"text\" required placeholder=\"Full Name\" class=\"w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs\"></div>");
+                    sb.AppendLine($"                                <div><label class=\"block text-xs uppercase text-slate-400 font-bold mb-1.5\">Phone / WhatsApp</label><input type=\"tel\" required placeholder=\"{phone}\" class=\"w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs\"></div>");
+                    sb.AppendLine($"                                <button type=\"submit\" class=\"w-full py-3.5 rounded-xl font-bold text-sm bg-emerald-500 hover:bg-emerald-600 text-slate-950 transition transform hover:scale-[1.01] shadow-lg\"><i class=\"fa-solid fa-lock mr-2\"></i>Confirm Reservation Slot</button>");
+                    sb.AppendLine("                                <p class=\"text-[11px] text-center text-slate-500\">Instant SMS / WhatsApp confirmation dispatched</p>");
+                    sb.AppendLine("                            </form>");
+                    sb.AppendLine("                        </div>");
+                    sb.AppendLine("                    </div>");
+                    sb.AppendLine("                </div>");
+
+                    // Operational details strip
+                    sb.AppendLine($"                <div class=\"mt-14 py-4 px-6 rounded-2xl bg-slate-950/60 border border-slate-800 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-400\">");
+                    sb.AppendLine($"                    <div class=\"flex items-center space-x-2\"><i class=\"fa-solid fa-location-dot text-emerald-400 text-base\"></i><span>{city}, {country}</span></div>");
+                    sb.AppendLine($"                    <div class=\"flex items-center space-x-2\"><i class=\"fa-solid fa-clock text-cyan-400 text-base\"></i><span>Monday – Sunday: 8:00 AM – 9:00 PM</span></div>");
+                    sb.AppendLine($"                    <div class=\"flex items-center space-x-2\"><i class=\"fa-solid fa-shield-heart text-rose-400 text-base\"></i><span>Emergency &amp; Same-Day Walk-Ins Accepted</span></div>");
+                    sb.AppendLine("                </div>");
+                    sb.AppendLine("            </div>");
+                    sb.AppendLine("        </section>");
+                    break;
+
+                case LandingPageArchetype.ModernSaaSTech:
+                    // MODERN SAAS TECH PRODUCT HERO WITH CODE / DASHBOARD UI PREVIEW
+                    sb.AppendLine("        <!-- Modern SaaS & Tech Product Hero -->");
+                    sb.AppendLine("        <section class=\"relative pt-20 pb-28 md:pt-32 md:pb-36 overflow-hidden\">");
+                    sb.AppendLine($"            <div class=\"absolute -top-40 left-1/2 transform -translate-x-1/2 w-[1000px] h-[550px] rounded-full blur-3xl opacity-25 pointer-events-none\" style=\"background: radial-gradient(circle, {accentHex}, transparent 70%);\"></div>");
+                    sb.AppendLine("            <div class=\"max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10\">");
+                    sb.AppendLine($"                <div class=\"inline-flex items-center space-x-2 px-4 py-1.5 rounded-full border border-cyan-500/40 bg-cyan-950/40 text-xs font-semibold uppercase tracking-wider mb-8 text-cyan-400\">");
+                    sb.AppendLine("                    <span class=\"w-2 h-2 rounded-full bg-cyan-400 animate-pulse\"></span>");
+                    sb.AppendLine($"                    <span>{payload.HeroBadge}</span>");
+                    sb.AppendLine("                </div>");
+                    sb.AppendLine($"                <h1 class=\"text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-cyan-300 leading-[1.1] mb-6\">{payload.Headline}</h1>");
+                    sb.AppendLine($"                <p class=\"max-w-3xl mx-auto text-lg sm:text-xl text-slate-300 leading-relaxed mb-10\">{payload.Subheadline}</p>");
+                    sb.AppendLine("                <div class=\"flex flex-col sm:flex-row items-center justify-center gap-4 mb-14\">");
+                    sb.AppendLine($"                    <a href=\"#contact\" class=\"w-full sm:w-auto px-8 py-4 rounded-xl text-base shadow-2xl {buttonClass} transition transform hover:scale-105\"><i class=\"fa-solid fa-bolt mr-2\"></i>{payload.CallToAction}</a>");
+                    sb.AppendLine($"                    <a href=\"#case-studies\" class=\"w-full sm:w-auto px-8 py-4 rounded-xl text-base font-semibold border border-slate-700 bg-slate-900/80 hover:bg-slate-800 text-white transition\"><i class=\"fa-solid fa-laptop-code mr-2 text-cyan-400\"></i>View Live Architecture</a>");
+                    sb.AppendLine("                </div>");
+
+                    // Interactive Terminal / Dashboard Mockup
+                    sb.AppendLine("                <!-- macOS Dashboard Mockup Window -->");
+                    sb.AppendLine("                <div class=\"max-w-4xl mx-auto rounded-2xl glass-card border border-slate-700/80 shadow-2xl overflow-hidden text-left\">");
+                    sb.AppendLine("                    <div class=\"px-4 py-3 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between\">");
+                    sb.AppendLine("                        <div class=\"flex items-center space-x-2\">");
+                    sb.AppendLine("                            <span class=\"w-3 h-3 rounded-full bg-rose-500\"></span>");
+                    sb.AppendLine("                            <span class=\"w-3 h-3 rounded-full bg-amber-500\"></span>");
+                    sb.AppendLine("                            <span class=\"w-3 h-3 rounded-full bg-emerald-500\"></span>");
+                    sb.AppendLine($"                            <span class=\"ml-3 text-xs text-slate-400 font-mono\">api.thekhansoft.io/{bizName.ToLowerInvariant().Replace(" ", "-")}/v2</span>");
+                    sb.AppendLine("                        </div>");
+                    sb.AppendLine("                        <div class=\"flex items-center space-x-3 text-xs text-slate-400 font-mono\">");
+                    sb.AppendLine("                            <span class=\"text-emerald-400\">● 99.99% SLA</span>");
+                    sb.AppendLine("                            <span>latency: 42ms</span>");
+                    sb.AppendLine("                        </div>");
+                    sb.AppendLine("                    </div>");
+                    sb.AppendLine("                    <div class=\"p-6 bg-slate-950/90 font-mono text-xs text-slate-300 leading-relaxed overflow-x-auto\">");
+                    sb.AppendLine($"                        <span class=\"text-cyan-400\">// Initializing high-throughput client infrastructure for {bizName} in {city}</span><br>");
+                    sb.AppendLine($"                        <span class=\"text-purple-400\">const</span> cluster = <span class=\"text-purple-400\">new</span> EnterpriseCluster({{<br>");
+                    sb.AppendLine($"                        &nbsp;&nbsp;region: <span class=\"text-emerald-300\">\"{city.ToLowerInvariant()}\"</span>,<br>");
+                    sb.AppendLine($"                        &nbsp;&nbsp;highAvailability: <span class=\"text-amber-400\">true</span>,<br>");
+                    sb.AppendLine($"                        &nbsp;&nbsp;autoScaleLimits: {{ min: <span class=\"text-amber-400\">3</span>, max: <span class=\"text-amber-400\">50</span> }},<br>");
+                    sb.AppendLine($"                        &nbsp;&nbsp;security: [<span class=\"text-emerald-300\">\"SOC2\"</span>, <span class=\"text-emerald-300\">\"HIPAA\"</span>, <span class=\"text-emerald-300\">\"ISO27001\"</span>]<br>");
+                    sb.AppendLine("                        });<br>");
+                    sb.AppendLine($"                        <span class=\"text-slate-500\">✔ Cluster deployed in 3.4s • Zero downtime deployment enabled</span>");
+                    sb.AppendLine("                    </div>");
+                    sb.AppendLine("                </div>");
+                    sb.AppendLine("            </div>");
+                    sb.AppendLine("        </section>");
+                    break;
+
+                case LandingPageArchetype.LuxuryBrandShowcase:
+                    // EDITORIAL LUXURY BRAND SHOWCASE HERO
+                    sb.AppendLine("        <!-- Luxury Brand Showcase Hero -->");
+                    sb.AppendLine("        <section class=\"relative pt-24 pb-28 md:pt-36 md:pb-40 overflow-hidden text-center\">");
+                    sb.AppendLine($"            <div class=\"absolute -top-32 left-1/2 transform -translate-x-1/2 w-[800px] h-[400px] rounded-full blur-3xl opacity-15 pointer-events-none\" style=\"background: radial-gradient(circle, #D97706, transparent 70%);\"></div>");
+                    sb.AppendLine("            <div class=\"max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10\">");
+                    sb.AppendLine($"                <p class=\"text-xs font-semibold uppercase tracking-[0.25em] text-amber-400 mb-6\">Exclusive Bespoke Experience • {city}</p>");
+                    sb.AppendLine($"                <h1 class=\"font-serif text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white leading-[1.15] mb-8\">{payload.Headline}</h1>");
+                    sb.AppendLine($"                <div class=\"w-24 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto mb-8\"></div>");
+                    sb.AppendLine($"                <p class=\"max-w-2xl mx-auto text-base sm:text-lg text-slate-300 font-light leading-relaxed mb-12\">{payload.Subheadline}</p>");
+                    sb.AppendLine("                <div class=\"flex flex-col sm:flex-row items-center justify-center gap-5\">");
+                    sb.AppendLine($"                    <a href=\"#contact\" class=\"px-9 py-4 rounded-full text-sm font-bold tracking-wider uppercase bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-2xl hover:brightness-110 transition\"><i class=\"fa-solid fa-crown mr-2\"></i>{payload.CallToAction}</a>");
+                    sb.AppendLine($"                    <a href=\"#services\" class=\"px-8 py-4 rounded-full text-sm font-semibold tracking-wider uppercase border border-amber-500/40 text-amber-200 hover:bg-amber-500/10 transition\">Explore Collection</a>");
+                    sb.AppendLine("                </div>");
+                    sb.AppendLine("            </div>");
+                    sb.AppendLine("        </section>");
+                    break;
+
+                case LandingPageArchetype.CorporateAgencyPortal:
+                    // CORPORATE AGENCY PORTAL WITH B2B ROADMAP
+                    sb.AppendLine("        <!-- Corporate Agency Portal Hero -->");
+                    sb.AppendLine("        <section class=\"relative pt-20 pb-24 md:pt-28 md:pb-32 overflow-hidden\">");
+                    sb.AppendLine("            <div class=\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8\">");
+                    sb.AppendLine("                <div class=\"max-w-3xl text-left\">");
+                    sb.AppendLine($"                    <span class=\"px-3.5 py-1.5 rounded-md bg-indigo-950/60 border border-indigo-500/40 text-xs font-bold text-indigo-300 uppercase tracking-wider mb-6 inline-block\">Enterprise Advisory • {city}</span>");
+                    sb.AppendLine($"                    <h1 class=\"text-4xl sm:text-6xl font-extrabold text-white tracking-tight leading-[1.1] mb-6\">{payload.Headline}</h1>");
+                    sb.AppendLine($"                    <p class=\"text-lg text-slate-300 mb-8\">{payload.Subheadline}</p>");
+                    sb.AppendLine("                    <div class=\"flex flex-wrap gap-4\">");
+                    sb.AppendLine($"                        <a href=\"#contact\" class=\"px-8 py-4 rounded-xl text-base font-bold shadow-xl {buttonClass} transition\"><i class=\"fa-solid fa-arrow-right mr-2\"></i>{payload.CallToAction}</a>");
+                    sb.AppendLine($"                        <a href=\"tel:{phone}\" class=\"px-6 py-4 rounded-xl text-base font-semibold border border-slate-700 bg-slate-900 text-white hover:bg-slate-800 transition\">Direct Briefing: {phone}</a>");
+                    sb.AppendLine("                    </div>");
+                    sb.AppendLine("                </div>");
+                    sb.AppendLine("            </div>");
+                    sb.AppendLine("        </section>");
+                    break;
+
+                default:
+                    // STANDARD HIGH-CONVERTING HERO (LeadGenerationFunnel & Ecommerce)
+                    sb.AppendLine("        <!-- Standard High-Converting Hero -->");
+                    sb.AppendLine("        <section class=\"relative pt-20 pb-24 md:pt-28 md:pb-36 overflow-hidden text-center\">");
+                    sb.AppendLine($"            <div class=\"absolute -top-40 left-1/2 transform -translate-x-1/2 w-[800px] h-[500px] rounded-full blur-3xl opacity-20 pointer-events-none\" style=\"background: radial-gradient(circle, {accentHex}, transparent 70%);\"></div>");
+                    sb.AppendLine("            <div class=\"max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10\">");
+                    sb.AppendLine($"                <div class=\"inline-flex items-center space-x-2 px-4 py-1.5 rounded-full border border-slate-700/80 bg-slate-900/60 text-xs font-semibold uppercase tracking-wider mb-8 text-slate-300\">");
+                    sb.AppendLine($"                    <span class=\"w-2 h-2 rounded-full animate-pulse\" style=\"background-color: {accentHex};\"></span>");
+                    sb.AppendLine($"                    <span>{payload.HeroBadge}</span>");
+                    sb.AppendLine("                </div>");
+                    sb.AppendLine($"                <h1 class=\"text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white leading-[1.1] mb-6\">{payload.Headline}</h1>");
+                    sb.AppendLine($"                <p class=\"max-w-3xl mx-auto text-lg sm:text-xl text-slate-300 leading-relaxed mb-10\">{payload.Subheadline}</p>");
+                    sb.AppendLine("                <div class=\"flex flex-col sm:flex-row items-center justify-center gap-4\">");
+                    sb.AppendLine($"                    <a href=\"#contact\" class=\"w-full sm:w-auto px-8 py-4 rounded-xl text-base shadow-2xl transition transform hover:scale-105 {buttonClass}\"><i class=\"fa-solid fa-calendar-check mr-2\"></i>{payload.CallToAction}</a>");
+                    sb.AppendLine($"                    <a href=\"tel:{phone}\" class=\"w-full sm:w-auto px-8 py-4 rounded-xl text-base font-semibold border border-slate-700 bg-slate-900/80 hover:bg-slate-800 text-white transition\"><i class=\"fa-solid fa-phone mr-2 text-cyan-400\"></i>{phone}</a>");
+                    sb.AppendLine("                </div>");
+                    sb.AppendLine("            </div>");
+                    sb.AppendLine("        </section>");
+                    break;
+            }
 
             // Key Metrics Grid
             if (payload.Metrics.Count > 0)
             {
-                sb.AppendLine("                <!-- Trust Metrics Grid -->");
-                sb.AppendLine($"                <div class=\"mt-16 grid grid-cols-2 sm:grid-cols-{Math.Min(4, payload.Metrics.Count)} gap-4 max-w-4xl mx-auto\">");
+                sb.AppendLine("        <!-- Trust Metrics Grid -->");
+                sb.AppendLine("        <div class=\"max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-16\">");
+                sb.AppendLine($"            <div class=\"grid grid-cols-2 sm:grid-cols-{Math.Min(4, payload.Metrics.Count)} gap-4\">");
                 foreach (var metric in payload.Metrics)
                 {
-                    sb.AppendLine("                    <div class=\"p-4 rounded-lg bg-slate-900/40 border border-slate-800\">");
-                    sb.AppendLine($"                        <div class=\"text-3xl font-extrabold text-white\">{metric.Value}</div>");
-                    sb.AppendLine($"                        <div class=\"text-xs text-slate-400 mt-1\">{metric.Label}</div>");
-                    sb.AppendLine("                    </div>");
+                    sb.AppendLine("                <div class=\"p-5 rounded-xl bg-slate-900/40 border border-slate-800 text-center\">");
+                    sb.AppendLine($"                    <div class=\"text-3xl font-extrabold text-white mb-1\">{metric.Value}</div>");
+                    sb.AppendLine($"                    <div class=\"text-xs text-slate-400 font-medium\">{metric.Label}</div>");
+                    sb.AppendLine("                </div>");
                 }
-                sb.AppendLine("                </div>");
+                sb.AppendLine("            </div>");
+                sb.AppendLine("        </div>");
             }
-
-            sb.AppendLine("            </div>");
-            sb.AppendLine("        </section>");
         }
 
         // Trust Bar
@@ -803,6 +1145,37 @@ public class AiLandingPageGeneratorService(
             {
                 sb.AppendLine($"                    <div class=\"flex items-center space-x-2 text-slate-300 font-bold text-sm\"><i class=\"fa-solid fa-shield-halved text-lg text-emerald-400\"></i><span>{badge}</span></div>");
             }
+            sb.AppendLine("                </div>");
+            sb.AppendLine("            </div>");
+            sb.AppendLine("        </section>");
+        }
+
+        // Corporate Agency 3-Step Methodology (Special for CorporateAgencyPortal)
+        if (request.Archetype == LandingPageArchetype.CorporateAgencyPortal)
+        {
+            sb.AppendLine("        <!-- 3-Step Methodology Section -->");
+            sb.AppendLine("        <section class=\"py-20 bg-slate-900/30 border-b border-slate-800/60\">");
+            sb.AppendLine("            <div class=\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8\">");
+            sb.AppendLine("                <div class=\"text-center max-w-2xl mx-auto mb-14\">");
+            sb.AppendLine("                    <h2 class=\"text-xs font-bold uppercase tracking-widest text-indigo-400 mb-2\">Proven Framework</h2>");
+            sb.AppendLine($"                    <p class=\"text-3xl font-extrabold text-white\">The {bizName} 3-Stage Scaling Engine</p>");
+            sb.AppendLine("                </div>");
+            sb.AppendLine("                <div class=\"grid grid-cols-1 md:grid-cols-3 gap-8\">");
+            sb.AppendLine("                    <div class=\"p-6 rounded-2xl glass-card border-t-4 border-t-indigo-500\">");
+            sb.AppendLine("                        <span class=\"text-3xl font-extrabold text-indigo-400\">01</span>");
+            sb.AppendLine("                        <h4 class=\"text-lg font-bold text-white mt-3 mb-2\">Strategic Discovery &amp; Audit</h4>");
+            sb.AppendLine($"                        <p class=\"text-sm text-slate-400 leading-relaxed\">Deep-dive assessment pinpointing revenue bottlenecks, competitive voids, and high-impact commercial opportunities in {city}.</p>");
+            sb.AppendLine("                    </div>");
+            sb.AppendLine("                    <div class=\"p-6 rounded-2xl glass-card border-t-4 border-t-cyan-500\">");
+            sb.AppendLine("                        <span class=\"text-3xl font-extrabold text-cyan-400\">02</span>");
+            sb.AppendLine("                        <h4 class=\"text-lg font-bold text-white mt-3 mb-2\">Precision Engineering &amp; Sprints</h4>");
+            sb.AppendLine("                        <p class=\"text-sm text-slate-400 leading-relaxed\">Rapid bi-weekly deployment sprints executing custom infrastructure, lead generation, and operational automation.</p>");
+            sb.AppendLine("                    </div>");
+            sb.AppendLine("                    <div class=\"p-6 rounded-2xl glass-card border-t-4 border-t-emerald-500\">");
+            sb.AppendLine("                        <span class=\"text-3xl font-extrabold text-emerald-400\">03</span>");
+            sb.AppendLine("                        <h4 class=\"text-lg font-bold text-white mt-3 mb-2\">Market Dominance &amp; Scale</h4>");
+            sb.AppendLine("                        <p class=\"text-sm text-slate-400 leading-relaxed\">Continuous SLA monitoring, conversion optimization, and dedicated retainer advisory to sustain market authority.</p>");
+            sb.AppendLine("                    </div>");
             sb.AppendLine("                </div>");
             sb.AppendLine("            </div>");
             sb.AppendLine("        </section>");
@@ -840,27 +1213,159 @@ public class AiLandingPageGeneratorService(
             sb.AppendLine("        </section>");
         }
 
-        // Why Choose Us / Differentiators
-        if (payload.Differentiators.Count > 0)
+        // =========================================================================
+        // CASE STUDIES & BEFORE-AFTER TRANSFORMATION (mod-before-after)
+        // =========================================================================
+        if (modules.Contains("mod-before-after") && payload.CaseStudies.Count > 0)
         {
-            sb.AppendLine("        <!-- Why Choose Us / Differentiators -->");
-            sb.AppendLine("        <section id=\"why-us\" class=\"py-20 bg-slate-900/30 border-y border-slate-800/60\">");
+            sb.AppendLine("        <!-- Case Studies & Transformation Section -->");
+            sb.AppendLine("        <section id=\"case-studies\" class=\"py-24 bg-slate-900/40 border-y border-slate-800/80\">");
             sb.AppendLine("            <div class=\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8\">");
-            sb.AppendLine("                <div class=\"text-center max-w-2xl mx-auto mb-14\">");
-            sb.AppendLine($"                    <h2 class=\"text-xs font-bold uppercase tracking-widest text-emerald-400 mb-2\">The {bizName} Advantage</h2>");
-            sb.AppendLine($"                    <p class=\"text-3xl font-extrabold text-white tracking-tight\">Why Clients in {city} Choose Us</p>");
+            sb.AppendLine("                <div class=\"text-center max-w-3xl mx-auto mb-16\">");
+            sb.AppendLine("                    <span class=\"text-xs font-bold uppercase tracking-widest text-emerald-400 mb-2 block\">Case Studies &amp; Transformation</span>");
+            sb.AppendLine($"                    <h2 class=\"text-3xl sm:text-4xl font-extrabold text-white tracking-tight\">Measurable Results Delivered Across {city}</h2>");
+            sb.AppendLine("                    <p class=\"text-slate-400 mt-3 text-sm\">Real organizations, real roadblocks, and quantifiable outcome benchmarks achieved.</p>");
             sb.AppendLine("                </div>");
-            sb.AppendLine("                <div class=\"grid grid-cols-1 md:grid-cols-3 gap-8\">");
-            foreach (var diff in payload.Differentiators)
+            sb.AppendLine("                <div class=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8\">");
+
+            foreach (var cs in payload.CaseStudies)
             {
-                sb.AppendLine("                    <div class=\"p-6 rounded-2xl glass-card flex items-start space-x-4\">");
-                sb.AppendLine($"                        <div class=\"w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center text-xl bg-emerald-500/10 text-emerald-400\"><i class=\"{diff.Icon}\"></i></div>");
+                sb.AppendLine("                    <div class=\"p-7 rounded-2xl glass-card flex flex-col justify-between hover:border-emerald-500/40 transition\">");
                 sb.AppendLine("                        <div>");
-                sb.AppendLine($"                            <h4 class=\"text-base font-bold text-white mb-1.5\">{diff.Title}</h4>");
-                sb.AppendLine($"                            <p class=\"text-slate-400 text-xs leading-relaxed\">{diff.Description}</p>");
+                sb.AppendLine($"                            <span class=\"text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1\">{cs.ClientName}</span>");
+                sb.AppendLine($"                            <div class=\"text-3xl font-black text-emerald-400 my-4\">{cs.ResultMetric}</div>");
+                sb.AppendLine($"                            <div class=\"mb-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 text-xs text-slate-400\">");
+                sb.AppendLine($"                                <strong class=\"text-rose-400 block mb-1\"><i class=\"fa-solid fa-triangle-exclamation mr-1\"></i>Initial Challenge:</strong>{cs.Challenge}");
+                sb.AppendLine("                            </div>");
+                sb.AppendLine($"                            <div class=\"mb-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 text-xs text-slate-400\">");
+                sb.AppendLine($"                                <strong class=\"text-cyan-400 block mb-1\"><i class=\"fa-solid fa-wand-magic-sparkles mr-1\"></i>Deployed Solution:</strong>{cs.Solution}");
+                sb.AppendLine("                            </div>");
                 sb.AppendLine("                        </div>");
+                sb.AppendLine($"                        <p class=\"text-xs text-slate-300 font-medium italic pt-3 border-t border-slate-800\"><i class=\"fa-solid fa-circle-check text-emerald-400 mr-1.5\"></i>{cs.ResultDescription}</p>");
                 sb.AppendLine("                    </div>");
             }
+
+            sb.AppendLine("                </div>");
+            sb.AppendLine("            </div>");
+            sb.AppendLine("        </section>");
+        }
+
+        // =========================================================================
+        // LEADERSHIP & PROFESSIONAL BIO (mod-team)
+        // =========================================================================
+        if (modules.Contains("mod-team") && payload.LeaderBio != null)
+        {
+            var bio = payload.LeaderBio;
+            sb.AppendLine("        <!-- Leadership & Authority Bio Section -->");
+            sb.AppendLine("        <section class=\"py-24 relative\">");
+            sb.AppendLine("            <div class=\"max-w-5xl mx-auto px-4 sm:px-6 lg:px-8\">");
+            sb.AppendLine("                <div class=\"p-8 sm:p-12 rounded-3xl glass-card border border-slate-700/80 shadow-2xl grid grid-cols-1 md:grid-cols-12 gap-8 items-center\">");
+            sb.AppendLine("                    <div class=\"md:col-span-4 text-center md:text-left\">");
+            sb.AppendLine($"                        <div class=\"w-32 h-32 mx-auto md:mx-0 rounded-2xl flex items-center justify-center font-black text-4xl shadow-2xl mb-4\" style=\"background: linear-gradient(135deg, {primaryHex}, {accentHex}); color: #000;\">");
+            sb.AppendLine($"                            {bio.AvatarInitials}");
+            sb.AppendLine("                        </div>");
+            sb.AppendLine($"                        <h3 class=\"text-xl font-bold text-white\">{bio.Name}</h3>");
+            sb.AppendLine($"                        <p class=\"text-xs font-semibold text-cyan-400 mt-1\">{bio.Role}</p>");
+            sb.AppendLine($"                        <span class=\"mt-3 inline-block px-3 py-1 rounded-full bg-slate-900 border border-slate-700 text-[11px] text-slate-300 font-medium\">{bio.Credentials}</span>");
+            sb.AppendLine("                    </div>");
+            sb.AppendLine("                    <div class=\"md:col-span-8 space-y-4\">");
+            sb.AppendLine($"                        <h4 class=\"text-2xl font-bold text-white tracking-tight\">Leadership &amp; Professional Authority</h4>");
+            sb.AppendLine($"                        <p class=\"text-slate-300 text-sm leading-relaxed\">{bio.Bio}</p>");
+            if (!string.IsNullOrWhiteSpace(bio.Quote))
+            {
+                sb.AppendLine($"                        <blockquote class=\"p-4 rounded-xl bg-slate-900/80 border-l-4 border-l-cyan-400 text-xs italic text-slate-300\">\"{bio.Quote}\"</blockquote>");
+            }
+            sb.AppendLine($"                        <div class=\"pt-2 flex flex-wrap gap-3 text-xs text-slate-400\">");
+            sb.AppendLine($"                            <span class=\"flex items-center\"><i class=\"fa-solid fa-award text-amber-400 mr-1.5\"></i>Certified Specialist</span>");
+            sb.AppendLine($"                            <span class=\"flex items-center\"><i class=\"fa-solid fa-user-shield text-emerald-400 mr-1.5\"></i>Direct Accountability</span>");
+            sb.AppendLine($"                            <span class=\"flex items-center\"><i class=\"fa-solid fa-location-dot text-cyan-400 mr-1.5\"></i>Based in {city}</span>");
+            sb.AppendLine("                        </div>");
+            sb.AppendLine("                    </div>");
+            sb.AppendLine("                </div>");
+            sb.AppendLine("            </div>");
+            sb.AppendLine("        </section>");
+        }
+
+        // =========================================================================
+        // TRANSPARENT PRICING & PACKAGES MATRIX (mod-pricing)
+        // =========================================================================
+        if (modules.Contains("mod-pricing") && payload.PricingPlans.Count > 0)
+        {
+            sb.AppendLine("        <!-- Pricing & Packages Section -->");
+            sb.AppendLine("        <section id=\"pricing\" class=\"py-24 bg-slate-950/50 border-t border-slate-800/80\">");
+            sb.AppendLine("            <div class=\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8\">");
+            sb.AppendLine("                <div class=\"text-center max-w-3xl mx-auto mb-16\">");
+            sb.AppendLine("                    <span class=\"text-xs font-bold uppercase tracking-widest text-cyan-400 mb-2 block\">Pricing &amp; Packages</span>");
+            sb.AppendLine($"                    <h2 class=\"text-3xl sm:text-4xl font-extrabold text-white tracking-tight\">Transparent Packages Designed for Every Stage</h2>");
+            sb.AppendLine("                    <p class=\"text-slate-400 mt-3 text-sm\">Zero hidden retainers, no surprise overhead, and 100% formal scope agreements.</p>");
+            sb.AppendLine("                </div>");
+            sb.AppendLine($"                <div class=\"grid grid-cols-1 md:grid-cols-{Math.Min(3, payload.PricingPlans.Count)} gap-8 items-stretch\">");
+
+            foreach (var plan in payload.PricingPlans)
+            {
+                var popularRing = plan.IsPopular ? "border-2 border-cyan-400 shadow-2xl relative" : "border border-slate-800";
+                var badgeHtml = !string.IsNullOrWhiteSpace(plan.Badge)
+                    ? $"<span class=\"absolute -top-3.5 left-1/2 transform -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-cyan-400 text-slate-950 shadow-md\">{plan.Badge}</span>"
+                    : "";
+
+                sb.AppendLine($"                    <div class=\"p-8 rounded-3xl glass-card flex flex-col justify-between {popularRing}\">");
+                sb.AppendLine($"                        {badgeHtml}");
+                sb.AppendLine("                        <div>");
+                sb.AppendLine($"                            <h3 class=\"text-xl font-bold text-white mb-2\">{plan.Name}</h3>");
+                sb.AppendLine($"                            <p class=\"text-xs text-slate-400 mb-6\">{plan.Description}</p>");
+                sb.AppendLine("                            <div class=\"flex items-baseline space-x-1 mb-6\">");
+                sb.AppendLine($"                                <span class=\"text-4xl font-black text-white\">{plan.Price}</span>");
+                sb.AppendLine($"                                <span class=\"text-xs text-slate-400\">{plan.Period}</span>");
+                sb.AppendLine("                            </div>");
+                sb.AppendLine("                            <ul class=\"space-y-3 mb-8 text-xs text-slate-300\">");
+                foreach (var f in plan.Features)
+                {
+                    sb.AppendLine($"                                <li class=\"flex items-center space-x-2.5\"><i class=\"fa-solid fa-circle-check text-cyan-400\"></i><span>{f}</span></li>");
+                }
+                sb.AppendLine("                            </ul>");
+                sb.AppendLine("                        </div>");
+                sb.AppendLine($"                        <a href=\"#contact\" class=\"w-full py-3.5 rounded-xl text-center text-sm font-bold {buttonClass} block shadow-lg transition transform hover:scale-[1.02]\">{plan.Cta}</a>");
+                sb.AppendLine("                    </div>");
+            }
+
+            sb.AppendLine("                </div>");
+            sb.AppendLine("            </div>");
+            sb.AppendLine("        </section>");
+        }
+
+        // =========================================================================
+        // INTERACTIVE ROI / COST ESTIMATOR (mod-calculator)
+        // =========================================================================
+        if (modules.Contains("mod-calculator") && payload.Calculator != null)
+        {
+            var calc = payload.Calculator;
+            var multStr = calc.Multiplier.ToString(CultureInfo.InvariantCulture);
+            sb.AppendLine("        <!-- Interactive ROI / Cost Estimator -->");
+            sb.AppendLine("        <section class=\"py-20 relative bg-gradient-to-b from-slate-900/40 to-slate-950/60 border-t border-slate-800/80\">");
+            sb.AppendLine("            <div class=\"max-w-4xl mx-auto px-4 sm:px-6 lg:px-8\">");
+            sb.AppendLine("                <div class=\"p-8 sm:p-12 rounded-3xl glass-card border border-cyan-500/30 shadow-2xl text-center\">");
+            sb.AppendLine($"                    <span class=\"text-xs font-bold uppercase tracking-widest text-cyan-400 mb-2 block\">Interactive Financial Modeling</span>");
+            sb.AppendLine($"                    <h2 class=\"text-3xl font-extrabold text-white mb-3\">{calc.Title}</h2>");
+            sb.AppendLine($"                    <p class=\"text-slate-400 text-sm max-w-xl mx-auto mb-10\">{calc.Subtitle}</p>");
+            sb.AppendLine("                    <div class=\"max-w-2xl mx-auto space-y-6 text-left mb-10\">");
+            sb.AppendLine("                        <div class=\"flex justify-between items-center\">");
+            sb.AppendLine($"                            <label class=\"text-xs font-bold uppercase text-slate-300\">{calc.SliderLabel}</label>");
+            sb.AppendLine($"                            <span id=\"calcInputVal\" class=\"text-2xl font-black text-white\">{calc.Unit}{calc.DefaultValue:N0}</span>");
+            sb.AppendLine("                        </div>");
+            sb.AppendLine($"                        <input type=\"range\" min=\"{calc.Min}\" max=\"{calc.Max}\" value=\"{calc.DefaultValue}\" step=\"500\" class=\"w-full h-2.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-400\" oninput=\"updateCalculator(this.value)\">");
+            sb.AppendLine("                        <div class=\"flex justify-between text-[11px] text-slate-500 font-mono\">");
+            sb.AppendLine($"                            <span>{calc.Unit}{calc.Min:N0}</span>");
+            sb.AppendLine($"                            <span>{calc.Unit}{calc.Max:N0}+</span>");
+            sb.AppendLine("                        </div>");
+            sb.AppendLine("                    </div>");
+            sb.AppendLine("                    <div class=\"p-6 rounded-2xl bg-slate-950/80 border border-slate-800 inline-block max-w-md w-full mb-8\">");
+            sb.AppendLine($"                        <div class=\"text-xs uppercase tracking-wider text-slate-400 mb-2 font-bold\">{calc.ResultLabel}</div>");
+            var defaultCalculated = Math.Round(calc.DefaultValue * calc.Multiplier);
+            sb.AppendLine($"                        <div id=\"calcOutputVal\" class=\"text-4xl sm:text-5xl font-black text-cyan-400\">{calc.Unit}{defaultCalculated:N0}{calc.ResultSuffix}</div>");
+            sb.AppendLine("                    </div>");
+            sb.AppendLine("                    <div>");
+            sb.AppendLine($"                        <a href=\"#contact\" class=\"px-8 py-4 rounded-xl text-base font-bold shadow-xl {buttonClass} transition transform hover:scale-105 inline-block\">Lock In These Projected Returns</a>");
+            sb.AppendLine("                    </div>");
             sb.AppendLine("                </div>");
             sb.AppendLine("            </div>");
             sb.AppendLine("        </section>");
@@ -1014,9 +1519,24 @@ public class AiLandingPageGeneratorService(
         sb.AppendLine("                icon.classList.remove('rotate-180');");
         sb.AppendLine("            }");
         sb.AppendLine("        }");
+        sb.AppendLine("        function selectSlot(btn) {");
+        sb.AppendLine("            document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('border-emerald-500', 'bg-emerald-500/20'));");
+        sb.AppendLine("            btn.classList.add('border-emerald-500', 'bg-emerald-500/20');");
+        sb.AppendLine("        }");
+        sb.AppendLine("        function updateCalculator(val) {");
+        var multVal = payload.Calculator?.Multiplier ?? 2.8;
+        var unitVal = payload.Calculator?.Unit ?? "$";
+        var sfxVal = payload.Calculator?.ResultSuffix ?? " / year";
+        sb.AppendLine($"            const mult = {multVal.ToString(CultureInfo.InvariantCulture)};");
+        sb.AppendLine($"            const unit = '{unitVal}';");
+        sb.AppendLine($"            const sfx = '{sfxVal}';");
+        sb.AppendLine("            const num = Number(val);");
+        sb.AppendLine("            document.getElementById('calcInputVal').innerText = unit + num.toLocaleString();");
+        sb.AppendLine("            document.getElementById('calcOutputVal').innerText = unit + Math.round(num * mult).toLocaleString() + sfx;");
+        sb.AppendLine("        }");
         sb.AppendLine("        function handleFormSubmit(e) {");
         sb.AppendLine("            e.preventDefault();");
-        sb.AppendLine($"            alert('Thank you! Your inquiry has been received by {bizName}. An advisor will contact you within 2 hours.');");
+        sb.AppendLine($"            alert('Thank you! Your request has been confirmed with {bizName}. An advisor will connect with you shortly.');");
         sb.AppendLine("            e.target.reset();");
         sb.AppendLine("        }");
         sb.AppendLine("    </script>");
@@ -1062,6 +1582,39 @@ public class AiLandingPageGeneratorService(
                     new() { Icon = "fa-solid fa-user-doctor", Title = "100% Attending Physician Care", Description = "Every diagnosis and treatment plan is conducted by seasoned, board-certified doctors, not unsupervised trainees." },
                     new() { Icon = "fa-solid fa-file-invoice-dollar", Title = "Transparent, Predictable Billing", Description = "Upfront copay and self-pay pricing schedules with absolutely zero surprise bills or hidden facility fees." }
                 ],
+                CaseStudies =
+                [
+                    new() { ClientName = $"{city} Family Emergency", Challenge = "Severe pediatric ear infection on weekend evening when ER wait was 4 hours", Solution = "Same-day priority admission with onsite pediatric evaluation and direct antibiotic prescription", ResultMetric = "7 Min Intake", ResultDescription = "Complete relief provided with zero emergency room fees" },
+                    new() { ClientName = $"{city} Sports Orthopedic Injury", Challenge = "Suspected wrist fracture requiring immediate radiological confirmation", Solution = "High-definition digital radiology with board-certified radiologist read in 15 minutes", ResultMetric = "35 Min Total", ResultDescription = "Splint applied and referral formalized without hospital hospitalization" }
+                ],
+                PricingPlans =
+                [
+                    new() { Name = "Urgent Consultation", Price = "$79", Period = "/visit", Badge = "", Description = "Complete clinical diagnosis & prescription", Features = ["Attending MD Examination", "Vitals & Oxygen Screening", "Digital Prescription Sent to Pharmacy", "Free 48-Hour Followup Message"], Cta = "Book Visit", IsPopular = false },
+                    new() { Name = "Comprehensive Care + Labs", Price = "$149", Period = "/visit", Badge = "Most Popular", Description = "Full diagnostic battery with digital imaging", Features = ["All Urgent Consultation Features", "Onsite Digital X-Ray (Single Region)", "Rapid Point-of-Care Blood/Urine Panel", "Written Specialist Clinical Report"], Cta = "Reserve Priority Slot", IsPopular = true },
+                    new() { Name = "Family Annual Wellness", Price = "$399", Period = "/year", Badge = "Best Value", Description = "Year-round priority healthcare for up to 4 members", Features = ["Unlimited Priority Queue Access", "4 Annual Comprehensive Wellness Physicals", "Discounted In-House Radiology & Labs", "24/7 Dedicated Physician WhatsApp Hotline"], Cta = "Enroll Family", IsPopular = false }
+                ],
+                LeaderBio = new BespokeLeaderBio
+                {
+                    Name = $"Dr. Alexander Miller, MD",
+                    Role = "Chief Medical Director",
+                    Credentials = "Board-Certified Emergency & Family Medicine • 18+ Yrs",
+                    Bio = $"Dr. Miller founded {bizName} to bring compassionate, zero-wait clinical care directly to families across {city}. Having directed busy emergency rooms, he eliminated bureaucratic delays to focus entirely on patient healing.",
+                    Quote = "Medicine is not just about prescriptions; it's about giving patients immediate reassurance and expert care when they feel most vulnerable.",
+                    AvatarInitials = "AM"
+                },
+                Calculator = new BespokeCalculatorConfig
+                {
+                    Title = "Hospital ER vs. Urgent Care Savings Estimator",
+                    Subtitle = "Compare typical hospital emergency room bills with our transparent upfront outpatient pricing.",
+                    SliderLabel = "Estimated Number of Annual Outpatient Visits",
+                    Unit = "",
+                    Min = 1,
+                    Max = 12,
+                    DefaultValue = 3,
+                    Multiplier = 450,
+                    ResultLabel = "Estimated Out-of-Pocket Savings",
+                    ResultSuffix = " saved vs. Hospital ER"
+                },
                 Testimonials =
                 [
                     new() { Quote = $"When my child developed an intense fever on Sunday evening, {bizName} in {city} took us into an exam room in under 10 minutes. The doctor was compassionate, gentle, and thorough.", Author = "Sarah Jenkins", Role = $"Parent & {city} Resident", Initials = "SJ", Rating = 5 },
@@ -1112,6 +1665,39 @@ public class AiLandingPageGeneratorService(
                     new() { Icon = "fa-solid fa-shield-halved", Title = "100% Unencumbered Source Code Ownership", Description = "All intellectual property, repositories, Docker images, and documentation belong strictly to your company from day one." },
                     new() { Icon = "fa-solid fa-headset", Title = "Post-Launch SLA & Dedicated Engineering Support", Description = "Guaranteed 15-minute response times for critical incidents, proactive security patching, and ongoing feature velocity." }
                 ],
+                CaseStudies =
+                [
+                    new() { ClientName = "FinTech Global Payments", Challenge = "Monolithic backend experiencing latency spikes and transaction timeout failures during peak volume", Solution = "Migrated to event-driven microservices architecture utilizing Kafka and high-throughput .NET 8 APIs", ResultMetric = "99.99% Uptime", ResultDescription = "Latency reduced by 74% and handled $140M in transaction volume without an error" },
+                    new() { ClientName = "Logistics Telematics Mobile Platform", Challenge = "Field technicians struggling with offline data synchronization and manual paper reporting", Solution = "Engineered cross-platform mobile app with SQLite offline caching and background sync to cloud database", ResultMetric = "4.2x Throughput", ResultDescription = "Eliminated 100% of paper logs and boosted driver delivery capacity by 35%" }
+                ],
+                PricingPlans =
+                [
+                    new() { Name = "MVP Acceleration Sprint", Price = "$4,900", Period = "/sprint", Badge = "", Description = "Rapid 3-week proof-of-concept release", Features = ["UI/UX Interactive Figma Prototype", "Production Full-Stack Architecture", "Core Database & Authentication", "CI/CD Deployment to Cloud Vercel/AWS"], Cta = "Book Discovery", IsPopular = false },
+                    new() { Name = "Dedicated Product Team", Price = "$9,500", Period = "/month", Badge = "Recommended", Description = "Autonomous cross-functional development squad", Features = ["Senior Full-Stack Engineers & Architect", "Bi-Weekly Production Sprint Releases", "Direct Slack/Teams Channel Integration", "Guaranteed 99.9% Uptime SLA Guarantee"], Cta = "Hire Squad", IsPopular = true },
+                    new() { Name = "Enterprise Cloud Modernization", Price = "Custom", Period = "/engagement", Badge = "", Description = "Complete legacy system overhaul & migration", Features = ["Enterprise Architecture Governance", "Zero-Downtime Database Migration", "Kubernetes Multi-Region Orchestration", "24/7/365 On-Call SRE Incident Response"], Cta = "Request Briefing", IsPopular = false }
+                ],
+                LeaderBio = new BespokeLeaderBio
+                {
+                    Name = $"{bizName} Engineering Leadership",
+                    Role = "Principal Solutions Architect",
+                    Credentials = "AWS Certified Solutions Architect Professional • 15+ Yrs",
+                    Bio = $"Our engineering leadership team has architected mission-critical platforms handling millions of transactions. We bridge commercial strategy with uncompromising software engineering quality.",
+                    Quote = "Great code isn't measured by lines written, but by the commercial value it creates and how reliably it runs in production.",
+                    AvatarInitials = "CTO"
+                },
+                Calculator = new BespokeCalculatorConfig
+                {
+                    Title = "Engineering Velocity & ROI Estimator",
+                    Subtitle = "Calculate potential annual development cost savings compared to hiring full-time in-house engineering squads.",
+                    SliderLabel = "Monthly Engineering Budget / Team Size",
+                    Unit = "$",
+                    Min = 3000,
+                    Max = 40000,
+                    DefaultValue = 10000,
+                    Multiplier = 2.4,
+                    ResultLabel = "Estimated Value & Operational Savings",
+                    ResultSuffix = " / year"
+                },
                 Testimonials =
                 [
                     new() { Quote = $"{bizName} transformed our legacy monolithic software into a modern microservices architecture ahead of schedule. The engineering discipline and communication in {city} were exceptional.", Author = "Alexander Wright", Role = "CTO, VentureScale", Initials = "AW", Rating = 5 },
@@ -1161,6 +1747,25 @@ public class AiLandingPageGeneratorService(
                     new() { Icon = "fa-solid fa-award", Title = "Award-Winning Master Chefs", Description = "Our kitchen brigade brings international culinary credentials and deep reverence for traditional flavor craftsmanship." },
                     new() { Icon = "fa-solid fa-heart", Title = "Warm, Attentive Hospitality", Description = "From table greeting to dessert presentation, our front-of-house team ensures you feel genuinely celebrated." }
                 ],
+                CaseStudies =
+                [
+                    new() { ClientName = "Annual Corporate Gala (120 Guests)", Challenge = "Strict multi-course dietary requirements across executive leadership", Solution = "Bespoke 5-course seasonal tasting menu paired with sommelier-selected reserve wines", ResultMetric = "100% Satisfaction", ResultDescription = "Delivered seamless simultaneous table service with zero delays" }
+                ],
+                PricingPlans =
+                [
+                    new() { Name = "Seasonal Tasting Menu", Price = "$65", Period = "/guest", Badge = "", Description = "4-course curated dining experience", Features = ["Chef's Amuse-Bouche", "Choice of Artisan Appetizer", "Prime Seasonal Entree", "Signature House Dessert"], Cta = "Reserve Seats", IsPopular = false },
+                    new() { Name = "Sommelier Signature Experience", Price = "$110", Period = "/guest", Badge = "Most Popular", Description = "6-course pairing journey", Features = ["All Tasting Menu Courses", "Exclusive Vintage Wine Pairings", "Chef's Table Kitchen Tour", "Priority Window Seating Guarantee"], Cta = "Book Chef's Table", IsPopular = true },
+                    new() { Name = "Private Banquet Buyout", Price = "Custom", Period = "/event", Badge = "", Description = "Exclusive venue access for up to 100 guests", Features = ["Full Exclusive Dining Room Access", "Custom Monogrammed Menu Cards", "Dedicated Mixologist & Full Bar", "Audio/Visual Presentation Setup"], Cta = "Inquire Dates", IsPopular = false }
+                ],
+                LeaderBio = new BespokeLeaderBio
+                {
+                    Name = "Executive Chef Matteo Rossi",
+                    Role = "Culinary Director & Founder",
+                    Credentials = "Michelin-Trained Gastronomy Specialist • 20+ Yrs",
+                    Bio = $"Chef Matteo founded {bizName} in {city} to bring unpretentious culinary excellence and vibrant regional flavors directly to discerning diners.",
+                    Quote = "True hospitality is about transforming dinner into an unforgettable story that friends share around the table.",
+                    AvatarInitials = "MR"
+                },
                 Testimonials =
                 [
                     new() { Quote = $"Hands down the most memorable dining experience in {city}. The ribeye and seasonal sides were cooked to absolute perfection. Impeccable wine pairings.", Author = "Sophia Martinez", Role = $"{city} Food Enthusiast", Initials = "SM", Rating = 5 },
@@ -1209,6 +1814,39 @@ public class AiLandingPageGeneratorService(
                     new() { Icon = "fa-solid fa-file-signature", Title = "Turnkey Net Metering & Permit Approvals", Description = $"Our dedicated compliance team handles all utility interconnect paperwork, municipal permits, and approvals in {city}." },
                     new() { Icon = "fa-solid fa-screwdriver-wrench", Title = "25-Year Equipment & Workmanship Coverage", Description = "Complete peace of mind backed by manufacturer warranties, storm durability guarantees, and ongoing monitoring." }
                 ],
+                CaseStudies =
+                [
+                    new() { ClientName = $"{city} Logistics Cold Storage Warehouse", Challenge = "Surging commercial electricity tariff exceeding $14,000 monthly", Solution = "Engineered 180kW rooftop array with smart load-shifting lithium storage", ResultMetric = "-78% Electric Bill", ResultDescription = "$130k saved annually with a 3.1-year total system payback period" },
+                    new() { ClientName = "Suburban Residential Homeowner", Challenge = "Frequent summer grid outages spoiling food and cutting air conditioning", Solution = "10kW Tier-1 system paired with dual 13.5kWh smart home batteries", ResultMetric = "$18/mo Power Bill", ResultDescription = "100% blackout resilience achieved with zero grid disruptions" }
+                ],
+                PricingPlans =
+                [
+                    new() { Name = "Residential Essential (6kW)", Price = "$8,500", Period = "turnkey", Badge = "", Description = "Ideal for single-family homes with $200/mo electric bills", Features = ["14x Tier-1 High-Efficiency Monocrystalline Panels", "Smart Solar Inverter with Mobile Monitoring", "Turnkey Municipal Permitting & Net Metering", "25-Year Manufacturer Linear Warranty"], Cta = "Audit My Roof", IsPopular = false },
+                    new() { Name = "Executive Solar + Battery (12kW)", Price = "$16,900", Period = "turnkey", Badge = "Most Popular", Description = "Complete energy independence & whole-home blackout protection", Features = ["28x Ultra-High Yield All-Black Panels", "13.5 kWh Lithium Smart Battery Storage", "24/7 Real-Time Cloud Grid Monitoring", "Whole-Home Seamless Blackout Transfer Switch"], Cta = "Lock In Incentives", IsPopular = true },
+                    new() { Name = "Commercial & Industrial Array", Price = "Custom", Period = "project", Badge = "", Description = "High-yield commercial systems for business facilities", Features = ["50kW to 1MW+ Commercial Engineering", "Corporate Tax Depreciation Optimization", "Structural Rooftop Feasibility Certification", "Dedicated Preventive O&M Service Contract"], Cta = "Request Commercial Bid", IsPopular = false }
+                ],
+                Calculator = new BespokeCalculatorConfig
+                {
+                    Title = "Solar ROI & 25-Year Savings Calculator",
+                    Subtitle = "Slide to your current monthly electric bill to estimate your cumulative lifetime solar savings.",
+                    SliderLabel = "Current Average Monthly Electric Bill",
+                    Unit = "$",
+                    Min = 100,
+                    Max = 2000,
+                    DefaultValue = 350,
+                    Multiplier = 240, // 20 years of ~80% savings
+                    ResultLabel = "Estimated 20-Year Lifetime Energy Savings",
+                    ResultSuffix = " saved"
+                },
+                LeaderBio = new BespokeLeaderBio
+                {
+                    Name = "Engineer Tariq Al-Mansoor",
+                    Role = "Chief Renewable Energy Engineer",
+                    Credentials = "NABCEP Certified PV Installation Professional • 16+ Yrs",
+                    Bio = $"Tariq has overseen the engineering and grid interconnect of over 85 megawatts of commercial and residential solar across {city} and international markets.",
+                    Quote = "Clean solar power isn't just an ecological choice; it's the smartest financial investment a property owner can make.",
+                    AvatarInitials = "TM"
+                },
                 Testimonials =
                 [
                     new() { Quote = $"{bizName} installed a 12kW system on our home in {city}. Our monthly power bill dropped from $480 down to the $18 connection fee! Clean, fast, professional installation.", Author = "Brian O'Connor", Role = $"Homeowner, {city}", Initials = "BO", Rating = 5 },
@@ -1255,6 +1893,38 @@ public class AiLandingPageGeneratorService(
                 new() { Icon = "fa-solid fa-clock", Title = "Rapid Turnaround Guarantees", Description = "Agile execution models ensure your project is initiated promptly and completed within agreed timelines." },
                 new() { Icon = "fa-solid fa-shield", Title = "100% Satisfaction Warranty", Description = "We stand behind all deliverables with clear scope definitions and responsive revision support." }
             ],
+            CaseStudies =
+            [
+                new() { ClientName = $"{city} Commercial Client", Challenge = "Inefficient operations and slow customer acquisition", Solution = "Modernized process workflows and launched targeted acquisition channel", ResultMetric = "+185% Inquiries", ResultDescription = "Delivered milestone project ahead of schedule with 99.4% satisfaction" }
+            ],
+            PricingPlans =
+            [
+                new() { Name = "Essential Service", Price = "$299", Period = "/package", Badge = "", Description = "Foundational commercial package", Features = ["Comprehensive Diagnostic Review", "Full Implementation Roadmap", "Core Deliverables Milestone", "30-Day Post-Launch Support"], Cta = "Get Started", IsPopular = false },
+                new() { Name = "Growth Professional", Price = "$799", Period = "/package", Badge = "Most Popular", Description = "Accelerated delivery & priority execution", Features = ["All Essential Features Included", "Dedicated Senior Account Lead", "Expedited 7-Day Turnaround", "Quarterly Strategy Review Session"], Cta = "Select Growth", IsPopular = true },
+                new() { Name = "Enterprise Retainer", Price = "$1,800", Period = "/month", Badge = "", Description = "Full dedicated agency capacity & continuous optimization", Features = ["Direct Emergency Hotline Access", "Unlimited Scope Revisions within SLA", "Continuous Multi-Channel Optimization", "Executive Monthly Reporting"], Cta = "Contact Sales", IsPopular = false }
+            ],
+            LeaderBio = new BespokeLeaderBio
+            {
+                Name = $"Director at {bizName}",
+                Role = $"Managing Principal, {category}",
+                Credentials = "Certified Industry Specialist • 15+ Yrs",
+                Bio = $"Guiding ambitious organizations across {city} to achieve sustainable commercial dominance through precision execution and proven methodologies.",
+                Quote = "Excellence is not an accident; it is the inevitable outcome of high standards and relentless execution.",
+                AvatarInitials = "MP"
+            },
+            Calculator = new BespokeCalculatorConfig
+            {
+                Title = "Commercial Impact & Value Estimator",
+                Subtitle = "Slide to adjust your estimated project scope and view projected commercial value return.",
+                SliderLabel = "Estimated Project Scope / Volume",
+                Unit = "$",
+                Min = 1000,
+                Max = 30000,
+                DefaultValue = 7500,
+                Multiplier = 3.2,
+                ResultLabel = "Projected 12-Month Value Return",
+                ResultSuffix = " generated"
+            },
             Testimonials =
             [
                 new() { Quote = $"{bizName} revolutionized our customer onboarding. The professionalism and speed in {city} were unlike anything we had experienced before.", Author = "Malik Asad", Role = $"Managing Director, Apex Global ({city})", Initials = "MA", Rating = 5 },
@@ -1309,13 +1979,25 @@ public class AiLandingPageGeneratorService(
             switch (mod)
             {
                 case "mod-hero":
-                    sb.AppendLine("- **Purpose:** Capture visitor attention within 3 seconds, deliver the core brand promise, and present clear dual CTAs (Booking + Phone).");
+                    sb.AppendLine($"- **Purpose:** Capture visitor attention within 3 seconds, deliver the core brand promise tailored to archetype `{archetype}`, and present clear dual CTAs.");
                     break;
                 case "mod-trust-bar":
                     sb.AppendLine("- **Purpose:** Overcome initial skepticism with recognized certifications, 4.9★ rating indicators, and compliance emblems.");
                     break;
                 case "mod-services":
                     sb.AppendLine("- **Purpose:** Showcase distinct service offerings with concrete deliverables and clear business value.");
+                    break;
+                case "mod-before-after":
+                    sb.AppendLine("- **Purpose:** High-impact client transformation benchmarks and before-and-after proof points.");
+                    break;
+                case "mod-team":
+                    sb.AppendLine("- **Purpose:** Establish personal leadership authority, founder credentials, and executive accountability.");
+                    break;
+                case "mod-pricing":
+                    sb.AppendLine("- **Purpose:** Multi-tier package clarity defusing price hesitation with explicit deliverables.");
+                    break;
+                case "mod-calculator":
+                    sb.AppendLine("- **Purpose:** Client-side dynamic ROI and cost savings estimator increasing time-on-page and engagement.");
                     break;
                 case "mod-testimonials":
                     sb.AppendLine("- **Purpose:** Provide authentic social proof from local regional clients with identifiable titles and satisfaction quotes.");

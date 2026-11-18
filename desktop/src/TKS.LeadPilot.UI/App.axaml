@@ -246,6 +246,33 @@
             <Setter Property="Opacity" Value="0.35"/>
         </Style>
 
+        <!-- 10a. Segmented Navigation & Tab Bar Buttons -->
+        <Style Selector="Button.tab-btn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#94A3B8"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="FontSize" Value="11.5"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style Selector="Button.tab-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#1E293B"/>
+            <Setter Property="Foreground" Value="#F8FAFC"/>
+            <Setter Property="BorderBrush" Value="#334155"/>
+        </Style>
+        <Style Selector="Button.tab-btn.active /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#0284C7"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#38BDF8"/>
+        </Style>
+        <Style Selector="Button.tab-btn.active">
+            <Setter Property="Background" Value="#0284C7"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#38BDF8"/>
+        </Style>
+
         <!-- 10b. Toggle Chips for Discovery & Filtering -->
         <Style Selector="ToggleButton.toggle-chip">
             <Setter Property="Cursor" Value="Hand"/>

@@ -1,11 +1,16 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using TKS.LeadPilot.Core.Enums;
 using TKS.LeadPilot.Core.Interfaces;
 using TKS.LeadPilot.Core.Models;
 
@@ -35,6 +40,12 @@ public partial class AuditsViewModel : ViewModelBase
     private ObservableCollection<WebsiteAuditFinding> _findings = [];
 
     [ObservableProperty]
+    private ObservableCollection<WebsiteAuditFinding> _filteredFindings = [];
+
+    [ObservableProperty]
+    private string _selectedSeverityFilter = "All";
+
+    [ObservableProperty]
     private ObservableCollection<WebsiteAudit> _recentAudits = [];
 
     [ObservableProperty]
@@ -42,6 +53,15 @@ public partial class AuditsViewModel : ViewModelBase
 
     [ObservableProperty]
     private string _statusMessage = "Select a business lead with a website to audit.";
+
+    // Multi-tab Workspace Navigation
+    [ObservableProperty]
+    private string _activeTab = "Findings";
+
+    public bool IsFindingsTab => ActiveTab == "Findings";
+    public bool IsForensicsTab => ActiveTab == "Forensics";
+    public bool IsSeoContentTab => ActiveTab == "SeoContent";
+    public bool IsRecentAuditsTab => ActiveTab == "RecentAudits";
 
     // AI Proposal Studio State (Stage 8)
     [ObservableProperty]
@@ -142,6 +162,45 @@ public partial class AuditsViewModel : ViewModelBase
         }
     }
 
+    [RelayCommand]
+    public void SetTab(string tab)
+    {
+        ActiveTab = tab;
+        OnPropertyChanged(nameof(IsFindingsTab));
+        OnPropertyChanged(nameof(IsForensicsTab));
+        OnPropertyChanged(nameof(IsSeoContentTab));
+        OnPropertyChanged(nameof(IsRecentAuditsTab));
+    }
+
+    [RelayCommand]
+    public void SetSeverityFilter(string filter)
+    {
+        SelectedSeverityFilter = filter;
+        ApplyFindingsFilter();
+    }
+
+    private void ApplyFindingsFilter()
+    {
+        if (Findings == null || Findings.Count == 0)
+        {
+            FilteredFindings = [];
+            return;
+        }
+
+        if (SelectedSeverityFilter == "All")
+        {
+            FilteredFindings = new ObservableCollection<WebsiteAuditFinding>(Findings);
+        }
+        else if (Enum.TryParse<AuditSeverity>(SelectedSeverityFilter, true, out var targetSeverity))
+        {
+            FilteredFindings = new ObservableCollection<WebsiteAuditFinding>(Findings.Where(f => f.Severity == targetSeverity));
+        }
+        else
+        {
+            FilteredFindings = new ObservableCollection<WebsiteAuditFinding>(Findings);
+        }
+    }
+
     private async Task LoadLatestAuditForBusiness(string businessId)
     {
         try
@@ -151,13 +210,15 @@ public partial class AuditsViewModel : ViewModelBase
             {
                 CurrentAudit = audit;
                 Findings = new ObservableCollection<WebsiteAuditFinding>(audit.Findings);
+                ApplyFindingsFilter();
                 StatusMessage = $"Loaded previous audit from {audit.CreatedAtUtc.ToLocalTime():g}. Overall Score: {audit.OverallScore}%";
             }
             else
             {
                 CurrentAudit = null;
                 Findings.Clear();
-                StatusMessage = "No prior audit exists for this business. Click 'Run Audit' to diagnose.";
+                ApplyFindingsFilter();
+                StatusMessage = "No prior audit exists for this business. Click 'Run Technical Audit' to diagnose.";
             }
         }
         catch
@@ -188,6 +249,7 @@ public partial class AuditsViewModel : ViewModelBase
 
             CurrentAudit = audit;
             Findings = new ObservableCollection<WebsiteAuditFinding>(audit.Findings);
+            ApplyFindingsFilter();
 
             var recent = await _auditRepository.GetRecentAuditsAsync(20);
             RecentAudits = new ObservableCollection<WebsiteAudit>(recent);
@@ -209,6 +271,76 @@ public partial class AuditsViewModel : ViewModelBase
         {
             IsAuditing = false;
         }
+    }
+
+    [RelayCommand]
+    public void OpenWebsiteInBrowser()
+    {
+        if (string.IsNullOrWhiteSpace(TargetUrl)) return;
+        try
+        {
+            var url = TargetUrl.Trim();
+            if (!url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                url = "https://" + url;
+            }
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Could not open browser: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public async Task CopyFindingFix(WebsiteAuditFinding? finding)
+    {
+        if (finding == null) return;
+        var text = $"[{finding.Severity}] {finding.Title}\nCode: {finding.RuleCode}\nImpact: {finding.BusinessImpact}\nRecommended Fix: {finding.RecommendedFix}";
+        await CopyToClipboardAsync(text);
+        StatusMessage = $"Copied fix for '{finding.Title}' to clipboard.";
+    }
+
+    [RelayCommand]
+    public async Task CopyReportSummary()
+    {
+        if (CurrentAudit == null) return;
+        var sb = new StringBuilder();
+        sb.AppendLine($"# Technical Audit Summary: {SelectedBusiness?.Name ?? CurrentAudit.TargetUrl}");
+        sb.AppendLine($"Target URL: {CurrentAudit.TargetUrl}");
+        sb.AppendLine($"Health Index: {CurrentAudit.OverallScoreDisplay} (Security: {CurrentAudit.SecurityScoreDisplay}, Performance: {CurrentAudit.PerformanceScoreDisplay}, SEO: {CurrentAudit.SeoScoreDisplay})");
+        sb.AppendLine($"SSL Status: {CurrentAudit.SslStatusDisplay} • TTFB Latency: {CurrentAudit.TtfbDisplay}");
+        sb.AppendLine($"Findings: {CurrentAudit.Findings.Count} detected ({CurrentAudit.CriticalCount} Critical, {CurrentAudit.HighCount} High, {CurrentAudit.MediumCount} Medium)");
+        await CopyToClipboardAsync(sb.ToString());
+        StatusMessage = "Copied technical audit summary to clipboard.";
+    }
+
+    [RelayCommand]
+    public void SelectRecentAudit(WebsiteAudit? audit)
+    {
+        if (audit == null) return;
+        CurrentAudit = audit;
+        TargetUrl = audit.TargetUrl;
+        Findings = new ObservableCollection<WebsiteAuditFinding>(audit.Findings);
+        ApplyFindingsFilter();
+        SetTab("Findings");
+        StatusMessage = $"Loaded historical audit from {audit.CreatedAtUtc.ToLocalTime():g}. Score: {audit.OverallScoreDisplay}";
+    }
+
+    private static async Task CopyToClipboardAsync(string text)
+    {
+        try
+        {
+            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.Clipboard != null)
+            {
+                await desktop.MainWindow.Clipboard.SetTextAsync(text);
+            }
+        }
+        catch { }
     }
 
     [RelayCommand]

@@ -355,30 +355,33 @@
                         </DataGrid.ContextMenu>
 
                         <DataGrid.Columns>
-                            <!-- 1. Selection Checkbox -->
-                            <DataGridTemplateColumn Width="36">
+                            <!-- 1. Selection Checkbox (Wider width with zero margin ensures full checkbox is visible) -->
+                            <DataGridTemplateColumn Width="48">
                                 <DataGridTemplateColumn.Header>
                                     <CheckBox IsChecked="{Binding ((vm:BusinessesViewModel)DataContext).IsAllSelected, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              Margin="0" Padding="0"
                                               ToolTip.Tip="Select / Deselect all visible leads"/>
                                 </DataGridTemplateColumn.Header>
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate x:DataType="m:Business">
                                         <CheckBox IsChecked="{Binding IsSelected}"
-                                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  Margin="0" Padding="0"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <!-- 2. Star / Favorite Toggle (Clickable) -->
-                            <DataGridTemplateColumn Header="★" Width="34">
+                            <!-- 2. Star / Favorite Toggle (Clickable, generous width) -->
+                            <DataGridTemplateColumn Header="★" Width="38">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate x:DataType="m:Business">
                                         <Button Command="{Binding ((vm:BusinessesViewModel)DataContext).ToggleStarCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 CommandParameter="{Binding}"
                                                 Background="Transparent"
                                                 BorderThickness="0"
-                                                Padding="2"
+                                                Padding="0"
+                                                Width="28" Height="28"
                                                 HorizontalAlignment="Center"
                                                 VerticalAlignment="Center"
                                                 Cursor="Hand"
