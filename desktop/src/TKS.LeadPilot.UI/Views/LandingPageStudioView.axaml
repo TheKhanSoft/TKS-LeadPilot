@@ -6,7 +6,7 @@
              x:DataType="vm:LandingPageStudioViewModel"
              Background="#080C14">
 
-    <Grid ColumnDefinitions="360,*" Margin="14">
+    <Grid ColumnDefinitions="380,*" Margin="14">
         <!-- ================================================================= -->
         <!-- LEFT PANEL: CONFIGURATION & PROMPT INSTRUCTION STUDIO             -->
         <!-- ================================================================= -->
@@ -365,47 +365,28 @@
                             </Grid>
                         </Border>
 
-                        <!-- Simulated Layout Structure Cards -->
+                        <!-- Dynamic Synthesized Page Modules Flow Cards -->
                         <TextBlock Text="SYNTHESIZED PAGE MODULES &amp; FLOW" FontSize="11" FontWeight="Bold" Foreground="#64748B" LetterSpacing="0.8"/>
-                        <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" Margin="0,0,0,10">
-                            <Border Grid.Row="0" Grid.Column="0" Background="#10192A" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,6,8">
-                                <StackPanel Spacing="4">
-                                    <TextBlock Text="01. Hero &amp; Value Proposition" FontWeight="Bold" FontSize="12" Foreground="#38BDF8"/>
-                                    <TextBlock Text="{Binding CurrentResult.Headline, FallbackValue='Headline tailored to high-converting local intent'}" FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Border>
-                            <Border Grid.Row="0" Grid.Column="1" Background="#10192A" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="8" Padding="14" Margin="3,0,3,8">
-                                <StackPanel Spacing="4">
-                                    <TextBlock Text="02. Trust &amp; Certification Bar" FontWeight="Bold" FontSize="12" Foreground="#38BDF8"/>
-                                    <TextBlock Text="Google Guaranteed, ISO 9001, Chamber of Commerce badges" FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Border>
-                            <Border Grid.Row="0" Grid.Column="2" Background="#10192A" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="8" Padding="14" Margin="6,0,0,8">
-                                <StackPanel Spacing="4">
-                                    <TextBlock Text="03. Solutions Grid" FontWeight="Bold" FontSize="12" Foreground="#38BDF8"/>
-                                    <TextBlock Text="Core offerings tailored to local customer demand and pain points" FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Border>
-
-                            <Border Grid.Row="1" Grid.Column="0" Background="#10192A" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,6,0">
-                                <StackPanel Spacing="4">
-                                    <TextBlock Text="04. Testimonials &amp; Social Proof" FontWeight="Bold" FontSize="12" Foreground="#38BDF8"/>
-                                    <TextBlock Text="4.9★ composite review score with verified regional customer quotes" FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Border>
-                            <Border Grid.Row="1" Grid.Column="1" Background="#10192A" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="8" Padding="14" Margin="3,0,3,0">
-                                <StackPanel Spacing="4">
-                                    <TextBlock Text="05. Interactive FAQ Accordion" FontWeight="Bold" FontSize="12" Foreground="#38BDF8"/>
-                                    <TextBlock Text="Expandable objection-handling resolving pricing and timeline hesitation" FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Border>
-                            <Border Grid.Row="1" Grid.Column="2" Background="#10192A" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="8" Padding="14" Margin="6,0,0,0">
-                                <StackPanel Spacing="4">
-                                    <TextBlock Text="06. Conversion Form &amp; WhatsApp" FontWeight="Bold" FontSize="12" Foreground="#38BDF8"/>
-                                    <TextBlock Text="Low-friction lead capture modal + persistent sticky WhatsApp button" FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Border>
-                        </Grid>
+                        <ItemsControl ItemsSource="{Binding SynthesizedModulesFlow}" Margin="0,0,0,10">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:SynthesizedModuleItem">
+                                    <Border Width="260" Background="#10192A" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,8,8">
+                                        <StackPanel Spacing="5">
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <TextBlock Text="{Binding Icon}" FontSize="12" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="12" Foreground="#38BDF8" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding Description}" FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
 
                         <!-- Callout: Pitching this to the Client -->
                         <Border Background="#1E1B4B" BorderBrush="#4338CA" BorderThickness="1" CornerRadius="10" Padding="16">

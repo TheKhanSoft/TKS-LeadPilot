@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
@@ -83,6 +84,9 @@ public partial class LandingPageStudioViewModel : ViewModelBase
     [ObservableProperty]
     private ObservableCollection<LandingPageModuleOption> _availableModules = [];
 
+    [ObservableProperty]
+    private ObservableCollection<SynthesizedModuleItem> _synthesizedModulesFlow = [];
+
     // Generation State
     [ObservableProperty]
     private bool _isGenerating = false;
@@ -123,6 +127,7 @@ public partial class LandingPageStudioViewModel : ViewModelBase
 
         var modules = _generatorService.GetAvailableModules();
         AvailableModules = new ObservableCollection<LandingPageModuleOption>(modules);
+        UpdateSynthesizedModulesFlow();
 
         if (TargetBusinessForStudio != null)
         {
@@ -351,6 +356,7 @@ public partial class LandingPageStudioViewModel : ViewModelBase
 
             var result = await _generatorService.GenerateLandingPageAsync(req);
             CurrentResult = result;
+            UpdateSynthesizedModulesFlow();
 
             StatusMessage = $"✅ Landing Page & Architecture generated in {result.ExecutionDuration.TotalSeconds:F1}s via {result.Provider} (Conversion Score: {result.ConversionScore}/100)";
             ActiveResultTab = "Preview";
@@ -476,6 +482,50 @@ public partial class LandingPageStudioViewModel : ViewModelBase
     }
 
 
+    public void UpdateSynthesizedModulesFlow()
+    {
+        var list = new List<SynthesizedModuleItem>();
+        int idx = 1;
+        var active = AvailableModules.Where(m => m.IsSelected).Select(m => m.Id).ToHashSet();
+        if (active.Count == 0)
+        {
+            active = ["mod-hero", "mod-trust-bar", "mod-services", "mod-before-after", "mod-team", "mod-testimonials", "mod-pricing", "mod-calculator", "mod-faq", "mod-lead-form", "mod-whatsapp", "mod-seo"];
+        }
+
+        var moduleDict = new Dictionary<string, (string Title, string Desc, string Icon)>
+        {
+            ["mod-hero"] = ("Hero & Value Proposition", CurrentResult?.Headline ?? "High-converting hero value proposition tailored to target market", "🎯"),
+            ["mod-trust-bar"] = ("Trust & Certification Bar", "Google Guaranteed, ISO 9001, Chamber of Commerce & Verified rating emblems", "🛡️"),
+            ["mod-services"] = ("Core Solutions & Services Grid", "Interactive cards detailing key commercial offerings, deliverables & CTAs", "💼"),
+            ["mod-before-after"] = ("Transformation & Case Studies", "Measurable client before & after benchmarks with quantified metrics", "📈"),
+            ["mod-team"] = ("Leadership & Authority Bio", "Executive credentials, founder story, certifications & personal quote", "👔"),
+            ["mod-testimonials"] = ("Testimonials & Social Proof", "4.9★ composite review score with verified regional customer feedback", "⭐"),
+            ["mod-pricing"] = ("Transparent Pricing & Packages", "Multi-tier commercial package matrix with feature checklists & badges", "🏷️"),
+            ["mod-calculator"] = ("Interactive ROI / Cost Estimator", "Client-side interactive budget or savings slider computing real-time value", "🧮"),
+            ["mod-faq"] = ("Interactive FAQ Accordion", "Expandable objection-handling resolving pricing, timeline & scope doubts", "❓"),
+            ["mod-lead-form"] = ("Lead Capture Booking Form", "Low-friction lead capture form with instant validation & reassurance", "📝"),
+            ["mod-whatsapp"] = ("Floating WhatsApp & Direct Call", "Persistent sticky instant messaging & click-to-call direct contact widget", "💬"),
+            ["mod-seo"] = ("LocalBusiness Schema & Meta Tags", "Automated JSON-LD rich snippet schema, OpenGraph tags & Twitter Cards", "🔍")
+        };
+
+        foreach (var (modId, (title, desc, icon)) in moduleDict)
+        {
+            if (active.Contains(modId))
+            {
+                list.Add(new SynthesizedModuleItem
+                {
+                    Number = $"{idx:D2}",
+                    Title = $"{idx:D2}. {title}",
+                    Description = desc,
+                    Icon = icon
+                });
+                idx++;
+            }
+        }
+
+        SynthesizedModulesFlow = new ObservableCollection<SynthesizedModuleItem>(list);
+    }
+
     private static async Task CopyToClipboardAsync(string text)
     {
         try
@@ -487,4 +537,12 @@ public partial class LandingPageStudioViewModel : ViewModelBase
         }
         catch { }
     }
+}
+
+public class SynthesizedModuleItem
+{
+    public string Number { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string Icon { get; set; } = "⚡";
 }

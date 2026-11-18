@@ -281,9 +281,14 @@ public partial class DiscoveryViewModel : ViewModelBase
 
     private void UpdateCategories()
     {
-        var presets = _discoveryService.GetPresetCategories().Keys.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        var presets = _discoveryService.GetPresetCategories().Keys
+            .Where(k => !string.IsNullOrWhiteSpace(k))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
         Categories = new ObservableCollection<string>(presets);
-        SelectedCategory = presets.FirstOrDefault() ?? "⭐ All Commercial Businesses & Enterprises";
+        SelectedCategory = presets.FirstOrDefault(c => c.Contains("All Commercial", StringComparison.OrdinalIgnoreCase)) 
+                           ?? presets.FirstOrDefault() 
+                           ?? "⭐ All Commercial Businesses & Enterprises";
     }
 
     private void UpdateSuggestedNiches()
