@@ -213,17 +213,54 @@
             <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto">
                 <!-- Left: DataGrid Pane -->
                 <Border Grid.Column="0" Background="#111A2C" BorderBrush="#223147" BorderThickness="1" CornerRadius="8">
-                    <DataGrid ItemsSource="{Binding Businesses}"
-                              SelectedItem="{Binding SelectedBusiness}"
-                              AutoGenerateColumns="False"
-                              IsReadOnly="True"
-                              IsEnabled="{Binding !IsLoading}"
-                              GridLinesVisibility="Horizontal"
-                              HorizontalScrollBarVisibility="Auto"
-                              VerticalScrollBarVisibility="Auto"
-                              RowBackground="#111A2C"
-                              BorderThickness="0"
-                              CornerRadius="8">
+                    <Grid RowDefinitions="Auto,*">
+                        <!-- Batch Selection & Bulk Removal Toolbar -->
+                        <Border Grid.Row="0" Background="#0C1322" BorderBrush="#1E293B" BorderThickness="0,0,0,1" Padding="10,6">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <TextBlock Text="BATCH:" FontSize="10" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,2,0"/>
+                                    <Button Content="Select All" Command="{Binding SelectAllLeadsCommand}" Classes="btn-secondary" Padding="7,3" FontSize="11" IsEnabled="{Binding !IsLoading}"/>
+                                    <Button Content="Unselect All" Command="{Binding UnselectAllLeadsCommand}" Classes="btn-secondary" Padding="7,3" FontSize="11" IsEnabled="{Binding !IsLoading}"/>
+                                    
+                                    <!-- Delete Selected Button (Active when 1 or more leads selected) -->
+                                    <Button Content="{Binding SelectedCount, StringFormat='🗑 Delete Selected ({0})'}"
+                                            Command="{Binding RequestDeleteSelectedCommand}"
+                                            Classes="btn-danger"
+                                            IsVisible="{Binding HasSelectedLeads}"
+                                            Padding="8,3" FontSize="11" Margin="4,0,0,0"/>
+                                </StackPanel>
+
+                                <!-- Right: Global / Filtered Deletion Menu -->
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <Button Content="🗑️ Delete All..." Classes="pill-filter" Foreground="#FB7185" Padding="8,3" FontSize="11" ToolTip.Tip="Remove all or filtered leads from database">
+                                        <Button.Flyout>
+                                            <MenuFlyout Placement="Bottom">
+                                                <MenuItem Header="{Binding FilteredCount, StringFormat='🗑 Delete Visible Filtered Leads ({0})'}"
+                                                          Command="{Binding RequestDeleteVisibleCommand}"
+                                                          Foreground="#FB7185"/>
+                                                <MenuItem Header="{Binding TotalCount, StringFormat='⚠️ Delete ALL Database Leads ({0})'}"
+                                                          Command="{Binding RequestDeleteAllDatabaseCommand}"
+                                                          Foreground="#EF4444"
+                                                          FontWeight="Bold"/>
+                                            </MenuFlyout>
+                                        </Button.Flyout>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <DataGrid Grid.Row="1"
+                                  ItemsSource="{Binding Businesses}"
+                                  SelectedItem="{Binding SelectedBusiness}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  IsEnabled="{Binding !IsLoading}"
+                                  GridLinesVisibility="Horizontal"
+                                  HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Auto"
+                                  RowBackground="#111A2C"
+                                  BorderThickness="0"
+                                  CornerRadius="8">
                         <!-- Right-Click Row Context Menu -->
                         <DataGrid.ContextMenu>
                             <ContextMenu>
@@ -307,13 +344,28 @@
                                           Command="{Binding ToggleStarCommand}"
                                           CommandParameter="{Binding SelectedBusiness}"/>
                                 <MenuItem Header="🗑️ Delete Business"
-                                          Command="{Binding DeleteBusinessCommand}"
+                                          Command="{Binding RequestDeleteSingleCommand}"
                                           CommandParameter="{Binding SelectedBusiness}"
                                           Foreground="#FB7185"/>
                             </ContextMenu>
                         </DataGrid.ContextMenu>
 
                         <DataGrid.Columns>
+                            <!-- Selection Checkbox Column -->
+                            <DataGridTemplateColumn Width="38">
+                                <DataGridTemplateColumn.Header>
+                                    <CheckBox IsChecked="{Binding ((vm:BusinessesViewModel)DataContext).IsAllSelected, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                              HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              ToolTip.Tip="Select / Deselect all visible leads"/>
+                                </DataGridTemplateColumn.Header>
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate x:DataType="m:Business">
+                                        <CheckBox IsChecked="{Binding IsSelected}"
+                                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
                             <!-- Star Toggle -->
                             <DataGridTemplateColumn Header="★" Width="36">
                                 <DataGridTemplateColumn.CellTemplate>
@@ -414,7 +466,7 @@
                                                               Command="{Binding ((vm:BusinessesViewModel)DataContext).ToggleStarCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                               CommandParameter="{Binding}"/>
                                                     <MenuItem Header="🗑️ Delete Lead"
-                                                              Command="{Binding ((vm:BusinessesViewModel)DataContext).DeleteBusinessCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                              Command="{Binding ((vm:BusinessesViewModel)DataContext).RequestDeleteSingleCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                               CommandParameter="{Binding}"
                                                               Foreground="#FB7185"/>
                                                 </MenuFlyout>
@@ -433,6 +485,7 @@
                             <DataGridTextColumn Header="Stage" Binding="{Binding PipelineStage.Name}" Width="105" />
                         </DataGrid.Columns>
                     </DataGrid>
+                    </Grid>
                 </Border>
 
                 <!-- Resizable Column Splitter -->
@@ -669,8 +722,9 @@
                                         Command="{Binding ((vm:BusinessesViewModel)DataContext).ToggleStarCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         CommandParameter="{Binding}"
                                         HorizontalAlignment="Stretch" Classes="btn-secondary"/>
-                                <Button Content="🗑️ Delete Business" 
-                                        Command="{Binding ((vm:BusinessesViewModel)DataContext).DeleteBusinessCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                <Button Content="🗑️ Delete Lead" 
+                                        Command="{Binding ((vm:BusinessesViewModel)DataContext).RequestDeleteSingleCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"
                                         HorizontalAlignment="Stretch" Classes="btn-danger-ghost"/>
                             </StackPanel>
                         </StackPanel>
@@ -787,6 +841,25 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,8,0,0">
                         <Button Content="Cancel" Command="{Binding CloseEnrichConfirmCommand}" Classes="btn-secondary" IsEnabled="{Binding !IsEnrichingWithGoogle}"/>
                         <Button Content="Confirm &amp; Enrich" Command="{Binding ExecuteGooglePlacesEnrichmentCommand}" Classes="btn-teal" IsEnabled="{Binding !IsEnrichingWithGoogle}" Padding="16,8"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Border>
+
+        <!-- Delete Confirmation Modal Overlay -->
+        <Border Background="#C0090D16" IsVisible="{Binding IsDeleteConfirmModalOpen}">
+            <Border Background="#131D2E" BorderBrush="#EF4444" BorderThickness="1" CornerRadius="12" Width="480" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="16">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <TextBlock Grid.Column="0" Text="🗑️" FontSize="22" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="{Binding DeleteConfirmTitle}" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC" VerticalAlignment="Center"/>
+                    </Grid>
+                    
+                    <TextBlock Text="{Binding DeleteConfirmMessage}" FontSize="13" Foreground="#CBD5E1" TextWrapping="Wrap" LineHeight="20"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,8,0,0">
+                        <Button Content="Cancel" Command="{Binding CloseDeleteConfirmCommand}" Classes="btn-secondary"/>
+                        <Button Content="{Binding DeleteConfirmButtonText}" Command="{Binding ConfirmDeleteCommand}" Classes="btn-danger" Padding="16,8"/>
                     </StackPanel>
                 </StackPanel>
             </Border>

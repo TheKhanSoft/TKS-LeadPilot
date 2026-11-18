@@ -49,4 +49,32 @@ public class BusinessModelTests
         business.DeletedAtUtc.Should().NotBeNull();
         business.Version.Should().Be(2);
     }
+
+    [Fact]
+    public void IsSelected_FiresPropertyChangedEvent()
+    {
+        var business = new Business { Name = "Test Co" };
+        var changedProps = new List<string>();
+        business.PropertyChanged += (s, e) => changedProps.Add(e.PropertyName!);
+
+        business.IsSelected = true;
+
+        business.IsSelected.Should().BeTrue();
+        changedProps.Should().Contain(nameof(Business.IsSelected));
+    }
+
+    [Fact]
+    public void IsStarred_FiresPropertyChangedAndUpdatesStarDisplay()
+    {
+        var business = new Business { Name = "Test Co" };
+        var changedProps = new List<string>();
+        business.PropertyChanged += (s, e) => changedProps.Add(e.PropertyName!);
+
+        business.StarDisplay.Should().Be("☆");
+        business.IsStarred = true;
+
+        business.StarDisplay.Should().Be("★");
+        changedProps.Should().Contain(nameof(Business.IsStarred));
+        changedProps.Should().Contain(nameof(Business.StarDisplay));
+    }
 }

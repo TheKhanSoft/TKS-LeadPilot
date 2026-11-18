@@ -1444,25 +1444,257 @@ public partial class BusinessesViewModel : ViewModelBase
         }
     }
 
-    [RelayCommand]
-    public async Task DeleteBusiness()
+    public enum DeleteTargetType
     {
-        if (SelectedBusiness == null) return;
+        Single,
+        Selected,
+        VisibleFiltered,
+        AllDatabase
+    }
 
+    // Batch Selection State
+    [ObservableProperty]
+    private int _selectedCount = 0;
+
+    public bool HasSelectedLeads => SelectedCount > 0;
+
+    public bool IsAllSelected
+    {
+        get => Businesses.Count > 0 && Businesses.All(b => b.IsSelected);
+        set
+        {
+            foreach (var b in Businesses)
+            {
+                b.IsSelected = value;
+            }
+            UpdateSelectedCount();
+        }
+    }
+
+    // Delete Confirmation Modal State
+    [ObservableProperty]
+    private bool _isDeleteConfirmModalOpen = false;
+
+    [ObservableProperty]
+    private string _deleteConfirmTitle = "Confirm Deletion";
+
+    [ObservableProperty]
+    private string _deleteConfirmMessage = string.Empty;
+
+    [ObservableProperty]
+    private string _deleteConfirmButtonText = "Delete";
+
+    private DeleteTargetType _currentDeleteType = DeleteTargetType.Single;
+    private Business? _targetBusinessToDelete = null;
+
+    partial void OnBusinessesChanged(ObservableCollection<Business> value)
+    {
+        if (value != null)
+        {
+            foreach (var b in value)
+            {
+                b.PropertyChanged += OnBusinessPropertyChanged;
+            }
+        }
+        UpdateSelectedCount();
+    }
+
+    private void OnBusinessPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(Business.IsSelected))
+        {
+            UpdateSelectedCount();
+        }
+    }
+
+    public void UpdateSelectedCount()
+    {
+        SelectedCount = Businesses.Count(b => b.IsSelected);
+        OnPropertyChanged(nameof(SelectedCount));
+        OnPropertyChanged(nameof(HasSelectedLeads));
+        OnPropertyChanged(nameof(IsAllSelected));
+    }
+
+    [RelayCommand]
+    public void SelectAllLeads()
+    {
+        foreach (var b in Businesses)
+        {
+            b.IsSelected = true;
+        }
+        UpdateSelectedCount();
+    }
+
+    [RelayCommand]
+    public void UnselectAllLeads()
+    {
+        foreach (var b in Businesses)
+        {
+            b.IsSelected = false;
+        }
+        UpdateSelectedCount();
+    }
+
+    // --- Delete Requests & Confirmation Flow ---
+
+    [RelayCommand]
+    public void RequestDeleteSingle(Business? business = null)
+    {
+        _targetBusinessToDelete = business ?? SelectedBusiness;
+        if (_targetBusinessToDelete == null) return;
+
+        _currentDeleteType = DeleteTargetType.Single;
+        DeleteConfirmTitle = "Delete Lead";
+        DeleteConfirmMessage = $"Are you sure you want to delete '{_targetBusinessToDelete.Name}'?\nThis will remove the lead from your pipeline and active database.";
+        DeleteConfirmButtonText = "Delete Lead";
+        IsDeleteConfirmModalOpen = true;
+    }
+
+    [RelayCommand]
+    public void RequestDeleteSelected()
+    {
+        var selected = Businesses.Where(b => b.IsSelected).ToList();
+        if (selected.Count == 0)
+        {
+            if (SelectedBusiness != null)
+            {
+                RequestDeleteSingle(SelectedBusiness);
+                return;
+            }
+            StatusMessage = "No leads selected to delete.";
+            return;
+        }
+
+        _currentDeleteType = DeleteTargetType.Selected;
+        DeleteConfirmTitle = $"Delete {selected.Count} Selected Leads";
+        DeleteConfirmMessage = $"Are you sure you want to delete {selected.Count} selected lead(s)?\nThis will remove them from your active pipeline and database.";
+        DeleteConfirmButtonText = $"Delete {selected.Count} Leads";
+        IsDeleteConfirmModalOpen = true;
+    }
+
+    [RelayCommand]
+    public void RequestDeleteVisible()
+    {
+        if (Businesses.Count == 0)
+        {
+            StatusMessage = "No leads visible to delete.";
+            return;
+        }
+
+        _currentDeleteType = DeleteTargetType.VisibleFiltered;
+        DeleteConfirmTitle = $"Delete Visible Filtered Leads ({Businesses.Count})";
+        DeleteConfirmMessage = $"Are you sure you want to delete all {Businesses.Count} currently visible/filtered leads?\nThis will remove them from your database.";
+        DeleteConfirmButtonText = $"Delete {Businesses.Count} Leads";
+        IsDeleteConfirmModalOpen = true;
+    }
+
+    [RelayCommand]
+    public void RequestDeleteAllDatabase()
+    {
+        _currentDeleteType = DeleteTargetType.AllDatabase;
+        DeleteConfirmTitle = $"⚠️ Delete ALL Database Leads ({TotalCount})";
+        DeleteConfirmMessage = $"DANGER: Are you sure you want to delete ALL {TotalCount} leads across the entire database?\nThis will permanently clear your database leads.";
+        DeleteConfirmButtonText = $"Yes, Delete All {TotalCount} Leads";
+        IsDeleteConfirmModalOpen = true;
+    }
+
+    [RelayCommand]
+    public void CloseDeleteConfirm()
+    {
+        IsDeleteConfirmModalOpen = false;
+        _targetBusinessToDelete = null;
+    }
+
+    [RelayCommand]
+    public async Task ConfirmDelete()
+    {
+        IsDeleteConfirmModalOpen = false;
         try
         {
-            var name = SelectedBusiness.Name;
-            await _businessRepository.DeleteAsync(SelectedBusiness.Id);
-            Businesses.Remove(SelectedBusiness);
-            SelectedBusiness = Businesses.FirstOrDefault();
-            TotalCount--;
-            FilteredCount--;
-            StatusMessage = $"Deleted business '{name}'";
+            IsLoading = true;
+
+            switch (_currentDeleteType)
+            {
+                case DeleteTargetType.Single:
+                    if (_targetBusinessToDelete != null)
+                    {
+                        var name = _targetBusinessToDelete.Name;
+                        await _businessRepository.DeleteAsync(_targetBusinessToDelete.Id);
+                        Businesses.Remove(_targetBusinessToDelete);
+                        if (SelectedBusiness == _targetBusinessToDelete)
+                        {
+                            SelectedBusiness = Businesses.FirstOrDefault();
+                        }
+                        TotalCount = Math.Max(0, TotalCount - 1);
+                        FilteredCount = Math.Max(0, FilteredCount - 1);
+                        StatusMessage = $"Deleted lead '{name}'";
+                    }
+                    break;
+
+                case DeleteTargetType.Selected:
+                    var selected = Businesses.Where(b => b.IsSelected).ToList();
+                    if (selected.Count > 0)
+                    {
+                        var ids = selected.Select(b => b.Id).ToList();
+                        await _businessRepository.DeleteBatchAsync(ids);
+                        foreach (var b in selected)
+                        {
+                            Businesses.Remove(b);
+                        }
+                        TotalCount = Math.Max(0, TotalCount - ids.Count);
+                        FilteredCount = Math.Max(0, FilteredCount - ids.Count);
+                        if (SelectedBusiness != null && ids.Contains(SelectedBusiness.Id))
+                        {
+                            SelectedBusiness = Businesses.FirstOrDefault();
+                        }
+                        StatusMessage = $"Deleted {ids.Count} selected leads";
+                    }
+                    break;
+
+                case DeleteTargetType.VisibleFiltered:
+                    if (Businesses.Count > 0)
+                    {
+                        var visibleIds = Businesses.Select(b => b.Id).ToList();
+                        await _businessRepository.DeleteBatchAsync(visibleIds);
+                        Businesses.Clear();
+                        TotalCount = Math.Max(0, TotalCount - visibleIds.Count);
+                        FilteredCount = 0;
+                        SelectedBusiness = null;
+                        StatusMessage = $"Deleted {visibleIds.Count} visible filtered leads";
+                    }
+                    break;
+
+                case DeleteTargetType.AllDatabase:
+                    await _businessRepository.DeleteAllAsync();
+                    Businesses.Clear();
+                    TotalCount = 0;
+                    FilteredCount = 0;
+                    SelectedBusiness = null;
+                    StatusMessage = "Cleared all database leads";
+                    break;
+            }
+
+            UpdateSelectedCount();
+            HotLeadsCount = await _businessRepository.GetHighOpportunityCountAsync(70);
+            VerifiedCount = Businesses.Count(b => b.IsGoogleVerified);
+            MissingGmbCount = Businesses.Count(b => !b.IsGoogleVerified && string.IsNullOrWhiteSpace(b.GooglePlaceId));
+            NoWebsiteCount = Businesses.Count(b => string.IsNullOrWhiteSpace(b.WebsiteUrl));
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Delete Business Error: {ex.Message}";
+            StatusMessage = $"Delete Error: {ex.Message}";
         }
+        finally
+        {
+            IsLoading = false;
+            _targetBusinessToDelete = null;
+        }
+    }
+
+    [RelayCommand]
+    public void DeleteBusiness(Business? business = null)
+    {
+        RequestDeleteSingle(business);
     }
 
     // --- Discovery Modal Cascading & Commands (Stage 5) ---

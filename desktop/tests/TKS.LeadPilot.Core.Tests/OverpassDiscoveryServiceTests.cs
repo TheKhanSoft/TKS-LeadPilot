@@ -419,7 +419,22 @@ public class OverpassDiscoveryServiceTests
 
         public Task UpdateAsync(Business business, CancellationToken ct = default) => Task.CompletedTask;
         public Task UpdateBatchAsync(IEnumerable<Business> businesses, CancellationToken ct = default) => Task.CompletedTask;
-        public Task DeleteAsync(string id, CancellationToken ct = default) => Task.CompletedTask;
+        public Task DeleteAsync(string id, CancellationToken ct = default)
+        {
+            Storage.RemoveAll(b => b.Id == id);
+            return Task.CompletedTask;
+        }
+        public Task DeleteBatchAsync(IEnumerable<string> ids, CancellationToken ct = default)
+        {
+            var idSet = ids.ToHashSet();
+            Storage.RemoveAll(b => idSet.Contains(b.Id));
+            return Task.CompletedTask;
+        }
+        public Task DeleteAllAsync(CancellationToken ct = default)
+        {
+            Storage.Clear();
+            return Task.CompletedTask;
+        }
         public Task<int> GetTotalCountAsync(CancellationToken ct = default) => Task.FromResult(Storage.Count);
         public Task<int> GetWithWebsiteCountAsync(CancellationToken ct = default) => Task.FromResult(0);
         public Task<int> GetHighOpportunityCountAsync(int threshold = 70, CancellationToken ct = default) => Task.FromResult(0);

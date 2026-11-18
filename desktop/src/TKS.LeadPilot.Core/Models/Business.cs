@@ -1,9 +1,19 @@
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using TKS.LeadPilot.Core.Enums;
 
 namespace TKS.LeadPilot.Core.Models;
 
-public class Business
+public class Business : INotifyPropertyChanged
 {
+    public event PropertyChangedEventHandler? PropertyChanged;
+    protected virtual void OnPropertyChanged(string propertyName)
+        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+    private bool _isSelected = false;
+    private bool _isStarred = false;
+
     public string Id { get; set; } = Guid.NewGuid().ToString();
     public string Name { get; set; } = string.Empty;
     public string? LegalName { get; set; }
@@ -34,8 +44,37 @@ public class Business
     public int LeadScore { get; set; } = 0;
     public LeadStatus LeadStatus { get; set; } = LeadStatus.Discovered;
     public string? Tags { get; set; }
-    public bool IsStarred { get; set; } = false;
+    
+    public bool IsStarred
+    {
+        get => _isStarred;
+        set
+        {
+            if (_isStarred != value)
+            {
+                _isStarred = value;
+                OnPropertyChanged(nameof(IsStarred));
+                OnPropertyChanged(nameof(StarDisplay));
+            }
+        }
+    }
     public string StarDisplay => IsStarred ? "★" : "☆";
+
+    // Transient UI Selection (Not stored in DB, ignored in JSON)
+    [NotMapped]
+    [JsonIgnore]
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set
+        {
+            if (_isSelected != value)
+            {
+                _isSelected = value;
+                OnPropertyChanged(nameof(IsSelected));
+            }
+        }
+    }
     
     // Provenance & Source
     public string? SourceProvider { get; set; }

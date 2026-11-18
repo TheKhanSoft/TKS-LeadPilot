@@ -116,6 +116,34 @@ public class RepositoryTests : IDisposable
         totalActive.Should().Be(0);
     }
 
+    [Fact]
+    public async Task DeleteBatchAsync_PerformsSoftDeleteOnSelectedIds()
+    {
+        var b1 = await _repository.AddAsync(new Business { Name = "Batch 1", City = "Lahore", Category = "Services", PipelineStageId = "stage-qual" });
+        var b2 = await _repository.AddAsync(new Business { Name = "Batch 2", City = "Karachi", Category = "Services", PipelineStageId = "stage-qual" });
+        var b3 = await _repository.AddAsync(new Business { Name = "Keep Me", City = "Islamabad", Category = "Services", PipelineStageId = "stage-qual" });
+
+        await _repository.DeleteBatchAsync([b1.Id, b2.Id]);
+
+        var active = await _repository.GetAllAsync();
+        active.Should().HaveCount(1);
+        active[0].Name.Should().Be("Keep Me");
+    }
+
+    [Fact]
+    public async Task DeleteAllAsync_SoftDeletesAllActiveBusinesses()
+    {
+        await _repository.AddAsync(new Business { Name = "All 1", City = "Lahore", Category = "Services", PipelineStageId = "stage-qual" });
+        await _repository.AddAsync(new Business { Name = "All 2", City = "Karachi", Category = "Services", PipelineStageId = "stage-qual" });
+
+        await _repository.DeleteAllAsync();
+
+        var active = await _repository.GetAllAsync();
+        active.Should().BeEmpty();
+        var totalActive = await _repository.GetTotalCountAsync();
+        totalActive.Should().Be(0);
+    }
+
     public void Dispose()
     {
         _context.Dispose();

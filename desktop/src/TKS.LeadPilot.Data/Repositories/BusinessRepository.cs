@@ -276,6 +276,47 @@ public class BusinessRepository : IBusinessRepository
         }
     }
 
+    public async Task DeleteBatchAsync(IEnumerable<string> ids, CancellationToken ct = default)
+    {
+        var idList = ids.ToList();
+        if (idList.Count == 0) return;
+
+        var businesses = await _context.Businesses
+            .Where(b => idList.Contains(b.Id) && !b.IsDeleted)
+            .ToListAsync(ct);
+
+        if (businesses.Count == 0) return;
+
+        var now = DateTime.UtcNow;
+        foreach (var b in businesses)
+        {
+            b.IsDeleted = true;
+            b.DeletedAtUtc = now;
+            b.Version += 1;
+        }
+
+        await _context.SaveChangesAsync(ct);
+    }
+
+    public async Task DeleteAllAsync(CancellationToken ct = default)
+    {
+        var businesses = await _context.Businesses
+            .Where(b => !b.IsDeleted)
+            .ToListAsync(ct);
+
+        if (businesses.Count == 0) return;
+
+        var now = DateTime.UtcNow;
+        foreach (var b in businesses)
+        {
+            b.IsDeleted = true;
+            b.DeletedAtUtc = now;
+            b.Version += 1;
+        }
+
+        await _context.SaveChangesAsync(ct);
+    }
+
     public async Task<int> GetTotalCountAsync(CancellationToken ct = default)
     {
         return await _context.Businesses.CountAsync(b => !b.IsDeleted, ct);

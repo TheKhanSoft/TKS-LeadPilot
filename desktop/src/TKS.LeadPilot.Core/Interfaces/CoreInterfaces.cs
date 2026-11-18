@@ -18,6 +18,8 @@ public interface IBusinessRepository
     Task UpdateAsync(Business business, CancellationToken ct = default);
     Task UpdateBatchAsync(IEnumerable<Business> businesses, CancellationToken ct = default);
     Task DeleteAsync(string id, CancellationToken ct = default);
+    Task DeleteBatchAsync(IEnumerable<string> ids, CancellationToken ct = default);
+    Task DeleteAllAsync(CancellationToken ct = default);
     Task<int> GetTotalCountAsync(CancellationToken ct = default);
     Task<int> GetWithWebsiteCountAsync(CancellationToken ct = default);
     Task<int> GetHighOpportunityCountAsync(int threshold = 70, CancellationToken ct = default);
