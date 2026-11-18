@@ -131,4 +131,49 @@ public class AiLandingPageGeneratorServiceTests
         result.GeneratedHtml.Should().Contain("<!DOCTYPE html>");
         result.GeneratedHtml.Should().Contain("Palette Test Studio");
     }
+
+    [Fact]
+    public void GenerateDeterministicLandingPage_GeneratesDistinctBespokeContentAcrossCategories()
+    {
+        var vault = new MockSecretVault();
+        var sut = new AiLandingPageGeneratorService(new HttpClient(), vault);
+
+        var healthReq = new LandingPageGenerationRequest
+        {
+            BusinessName = "Healthhelpzone",
+            Category = "Healthcare & Urgent Care",
+            City = "Albany",
+            Country = "United States"
+        };
+
+        var techReq = new LandingPageGenerationRequest
+        {
+            BusinessName = "TheKhanSoft",
+            Category = "Software Company & IT Services",
+            City = "Charsadda",
+            Country = "Pakistan"
+        };
+
+        var healthResult = sut.GenerateDeterministicLandingPage(healthReq);
+        var techResult = sut.GenerateDeterministicLandingPage(techReq);
+
+        // Different headlines
+        healthResult.Headline.Should().NotBe(techResult.Headline);
+        healthResult.Headline.Should().Contain("Health");
+        techResult.Headline.Should().Contain("Software");
+
+        // Healthcare specific services & testimonials
+        healthResult.GeneratedHtml.Should().Contain("Walk-In Care");
+        healthResult.GeneratedHtml.Should().Contain("X-Ray");
+        healthResult.GeneratedHtml.Should().Contain("Sarah Jenkins");
+
+        // Tech specific services & testimonials
+        techResult.GeneratedHtml.Should().Contain("Custom SaaS");
+        techResult.GeneratedHtml.Should().Contain("DevOps");
+        techResult.GeneratedHtml.Should().Contain("Alexander Wright");
+
+        // Ensure neither has static generic placeholders
+        healthResult.GeneratedHtml.Should().NotContain("Premium Healthcare & Urgent Care Delivery");
+        techResult.GeneratedHtml.Should().NotContain("Premium Software Company & IT Services Delivery");
+    }
 }
