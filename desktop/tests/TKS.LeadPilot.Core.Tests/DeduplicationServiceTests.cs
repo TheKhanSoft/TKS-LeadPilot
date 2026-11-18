@@ -169,4 +169,46 @@ public class DeduplicationServiceTests
         target.Contacts[0].FullName.Should().Be("Dr. Tariq");
         target.Contacts[0].BusinessId.Should().Be("b1");
     }
+
+    [Fact]
+    public void MergeSourceEngines_CombinesDistinctEnginesWithoutDuplicates()
+    {
+        var existing = "OpenStreetMap, Photon (Komoot OpenPOI)";
+        var incoming = "Photon (Komoot OpenPOI), Google Places (via Serper)";
+
+        var result = _sut.MergeSourceEngines(existing, incoming);
+
+        result.Should().Be("OpenStreetMap, Photon (Komoot OpenPOI), Google Places (via Serper)");
+    }
+
+    [Fact]
+    public void MergeSourceEngines_HandlesNullAndEmptyGracefully()
+    {
+        _sut.MergeSourceEngines(null, "Brave Search").Should().Be("Brave Search");
+        _sut.MergeSourceEngines("OpenStreetMap", null).Should().Be("OpenStreetMap");
+        _sut.MergeSourceEngines("", "   ").Should().BeEmpty();
+    }
+
+    [Fact]
+    public void MergeBusinesses_MergesSourceProviderEngines()
+    {
+        var target = new Business
+        {
+            Id = "b1",
+            Name = "Grand Banquet Hall",
+            City = "Peshawar",
+            SourceProvider = "OpenStreetMap"
+        };
+
+        var source = new Business
+        {
+            Name = "Grand Banquet Hall",
+            City = "Peshawar",
+            SourceProvider = "Photon (Komoot OpenPOI), Google Places (via Serper)"
+        };
+
+        _sut.MergeBusinesses(target, source);
+
+        target.SourceProvider.Should().Be("OpenStreetMap, Photon (Komoot OpenPOI), Google Places (via Serper)");
+    }
 }

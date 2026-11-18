@@ -244,6 +244,12 @@ public partial class DeduplicationService : IDeduplicationService
         if (!targetExisting.Longitude.HasValue && sourceIncoming.Longitude.HasValue)
             targetExisting.Longitude = sourceIncoming.Longitude;
 
+        // Merge provenance & discovery engines
+        if (!string.IsNullOrWhiteSpace(sourceIncoming.SourceProvider))
+        {
+            targetExisting.SourceProvider = MergeSourceEngines(targetExisting.SourceProvider, sourceIncoming.SourceProvider);
+        }
+
         // Merge tags
         foreach (var tag in sourceIncoming.GetTagList())
         {
@@ -297,5 +303,30 @@ public partial class DeduplicationService : IDeduplicationService
         int distance = d[n, m];
         int maxLength = Math.Max(n, m);
         return 1.0 - ((double)distance / maxLength);
+    }
+
+    public string MergeSourceEngines(string? existingSources, string? incomingSources)
+    {
+        if (string.IsNullOrWhiteSpace(existingSources)) return incomingSources?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(incomingSources)) return existingSources.Trim();
+
+        var list = new List<string>();
+
+        void AddTokens(string raw)
+        {
+            var tokens = raw.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            foreach (var token in tokens)
+            {
+                if (!string.IsNullOrWhiteSpace(token) && !list.Any(x => string.Equals(x, token, StringComparison.OrdinalIgnoreCase)))
+                {
+                    list.Add(token);
+                }
+            }
+        }
+
+        AddTokens(existingSources);
+        AddTokens(incomingSources);
+
+        return string.Join(", ", list);
     }
 }

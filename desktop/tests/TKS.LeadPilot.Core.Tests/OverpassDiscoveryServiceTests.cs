@@ -134,6 +134,54 @@ public class OverpassDiscoveryServiceTests
     }
 
     [Fact]
+    public async Task ImportDiscoveredLeadsAsync_MergesSearchEnginesIntoExistingRecordOnSkipStrategy()
+    {
+        var fakeHandler = new MockHttpMessageHandler("{}");
+        var httpClient = new HttpClient(fakeHandler);
+        var fakeRepo = new InMemoryBusinessRepository();
+        var dedupService = new DeduplicationService();
+        var sut = new OverpassDiscoveryService(httpClient, fakeRepo, dedupService);
+
+        var existingBusiness = new Business
+        {
+            Id = "existing-1",
+            Name = "Apex Dental Clinic",
+            City = "Lahore",
+            PhonePrimary = "+92 42 35789000",
+            SourceProvider = "OpenStreetMap"
+        };
+        fakeRepo.Storage.Add(existingBusiness);
+
+        var leads = new List<DiscoveredLead>
+        {
+            new()
+            {
+                Business = new Business
+                {
+                    Name = "Apex Dental Clinic",
+                    City = "Lahore",
+                    PhonePrimary = "+92 42 35789000",
+                    SourceProvider = "Photon (Komoot OpenPOI), Google Places (via Serper)"
+                },
+                DuplicateMatch = new DuplicateMatchResult
+                {
+                    ExistingBusiness = existingBusiness,
+                    MatchType = DuplicateMatchType.ExactPhone,
+                    ConfidenceScore = 95
+                },
+                IsSelectedForImport = true
+            }
+        };
+
+        var result = await sut.ImportDiscoveredLeadsAsync(leads, DeduplicationStrategy.Skip);
+
+        result.SkippedCount.Should().Be(1);
+        result.CreatedCount.Should().Be(0);
+        existingBusiness.SourceProvider.Should().Be("OpenStreetMap, Photon (Komoot OpenPOI), Google Places (via Serper)");
+        fakeRepo.Storage.Should().HaveCount(1);
+    }
+
+    [Fact]
     public void MapNominatimToBusinesses_ExtractsAllPropertiesAccurately()
     {
         var nominatimJson = """

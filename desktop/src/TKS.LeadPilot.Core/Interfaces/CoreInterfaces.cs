@@ -62,6 +62,7 @@ public interface IDeduplicationService
     DuplicateMatchResult CheckDuplicate(Business incoming, IEnumerable<Business> existing, DeduplicationOptions? options = null);
     List<DuplicateMatchResult> CheckDuplicatesBatch(IEnumerable<Business> incomingBatch, IEnumerable<Business> existingDatabase, DeduplicationOptions? options = null);
     void MergeBusinesses(Business targetExisting, Business sourceIncoming);
+    string MergeSourceEngines(string? existingSources, string? incomingSources);
 }
 
 public interface ICsvImporterService

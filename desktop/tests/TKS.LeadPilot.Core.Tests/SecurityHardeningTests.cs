@@ -177,5 +177,6 @@ public class SecurityHardeningTests
         public List<DuplicateMatchResult> CheckDuplicatesBatch(IEnumerable<Business> incomingBatch, IEnumerable<Business> existingDatabase, DeduplicationOptions? options = null)
             => [];
         public void MergeBusinesses(Business targetExisting, Business sourceIncoming) { }
+        public string MergeSourceEngines(string? existingSources, string? incomingSources) => existingSources ?? string.Empty;
     }
 }

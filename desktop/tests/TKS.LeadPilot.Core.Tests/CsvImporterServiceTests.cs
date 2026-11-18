@@ -111,7 +111,8 @@ Novelty Bookshop,Retail,Islamabad,https://noveltybooks.pk
                 Category = "Healthcare",
                 City = "Karachi",
                 WebsiteUrl = "https://elitediagnostic.pk",
-                Tags = "VIP, Diagnostics"
+                Tags = "VIP, Diagnostics",
+                SourceProvider = "OpenStreetMap, Photon (Komoot OpenPOI)"
             }
         };
 
@@ -124,8 +125,10 @@ Novelty Bookshop,Retail,Islamabad,https://noveltybooks.pk
         bytes[2].Should().Be(0xBF);
 
         var content = Encoding.UTF8.GetString(bytes[3..]);
+        content.Should().Contain("SourceEngine");
         content.Should().Contain("\"The \"\"Elite\"\" Diagnostic Center, Karachi\"");
         content.Should().Contain("elitediagnostic.pk");
+        content.Should().Contain("\"OpenStreetMap, Photon (Komoot OpenPOI)\"");
     }
 
     private class FakeBusinessRepository : IBusinessRepository

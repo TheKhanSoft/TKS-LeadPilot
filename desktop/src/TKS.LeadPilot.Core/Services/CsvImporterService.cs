@@ -55,6 +55,8 @@ public class CsvImporterService : ICsvImporterService
                 mapping.CountryColumn = header;
             else if (string.IsNullOrEmpty(mapping.TagsColumn) && IsMatch(h, "tags", "tag", "labels", "keywords"))
                 mapping.TagsColumn = header;
+            else if (string.IsNullOrEmpty(mapping.SourceColumn) && IsMatch(h, "source", "source engine", "sourceengine", "discovery source", "source provider", "provider", "engine"))
+                mapping.SourceColumn = header;
         }
 
         return mapping;
@@ -242,7 +244,7 @@ public class CsvImporterService : ICsvImporterService
         var preamble = Encoding.UTF8.GetPreamble();
 
         // Header
-        sb.AppendLine("Id,Name,Category,Subcategory,City,StateProvince,Country,PhonePrimary,EmailPrimary,WebsiteUrl,WebsiteStatus,LeadScore,PipelineStage,Tags,CreatedAtUtc");
+        sb.AppendLine("Id,Name,Category,Subcategory,City,StateProvince,Country,PhonePrimary,EmailPrimary,WebsiteUrl,WebsiteStatus,LeadScore,PipelineStage,SourceEngine,Tags,CreatedAtUtc");
 
         foreach (var b in businesses)
         {
@@ -261,6 +263,7 @@ public class CsvImporterService : ICsvImporterService
                 EscapeCsv(b.WebsiteStatus.ToString()),
                 b.LeadScore.ToString(),
                 EscapeCsv(b.PipelineStage?.Name ?? b.PipelineStageId),
+                EscapeCsv(b.SourceProvider),
                 EscapeCsv(b.Tags),
                 b.CreatedAtUtc.ToString("o")
             );
@@ -299,6 +302,7 @@ public class CsvImporterService : ICsvImporterService
         var postalCode = GetVal(mapping.PostalCodeColumn);
         var country = GetVal(mapping.CountryColumn);
         var tags = GetVal(mapping.TagsColumn);
+        var source = GetVal(mapping.SourceColumn);
 
         var business = new Business
         {
@@ -315,7 +319,7 @@ public class CsvImporterService : ICsvImporterService
             PostalCode = string.IsNullOrWhiteSpace(postalCode) ? null : postalCode,
             Country = string.IsNullOrWhiteSpace(country) ? "Pakistan" : country,
             Tags = string.IsNullOrWhiteSpace(tags) ? null : tags,
-            SourceProvider = "CSV_IMPORT"
+            SourceProvider = !string.IsNullOrWhiteSpace(source) ? source : "CSV_IMPORT"
         };
 
         return business;

@@ -16,6 +16,7 @@ public class CsvColumnMapping
     public string? PostalCodeColumn { get; set; }
     public string? CountryColumn { get; set; }
     public string? TagsColumn { get; set; }
+    public string? SourceColumn { get; set; }
 }
 
 public class ImportPreviewRow

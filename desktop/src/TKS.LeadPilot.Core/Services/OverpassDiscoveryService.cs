@@ -271,6 +271,10 @@ public class OverpassDiscoveryService : IDiscoveryService
                 deduplicatedLeads.Add(candidate);
                 relevanceScores[candidate.Id] = relevance;
             }
+            else if (dupCheck.ExistingBusiness != null)
+            {
+                _dedupService.MergeBusinesses(dupCheck.ExistingBusiness, candidate);
+            }
         }
 
         if (deduplicatedLeads.Count == 0)
@@ -858,6 +862,17 @@ public class OverpassDiscoveryService : IDiscoveryService
             {
                 if (strategy == DeduplicationStrategy.Skip)
                 {
+                    // Even if skipping field overwrites, persist newly discovered engines to existing database record so provenance is never lost
+                    if (!string.IsNullOrWhiteSpace(incoming.SourceProvider))
+                    {
+                        var merged = _dedupService.MergeSourceEngines(existing.SourceProvider, incoming.SourceProvider);
+                        if (!string.Equals(merged, existing.SourceProvider, StringComparison.OrdinalIgnoreCase))
+                        {
+                            existing.SourceProvider = merged;
+                            existing.UpdatedAtUtc = DateTime.UtcNow;
+                            toUpdate.Add(existing);
+                        }
+                    }
                     result.SkippedCount++;
                     continue;
                 }
