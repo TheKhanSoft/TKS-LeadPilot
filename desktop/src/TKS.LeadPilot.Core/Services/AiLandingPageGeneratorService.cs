@@ -144,13 +144,15 @@ public class AiLandingPageGeneratorService(
         // 2. Build Gemini Prompt
         var prompt = BuildGeminiPrompt(request);
 
-        // Production-verified Gemini model
-        var modelName = "gemini-3.8-flash";
+        // Production multi-model fallback chain ordered by current verified latency and quota availability
+        string[] candidateModels = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-3.8-flash", "gemini-flash-latest"];
         HttpResponseMessage? lastResponse = null;
         string lastErrorDetail = string.Empty;
 
-        for (int attempt = 1; attempt <= 2; attempt++)
+        foreach (var modelName in candidateModels)
         {
+            if (ct.IsCancellationRequested) break;
+
             try
             {
                 var requestUri = $"https://generativelanguage.googleapis.com/v1beta/models/{modelName}:generateContent?key={apiKey}";
@@ -169,10 +171,10 @@ public class AiLandingPageGeneratorService(
                     },
                     generationConfig = new
                     {
-                        temperature = 0.4,
+                        temperature = 0.3,
                         topK = 40,
                         topP = 0.95,
-                        maxOutputTokens = 4096
+                        maxOutputTokens = 3072
                     }
                 };
 
@@ -182,7 +184,7 @@ public class AiLandingPageGeneratorService(
                     "application/json");
 
                 using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-                cts.CancelAfter(TimeSpan.FromSeconds(90));
+                cts.CancelAfter(TimeSpan.FromSeconds(25));
 
                 var response = await _httpClient.PostAsync(requestUri, jsonContent, cts.Token);
                 lastResponse = response;
@@ -209,24 +211,18 @@ public class AiLandingPageGeneratorService(
 
                 lastErrorDetail = await response.Content.ReadAsStringAsync(ct);
 
-                // If rate limited (HTTP 429), wait 2 seconds and retry once
-                if ((int)response.StatusCode == 429 && attempt == 1)
-                {
-                    await Task.Delay(2000, ct);
-                    continue;
-                }
-
-                break;
+                // If 429 (Resource Exhausted / Quota Limit) or 404 (Model Not Found) or 503, immediately try next model in candidateModels chain
+                continue;
             }
             catch (OperationCanceledException) when (!ct.IsCancellationRequested)
             {
-                lastErrorDetail = "Request reached timeout (90s) generating extensive HTML architecture.";
-                break;
+                lastErrorDetail = $"{modelName}: Request timed out after 25s.";
+                continue;
             }
             catch (Exception ex)
             {
-                lastErrorDetail = ex.Message;
-                break;
+                lastErrorDetail = $"{modelName}: {ex.Message}";
+                continue;
             }
         }
 
@@ -336,7 +332,7 @@ public class AiLandingPageGeneratorService(
                 IsSuccess = true,
                 IsLocalFallback = false,
                 BusinessName = request.BusinessName,
-                Provider = "Google Gemini Free Tier (gemini-1.5-flash)",
+                Provider = "Google Gemini Free Tier",
                 Headline = obj.TryGetProperty("headline", out var hl) ? hl.GetString() ?? $"{request.BusinessName} Digital Hub" : $"{request.BusinessName} Digital Hub",
                 Subheadline = obj.TryGetProperty("subheadline", out var shl) ? shl.GetString() ?? "Engineered for maximum client acquisition and trust." : "Engineered for maximum client acquisition and trust.",
                 CallToActionText = obj.TryGetProperty("call_to_action", out var cta) ? cta.GetString() ?? "Book Free Consultation" : "Book Free Consultation",
@@ -357,8 +353,10 @@ public class AiLandingPageGeneratorService(
                 }
             }
 
-            // If Gemini didn't supply complete HTML, supplement with deterministic HTML
-            if (string.IsNullOrWhiteSpace(result.GeneratedHtml) || !result.GeneratedHtml.Contains("<!DOCTYPE html>"))
+            // If Gemini didn't supply complete HTML, supplement with deterministic HTML (case-insensitive doctype or html tag check)
+            if (string.IsNullOrWhiteSpace(result.GeneratedHtml) || 
+                (!result.GeneratedHtml.Contains("<!DOCTYPE html>", StringComparison.OrdinalIgnoreCase) && 
+                 !result.GeneratedHtml.Contains("<html", StringComparison.OrdinalIgnoreCase)))
             {
                 var det = GenerateDeterministicLandingPage(request);
                 result.GeneratedHtml = det.GeneratedHtml;

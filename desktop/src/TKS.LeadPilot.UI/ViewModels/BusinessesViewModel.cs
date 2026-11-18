@@ -450,7 +450,7 @@ public partial class BusinessesViewModel : ViewModelBase
                 SelectedDiscoveryCountry = DiscoveryCountries.FirstOrDefault() ?? "Pakistan";
             }
 
-            DiscoveryCategoryPresets = new ObservableCollection<string>(_discoveryService.GetPresetCategories().Keys);
+            DiscoveryCategoryPresets = new ObservableCollection<string>(_discoveryService.GetPresetCategories().Keys.Distinct(StringComparer.OrdinalIgnoreCase));
             SelectedDiscoveryCategoryPreset = DiscoveryCategoryPresets.FirstOrDefault() ?? "⭐ All Commercial Businesses & Enterprises";
 
             // Initialize Discovery Locations

@@ -18,7 +18,7 @@
                         <TextBlock Text="🎨" FontSize="18" VerticalAlignment="Center"/>
                         <TextBlock Text="AI Landing Page Studio" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC"/>
                     </StackPanel>
-                    <TextBlock Text="Synthesize bespoke landing pages, module architectures, and Tailwind code with Gemini AI." FontSize="11" Foreground="#94A3B8"/>
+                    <TextBlock Text="Synthesize bespoke landing pages, module architectures, and Tailwind code with Gemini AI." FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap"/>
                 </StackPanel>
 
                 <!-- Scrollable Form Inputs -->
@@ -185,20 +185,20 @@
                 </StackPanel>
 
                 <!-- Navigation & Fast Action Strip -->
-                <Border Grid.Row="1" Background="#10192A" BorderBrush="#1F2F47" BorderThickness="1" CornerRadius="8" Padding="4,3" Margin="0,0,0,14">
+                <Border Grid.Row="1" Background="#10192A" BorderBrush="#1F2F47" BorderThickness="1" CornerRadius="8" Padding="6,4" Margin="0,0,0,14">
                     <Grid ColumnDefinitions="Auto,*,Auto">
-                        <!-- Left: View Mode Navigation Tabs -->
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="3">
-                            <Button Content="🌐 Visual Preview" Command="{Binding SetTabCommand}" CommandParameter="Preview"
+                        <!-- Left: View Mode Navigation Tabs (Distinct labels and icons) -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4">
+                            <Button Content="👁️ Visual Overview" Command="{Binding SetTabCommand}" CommandParameter="Preview"
                                     Classes="tab-btn" Classes.active="{Binding IsPreviewTab}"
-                                    ToolTip.Tip="Live responsive preview &amp; page module architecture cards"/>
-                            <Button Content="📐 Blueprint" Command="{Binding SetTabCommand}" CommandParameter="Blueprint"
+                                    ToolTip.Tip="Live visual overview, interactive hero preview &amp; page module architecture"/>
+                            <Button Content="📐 Architecture Blueprint" Command="{Binding SetTabCommand}" CommandParameter="Blueprint"
                                     Classes="tab-btn" Classes.active="{Binding IsBlueprintTab}"
                                     ToolTip.Tip="Conversion architecture, UX module hierarchy, and agency consulting pitch"/>
-                            <Button Content="💻 HTML5 Code" Command="{Binding SetTabCommand}" CommandParameter="Html"
+                            <Button Content="💻 HTML Source Code" Command="{Binding SetTabCommand}" CommandParameter="Html"
                                     Classes="tab-btn" Classes.active="{Binding IsHtmlTab}"
                                     ToolTip.Tip="Standalone production HTML5 source code with Tailwind CDN &amp; scripts"/>
-                            <Button Content="🤖 AI Prompts" Command="{Binding SetTabCommand}" CommandParameter="Prompts"
+                            <Button Content="🤖 AI &amp; Ad Prompts" Command="{Binding SetTabCommand}" CommandParameter="Prompts"
                                     Classes="tab-btn" Classes.active="{Binding IsPromptsTab}"
                                     ToolTip.Tip="System instructions &amp; developer prompt used for AI synthesis"/>
                         </StackPanel>
@@ -206,22 +206,22 @@
                         <!-- Center Divider / Flexible Spacer -->
                         <Border Grid.Column="1"/>
 
-                        <!-- Right: Action Buttons Nicely Adjusted in Small Size -->
-                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" Margin="0,0,2,0">
-                            <Button Command="{Binding OpenInBrowserCommand}" Classes="btn-success" Padding="8,4" FontSize="10.5">
+                        <!-- Right: Action Buttons (Distinct actions, no duplicate names) -->
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="0,0,2,0">
+                            <Button Command="{Binding OpenInBrowserCommand}" Classes="btn-success" Padding="10,5" FontSize="11">
                                 <ToolTip.Tip>
                                     <StackPanel Spacing="3">
                                         <TextBlock Text="🌐 Live Browser Preview" FontWeight="Bold" FontSize="11" Foreground="#34D399"/>
-                                        <TextBlock Text="Launch the generated HTML5 + Tailwind CSS page in your default web browser." FontSize="10" Foreground="#94A3B8" TextWrapping="Wrap" MaxWidth="280"/>
+                                        <TextBlock Text="Launch the freshly generated HTML5 + Tailwind CSS page in your web browser with zero caching." FontSize="10" Foreground="#94A3B8" TextWrapping="Wrap" MaxWidth="280"/>
                                     </StackPanel>
                                 </ToolTip.Tip>
-                                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
                                     <TextBlock Text="🌐" FontSize="11" VerticalAlignment="Center"/>
-                                    <TextBlock Text="Preview" FontSize="10.5" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Open in Web Browser" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
 
-                            <Button Command="{Binding CopyHtmlCommand}" Classes="btn-secondary" Padding="8,4" FontSize="10.5">
+                            <Button Command="{Binding CopyHtmlCommand}" Classes="btn-secondary" Padding="8,5" FontSize="10.5">
                                 <ToolTip.Tip>
                                     <StackPanel Spacing="3">
                                         <TextBlock Text="📋 Copy HTML5 Code" FontWeight="Bold" FontSize="11" Foreground="#38BDF8"/>
@@ -234,7 +234,7 @@
                                 </StackPanel>
                             </Button>
 
-                            <Button Command="{Binding CopyBlueprintCommand}" Classes="btn-secondary" Padding="8,4" FontSize="10.5">
+                            <Button Command="{Binding CopyBlueprintCommand}" Classes="btn-secondary" Padding="8,5" FontSize="10.5">
                                 <ToolTip.Tip>
                                     <StackPanel Spacing="3">
                                         <TextBlock Text="📄 Copy Architecture Blueprint" FontWeight="Bold" FontSize="11" Foreground="#38BDF8"/>
@@ -243,11 +243,11 @@
                                 </ToolTip.Tip>
                                 <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                     <TextBlock Text="📄" FontSize="11" VerticalAlignment="Center"/>
-                                    <TextBlock Text="Blueprint" FontSize="10.5" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Copy Blueprint" FontSize="10.5" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
 
-                            <Button Command="{Binding SaveHtmlFileCommand}" Classes="btn-secondary" Padding="8,4" FontSize="10.5">
+                            <Button Command="{Binding SaveHtmlFileCommand}" Classes="btn-secondary" Padding="8,5" FontSize="10.5">
                                 <ToolTip.Tip>
                                     <StackPanel Spacing="3">
                                         <TextBlock Text="💾 Export .html File" FontWeight="Bold" FontSize="11" Foreground="#38BDF8"/>
@@ -256,7 +256,7 @@
                                 </ToolTip.Tip>
                                 <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                     <TextBlock Text="💾" FontSize="11" VerticalAlignment="Center"/>
-                                    <TextBlock Text="Export" FontSize="10.5" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Export File" FontSize="10.5" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
                         </StackPanel>
@@ -266,23 +266,108 @@
                 <!-- Tab 1: Visual Overview & Browser Launcher -->
                 <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" IsVisible="{Binding IsPreviewTab}">
                     <StackPanel Spacing="16">
-                        <!-- Big Browser Preview Launch Card -->
-                        <Border Background="#131F33" BorderBrush="#0284C7" BorderThickness="1" CornerRadius="12" Padding="20">
-                            <Grid ColumnDefinitions="*,Auto">
-                                <StackPanel Grid.Column="0" Spacing="6">
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <TextBlock Text="🚀" FontSize="20" VerticalAlignment="Center"/>
-                                        <TextBlock Text="Live Standalone HTML5 + Tailwind CSS Preview" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC"/>
+                        <!-- Interactive In-App Browser Simulation Frame -->
+                        <Border Background="#0B1320" BorderBrush="#0284C7" BorderThickness="1.5" CornerRadius="12" ClipToBounds="True">
+                            <Grid RowDefinitions="Auto,*">
+                                <!-- Browser Window Top Chrome Bar -->
+                                <Border Grid.Row="0" Background="#111C2E" BorderBrush="#1F2F47" BorderThickness="0,0,0,1" Padding="14,10">
+                                    <Grid ColumnDefinitions="Auto,*,Auto">
+                                        <!-- Browser Window Controls -->
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                            <Ellipse Width="11" Height="11" Fill="#EF4444"/>
+                                            <Ellipse Width="11" Height="11" Fill="#F59E0B"/>
+                                            <Ellipse Width="11" Height="11" Fill="#10B981"/>
+                                        </StackPanel>
+
+                                        <!-- Simulated URL Address Bar -->
+                                        <Border Grid.Column="1" Background="#0A101D" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="6" Padding="12,4" Margin="20,0" HorizontalAlignment="Stretch">
+                                            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                                                <TextBlock Text="🔒" FontSize="10" VerticalAlignment="Center"/>
+                                                <TextBlock Text="https://" FontSize="11" Foreground="#64748B" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding CurrentResult.BusinessName, FallbackValue='preview-client.local'}" FontSize="11" FontWeight="SemiBold" Foreground="#38BDF8" VerticalAlignment="Center"/>
+                                                <TextBlock Text="/live-preview" FontSize="11" Foreground="#64748B" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- Direct Browser Launcher -->
+                                        <Button Grid.Column="2" Command="{Binding OpenInBrowserCommand}" Classes="btn-accent" Padding="12,5" FontSize="11" FontWeight="Bold">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <TextBlock Text="🌐" FontSize="11" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Launch Browser" FontSize="11" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+                                </Border>
+
+                                <!-- In-App Simulated Landing Page Hero Canvas -->
+                                <Border Grid.Row="1" Background="#070D18" Padding="20">
+                                    <StackPanel Spacing="16">
+                                        <!-- Simulated Web Navbar -->
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                <Border Background="#0284C7" CornerRadius="6" Width="24" Height="24">
+                                                    <TextBlock Text="★" FontSize="13" Foreground="#FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <TextBlock Text="{Binding CurrentResult.BusinessName, FallbackValue='Horizon Clinic'}" FontSize="13" FontWeight="Bold" Foreground="#F8FAFC" VerticalAlignment="Center"/>
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="16" VerticalAlignment="Center">
+                                                <TextBlock Text="Overview" FontSize="10.5" Foreground="#94A3B8"/>
+                                                <TextBlock Text="Solutions" FontSize="10.5" Foreground="#94A3B8"/>
+                                                <TextBlock Text="Testimonials" FontSize="10.5" Foreground="#94A3B8"/>
+                                                <TextBlock Text="FAQ" FontSize="10.5" Foreground="#94A3B8"/>
+                                            </StackPanel>
+
+                                            <Border Grid.Column="2" Background="#064E3B" BorderBrush="#059669" BorderThickness="1" CornerRadius="14" Padding="8,3">
+                                                <TextBlock Text="{Binding PhonePrimary, StringFormat='📞 {0}'}" FontSize="10.5" FontWeight="SemiBold" Foreground="#34D399"/>
+                                            </Border>
+                                        </Grid>
+
+                                        <!-- Hero Content -->
+                                        <Border Background="#0D1626" BorderBrush="#1E2F48" BorderThickness="1" CornerRadius="10" Padding="20">
+                                            <StackPanel Spacing="10">
+                                                <!-- Authority Badge -->
+                                                <Border Background="#1E293B" CornerRadius="12" Padding="8,3" HorizontalAlignment="Left">
+                                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                                        <TextBlock Text="⭐" FontSize="10" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="{Binding City, StringFormat='Premier Rated Local Partner in {0}'}" FontSize="10" FontWeight="Bold" Foreground="#38BDF8"/>
+                                                    </StackPanel>
+                                                </Border>
+
+                                                <!-- Headline -->
+                                                <TextBlock Text="{Binding CurrentResult.Headline, FallbackValue='Transforming Business Operations with Elite Digital Solutions'}" 
+                                                           FontSize="18" FontWeight="ExtraBold" Foreground="#FFFFFF" TextWrapping="Wrap"/>
+
+                                                <!-- Subheadline -->
+                                                <TextBlock Text="{Binding CurrentResult.Subheadline, FallbackValue='Accelerate acquisition, drive predictable revenue, and establish market dominance with custom-engineered web infrastructure.'}" 
+                                                           FontSize="11.5" Foreground="#CBD5E1" TextWrapping="Wrap" MaxWidth="720"/>
+
+                                                <!-- Hero Action CTAs -->
+                                                <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,6,0,0">
+                                                    <Button Command="{Binding OpenInBrowserCommand}" Classes="btn-accent" Padding="16,8" FontSize="11" FontWeight="Bold">
+                                                        <TextBlock Text="{Binding CurrentResult.CallToActionText, FallbackValue='Claim Free Consultation'}"/>
+                                                    </Button>
+                                                    <Button Command="{Binding OpenInBrowserCommand}" Classes="btn-success" Padding="14,8" FontSize="11" FontWeight="Bold">
+                                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                                            <TextBlock Text="💬" FontSize="11"/>
+                                                            <TextBlock Text="WhatsApp Direct Chat"/>
+                                                        </StackPanel>
+                                                    </Button>
+                                                </StackPanel>
+
+                                                <!-- Trust Badges Strip -->
+                                                <Border Background="#070D18" BorderBrush="#1A283D" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,8,0,0">
+                                                    <WrapPanel VerticalAlignment="Center">
+                                                        <TextBlock Text="🛡️ Verified Local Enterprise" FontSize="10.5" Foreground="#94A3B8" Margin="0,0,14,0"/>
+                                                        <TextBlock Text="⭐ 4.9/5 Client Score" FontSize="10.5" Foreground="#F59E0B" Margin="0,0,14,0"/>
+                                                        <TextBlock Text="✓ ISO 9001 Standard" FontSize="10.5" Foreground="#10B981" Margin="0,0,14,0"/>
+                                                        <TextBlock Text="⚡ Instant Response Guarantee" FontSize="10.5" Foreground="#38BDF8"/>
+                                                    </WrapPanel>
+                                                </Border>
+                                            </StackPanel>
+                                        </Border>
                                     </StackPanel>
-                                    <TextBlock Text="{Binding HtmlPreviewNotice}" FontSize="12" Foreground="#CBD5E1" TextWrapping="Wrap"/>
-                                    <StackPanel Orientation="Horizontal" Spacing="14" Margin="0,6,0,0">
-                                        <TextBlock Text="✓ Google Fonts (Plus Jakarta Sans)" FontSize="11" Foreground="#34D399"/>
-                                        <TextBlock Text="✓ Tailwind CDN Active" FontSize="11" Foreground="#34D399"/>
-                                        <TextBlock Text="✓ Responsive Mobile &amp; Desktop" FontSize="11" Foreground="#34D399"/>
-                                        <TextBlock Text="✓ Floating WhatsApp" FontSize="11" Foreground="#34D399"/>
-                                    </StackPanel>
-                                </StackPanel>
-                                <Button Grid.Column="1" Content="🌐 Open in Web Browser" Command="{Binding OpenInBrowserCommand}" Classes="btn-accent" Padding="20,14" FontSize="13" FontWeight="Bold" VerticalAlignment="Center"/>
+                                </Border>
                             </Grid>
                         </Border>
 

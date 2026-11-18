@@ -281,7 +281,7 @@ public partial class DiscoveryViewModel : ViewModelBase
 
     private void UpdateCategories()
     {
-        var presets = _discoveryService.GetPresetCategories().Keys.Distinct().ToList();
+        var presets = _discoveryService.GetPresetCategories().Keys.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         Categories = new ObservableCollection<string>(presets);
         SelectedCategory = presets.FirstOrDefault() ?? "⭐ All Commercial Businesses & Enterprises";
     }
@@ -664,7 +664,7 @@ public partial class DiscoveryViewModel : ViewModelBase
             SelectedCountry = "All Countries";
             SelectedState = "All States/Provinces";
             SelectedCity = "All Cities";
-            SelectedCategory = Categories.FirstOrDefault() ?? "🌟 All Commercial Businesses & Enterprises";
+            SelectedCategory = Categories.FirstOrDefault() ?? "⭐ All Commercial Businesses & Enterprises";
         }
 
         // 2. Remove leads that are now in the database
@@ -719,7 +719,7 @@ public partial class DiscoveryViewModel : ViewModelBase
         SelectedCountry = "All Countries";
         SelectedState = "All States/Provinces";
         SelectedCity = "All Cities";
-        SelectedCategory = Categories.FirstOrDefault() ?? "🌟 All Commercial Businesses & Enterprises";
+        SelectedCategory = Categories.FirstOrDefault() ?? "⭐ All Commercial Businesses & Enterprises";
         SelectedEngine = AvailableEngines.FirstOrDefault() ?? "🌐 Unified Multi-Engine Aggregator (All Active)";
 
         DiscoveredLeads.Clear();

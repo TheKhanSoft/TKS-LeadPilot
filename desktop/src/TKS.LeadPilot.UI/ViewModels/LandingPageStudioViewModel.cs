@@ -386,9 +386,33 @@ public partial class LandingPageStudioViewModel : ViewModelBase
             if (!Directory.Exists(tempDir)) Directory.CreateDirectory(tempDir);
 
             var cleanName = string.Concat(BusinessName.Where(char.IsLetterOrDigit));
-            var filePath = Path.Combine(tempDir, $"{cleanName}_LandingPage.html");
+            if (string.IsNullOrWhiteSpace(cleanName)) cleanName = "LandingPage";
 
-            await File.WriteAllTextAsync(filePath, CurrentResult.GeneratedHtml);
+            // Clean up older preview files for this business to prevent temp directory bloat and cache pollution
+            try
+            {
+                var oldFiles = Directory.GetFiles(tempDir, $"{cleanName}_LandingPage*.html");
+                foreach (var old in oldFiles)
+                {
+                    try { File.Delete(old); } catch { }
+                }
+            }
+            catch { }
+
+            // Timestamped unique file name guarantees browser cache-busting
+            var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            var filePath = Path.Combine(tempDir, $"{cleanName}_LandingPage_{timestamp}.html");
+
+            // Inject anti-cache meta headers into HTML so browser never serves stale static assets
+            var html = CurrentResult.GeneratedHtml;
+            if (html.Contains("<head>", StringComparison.OrdinalIgnoreCase))
+            {
+                var cacheBuster = "\n    <meta http-equiv=\"Cache-Control\" content=\"no-cache, no-store, must-revalidate\" />\n    <meta http-equiv=\"Pragma\" content=\"no-cache\" />\n    <meta http-equiv=\"Expires\" content=\"0\" />\n";
+                var headIdx = html.IndexOf("<head>", StringComparison.OrdinalIgnoreCase);
+                html = html.Insert(headIdx + 6, cacheBuster);
+            }
+
+            await File.WriteAllTextAsync(filePath, html);
 
             Process.Start(new ProcessStartInfo
             {
@@ -396,7 +420,7 @@ public partial class LandingPageStudioViewModel : ViewModelBase
                 UseShellExecute = true
             });
 
-            StatusMessage = $"🌐 Launching landing page preview in web browser ({filePath})...";
+            StatusMessage = $"🌐 Fresh landing page preview opened in web browser ({Path.GetFileName(filePath)} at {DateTime.Now:T})...";
         }
         catch (Exception ex)
         {
