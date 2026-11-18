@@ -353,7 +353,7 @@
             <Setter Property="Padding" Value="12,10"/>
         </Style>
         <Style Selector="DataGridRow">
-            <Setter Property="Height" Value="42"/>
+            <Setter Property="MinHeight" Value="42"/>
             <Setter Property="Transitions">
                 <Transitions>
                     <BrushTransition Property="Background" Duration="0:0:0.1"/>

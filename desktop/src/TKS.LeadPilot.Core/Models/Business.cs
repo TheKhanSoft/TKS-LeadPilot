@@ -75,6 +75,49 @@ public class Business : INotifyPropertyChanged
             }
         }
     }
+
+    // UI Helpers (Transient, NotMapped, JsonIgnored)
+    [NotMapped]
+    [JsonIgnore]
+    public string RegionAndCountryDisplay
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(StateProvince) && !string.IsNullOrWhiteSpace(Country))
+                return $"{StateProvince}, {Country}";
+            if (!string.IsNullOrWhiteSpace(StateProvince))
+                return StateProvince;
+            return Country ?? string.Empty;
+        }
+    }
+
+    [NotMapped]
+    [JsonIgnore]
+    public bool HasWebsite => !string.IsNullOrWhiteSpace(WebsiteUrl);
+
+    [NotMapped]
+    [JsonIgnore]
+    public bool HasPhone => !string.IsNullOrWhiteSpace(PhonePrimary);
+
+    [NotMapped]
+    [JsonIgnore]
+    public bool HasEmail => !string.IsNullOrWhiteSpace(EmailPrimary);
+
+    [NotMapped]
+    [JsonIgnore]
+    public bool HasGmb => IsGoogleVerified || !string.IsNullOrWhiteSpace(GooglePlaceId);
+
+    [NotMapped]
+    [JsonIgnore]
+    public string PhoneDisplay => !string.IsNullOrWhiteSpace(PhonePrimary) ? PhonePrimary : "—";
+
+    [NotMapped]
+    [JsonIgnore]
+    public string EmailDisplay => !string.IsNullOrWhiteSpace(EmailPrimary) ? EmailPrimary : "—";
+
+    [NotMapped]
+    [JsonIgnore]
+    public string StageDisplay => PipelineStage?.Name ?? (!string.IsNullOrWhiteSpace(PipelineStageId) ? PipelineStageId : "Discovered");
     
     // Provenance & Source
     public string? SourceProvider { get; set; }

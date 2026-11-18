@@ -74,3 +74,61 @@ public class LandingPageGenerationResult
     public int RequestsUsedToday { get; set; }
     public int DailyLimit { get; set; } = 1200;
 }
+
+public class BespokeServiceItem
+{
+    public string Icon { get; set; } = "fa-solid fa-briefcase";
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string Cta { get; set; } = "Learn More";
+}
+
+public class BespokeTestimonialItem
+{
+    public string Quote { get; set; } = string.Empty;
+    public string Author { get; set; } = string.Empty;
+    public string Role { get; set; } = string.Empty;
+    public string Initials { get; set; } = "CL";
+    public int Rating { get; set; } = 5;
+}
+
+public class BespokeFaqItem
+{
+    public string Question { get; set; } = string.Empty;
+    public string Answer { get; set; } = string.Empty;
+}
+
+public class BespokeMetricItem
+{
+    public string Value { get; set; } = string.Empty;
+    public string Label { get; set; } = string.Empty;
+}
+
+public class BespokeDifferentiatorItem
+{
+    public string Icon { get; set; } = "fa-solid fa-check";
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+}
+
+public class BespokeContentPayload
+{
+    public string Headline { get; set; } = string.Empty;
+    public string Subheadline { get; set; } = string.Empty;
+    public string HeroBadge { get; set; } = string.Empty;
+    public string CallToAction { get; set; } = string.Empty;
+    public string SecondaryCta { get; set; } = string.Empty;
+    public List<BespokeMetricItem> Metrics { get; set; } = [];
+    public List<string> TrustBadges { get; set; } = [];
+    public List<BespokeServiceItem> Services { get; set; } = [];
+    public List<BespokeDifferentiatorItem> Differentiators { get; set; } = [];
+    public List<BespokeTestimonialItem> Testimonials { get; set; } = [];
+    public List<BespokeFaqItem> Faqs { get; set; } = [];
+    public string LeadFormTitle { get; set; } = string.Empty;
+    public string LeadFormSubtitle { get; set; } = string.Empty;
+    public int ConversionScore { get; set; } = 94;
+    public string ArchitectureBlueprintMarkdown { get; set; } = string.Empty;
+    public string DeveloperPrompts { get; set; } = string.Empty;
+    public string AdCopyPrompts { get; set; } = string.Empty;
+    public List<string> MidjourneyPrompts { get; set; } = [];
+}
