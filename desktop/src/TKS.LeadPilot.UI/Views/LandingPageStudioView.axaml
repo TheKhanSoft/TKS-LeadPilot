@@ -188,14 +188,12 @@
                     <!-- Fast Action Toolbar -->
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                         <Button Command="{Binding OpenInBrowserCommand}" Classes="btn-success" Padding="10,6" FontSize="11">
-                            <Button.ToolTip>
-                                <ToolTip Background="#0F172A" BorderBrush="#10B981" BorderThickness="1" CornerRadius="8" Padding="10">
-                                    <StackPanel Spacing="3">
-                                        <TextBlock Text="🌐 Live Browser Preview" FontWeight="Bold" FontSize="11" Foreground="#34D399"/>
-                                        <TextBlock Text="Launch the generated HTML5 + Tailwind CSS page in your default web browser to test responsiveness." FontSize="10" Foreground="#94A3B8" TextWrapping="Wrap" MaxWidth="280"/>
-                                    </StackPanel>
-                                </ToolTip>
-                            </Button.ToolTip>
+                            <ToolTip.Tip>
+                                <StackPanel Spacing="3">
+                                    <TextBlock Text="🌐 Live Browser Preview" FontWeight="Bold" FontSize="11" Foreground="#34D399"/>
+                                    <TextBlock Text="Launch the generated HTML5 + Tailwind CSS page in your default web browser to test responsiveness." FontSize="10" Foreground="#94A3B8" TextWrapping="Wrap" MaxWidth="280"/>
+                                </StackPanel>
+                            </ToolTip.Tip>
                             <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
                                 <TextBlock Text="🌐" FontSize="12" VerticalAlignment="Center"/>
                                 <TextBlock Text="Preview" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
@@ -203,14 +201,12 @@
                         </Button>
 
                         <Button Command="{Binding CopyHtmlCommand}" Classes="btn-secondary" Padding="10,6" FontSize="11">
-                            <Button.ToolTip>
-                                <ToolTip Background="#0F172A" BorderBrush="#38BDF8" BorderThickness="1" CornerRadius="8" Padding="10">
-                                    <StackPanel Spacing="3">
-                                        <TextBlock Text="📋 Copy HTML5 Code" FontWeight="Bold" FontSize="11" Foreground="#38BDF8"/>
-                                        <TextBlock Text="Copy complete standalone HTML5 code with Tailwind CSS CDN and WhatsApp widgets to clipboard." FontSize="10" Foreground="#94A3B8" TextWrapping="Wrap" MaxWidth="280"/>
-                                    </StackPanel>
-                                </ToolTip>
-                            </Button.ToolTip>
+                            <ToolTip.Tip>
+                                <StackPanel Spacing="3">
+                                    <TextBlock Text="📋 Copy HTML5 Code" FontWeight="Bold" FontSize="11" Foreground="#38BDF8"/>
+                                    <TextBlock Text="Copy complete standalone HTML5 code with Tailwind CSS CDN and WhatsApp widgets to clipboard." FontSize="10" Foreground="#94A3B8" TextWrapping="Wrap" MaxWidth="280"/>
+                                </StackPanel>
+                            </ToolTip.Tip>
                             <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
                                 <TextBlock Text="📋" FontSize="12" VerticalAlignment="Center"/>
                                 <TextBlock Text="Copy HTML" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
@@ -218,14 +214,12 @@
                         </Button>
 
                         <Button Command="{Binding CopyBlueprintCommand}" Classes="btn-secondary" Padding="10,6" FontSize="11">
-                            <Button.ToolTip>
-                                <ToolTip Background="#0F172A" BorderBrush="#38BDF8" BorderThickness="1" CornerRadius="8" Padding="10">
-                                    <StackPanel Spacing="3">
-                                        <TextBlock Text="📄 Copy Architecture Blueprint" FontWeight="Bold" FontSize="11" Foreground="#38BDF8"/>
-                                        <TextBlock Text="Copy modular layout specifications, UX rationale, and agency sales pitch to clipboard." FontSize="10" Foreground="#94A3B8" TextWrapping="Wrap" MaxWidth="280"/>
-                                    </StackPanel>
-                                </ToolTip>
-                            </Button.ToolTip>
+                            <ToolTip.Tip>
+                                <StackPanel Spacing="3">
+                                    <TextBlock Text="📄 Copy Architecture Blueprint" FontWeight="Bold" FontSize="11" Foreground="#38BDF8"/>
+                                    <TextBlock Text="Copy modular layout specifications, UX rationale, and agency sales pitch to clipboard." FontSize="10" Foreground="#94A3B8" TextWrapping="Wrap" MaxWidth="280"/>
+                                </StackPanel>
+                            </ToolTip.Tip>
                             <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
                                 <TextBlock Text="📄" FontSize="12" VerticalAlignment="Center"/>
                                 <TextBlock Text="Blueprint" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
@@ -233,14 +227,12 @@
                         </Button>
 
                         <Button Command="{Binding SaveHtmlFileCommand}" Classes="btn-secondary" Padding="10,6" FontSize="11">
-                            <Button.ToolTip>
-                                <ToolTip Background="#0F172A" BorderBrush="#38BDF8" BorderThickness="1" CornerRadius="8" Padding="10">
-                                    <StackPanel Spacing="3">
-                                        <TextBlock Text="💾 Export .html File" FontWeight="Bold" FontSize="11" Foreground="#38BDF8"/>
-                                        <TextBlock Text="Save self-contained production .html file directly into your user Downloads directory." FontSize="10" Foreground="#94A3B8" TextWrapping="Wrap" MaxWidth="280"/>
-                                    </StackPanel>
-                                </ToolTip>
-                            </Button.ToolTip>
+                            <ToolTip.Tip>
+                                <StackPanel Spacing="3">
+                                    <TextBlock Text="💾 Export .html File" FontWeight="Bold" FontSize="11" Foreground="#38BDF8"/>
+                                    <TextBlock Text="Save self-contained production .html file directly into your user Downloads directory." FontSize="10" Foreground="#94A3B8" TextWrapping="Wrap" MaxWidth="280"/>
+                                </StackPanel>
+                            </ToolTip.Tip>
                             <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
                                 <TextBlock Text="💾" FontSize="12" VerticalAlignment="Center"/>
                                 <TextBlock Text="Export" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>

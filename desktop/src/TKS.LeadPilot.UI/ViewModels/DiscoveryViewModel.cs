@@ -770,30 +770,15 @@ public partial class DiscoveryViewModel : ViewModelBase
     public void OpenLandingPageStudio(DiscoveredLead? lead)
     {
         var b = lead?.Business ?? SelectedLead?.Business;
-        if (b == null) return;
-
-        if (_serviceProvider == null)
+        if (b == null)
         {
-            StatusMessage = "Service provider unavailable to launch Studio.";
+            StatusMessage = "⚠️ Select a discovered lead first to launch AI Landing Page Studio.";
             return;
         }
 
-        try
-        {
-            var studioVm = _serviceProvider.GetRequiredService<LandingPageStudioViewModel>();
-            studioVm.PopulateFromBusiness(b);
-
-            var window = new LandingPageStudioWindow
-            {
-                DataContext = studioVm
-            };
-            window.Show();
-            StatusMessage = $"🎨 Launched AI Landing Page Studio for {b.Name}!";
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"Could not launch AI Landing Page Studio: {ex.Message}";
-        }
+        LandingPageStudioViewModel.TargetBusinessForStudio = b;
+        BusinessesViewModel.RequestGlobalNavigation("LandingStudio");
+        StatusMessage = $"🎨 Pre-filled AI Landing Page Studio for '{b.Name}'.";
     }
 
     [RelayCommand]

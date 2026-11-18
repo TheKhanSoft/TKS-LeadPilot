@@ -588,7 +588,8 @@
                                         IsEnabled="{Binding WebsiteUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
                                 <Button Content="🎨 AI Landing Page Studio" 
                                         Command="{Binding ((vm:BusinessesViewModel)DataContext).OpenLandingPageStudioCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                        Classes="btn-accent" HorizontalAlignment="Stretch" ToolTip.Tip="Open AI Landing Page Studio window pre-filled with this business"/>
+                                        CommandParameter="{Binding}"
+                                        Classes="btn-accent" HorizontalAlignment="Stretch" ToolTip.Tip="Open AI Landing Page Studio pre-filled with this business"/>
                                 <Button Content="🌐 Launch Website in Browser" 
                                         Command="{Binding ((vm:BusinessesViewModel)DataContext).OpenWebsiteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                                         Classes="btn-secondary" HorizontalAlignment="Stretch"
