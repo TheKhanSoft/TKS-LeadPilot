@@ -817,13 +817,13 @@ public class OverpassDiscoveryService : IDiscoveryService
         if (!isAllCommercial && !string.IsNullOrWhiteSpace(preset))
         {
             var presetLower = preset.ToLowerInvariant();
-            if (catLower.Contains(presetLower) || nameLower.Contains(presetLower))
+            if (catLower.Contains(presetLower) || presetLower.Contains(catLower) || nameLower.Contains(presetLower))
             {
                 score += 40;
             }
 
             var presetTokens = presetLower.Split([' ', ',', '-', '/', '&', '⭐'], StringSplitOptions.RemoveEmptyEntries)
-                .Where(t => t.Length >= 4 && t != "commercial" && t != "businesses" && t != "enterprises")
+                .Where(t => t.Length >= 2 && t != "commercial" && t != "businesses" && t != "enterprises")
                 .ToList();
 
             foreach (var ptok in presetTokens)

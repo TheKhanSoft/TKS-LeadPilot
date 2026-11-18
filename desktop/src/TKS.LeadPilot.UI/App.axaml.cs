@@ -75,7 +75,7 @@ public partial class App : Application
         services.AddScoped<IDatabaseInitializer, DatabaseInitializer>();
 
         // Core Business Services (Stage 4, 5, 6, 7)
-        services.AddSingleton(new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(60) });
+        services.AddSingleton(new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(120) });
         services.AddSingleton<IGeoLocationService, GeoLocationService>();
         services.AddScoped<IDeduplicationService, DeduplicationService>();
         services.AddScoped<ICsvImporterService, CsvImporterService>();

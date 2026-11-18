@@ -600,7 +600,9 @@ public static class OverpassQueryBuilder
         ["Education & Training"] = ["school", "college", "university"],
 
         // Expanded Commercial Niches
-        ["Software & IT Agencies"] = ["it", "computer", "telecommunication", "office"],
+        ["Software Company & IT Services"] = ["software", "it", "computer", "saas", "tech", "developer", "web_development", "telecommunication", "office", "agency"],
+        ["Software & IT Agencies"] = ["software", "it", "computer", "saas", "tech", "developer", "web_development", "telecommunication", "office", "agency"],
+        ["Software Company"] = ["software", "it", "computer", "saas", "tech", "developer", "web_development", "office"],
         ["Legal & Corporate Law"] = ["lawyer", "legal", "notary", "office"],
         ["Finance & Accounting"] = ["bank", "accountant", "financial", "insurance"],
         ["Real Estate & Builders"] = ["estate_agent", "real_estate", "property_management"],

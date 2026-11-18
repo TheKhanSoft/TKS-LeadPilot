@@ -451,12 +451,120 @@ public class BusinessRepository : IBusinessRepository
 
         if (!string.IsNullOrWhiteSpace(criteria.City))
         {
-            query = query.Where(b => b.City == criteria.City);
+            var cityLower = criteria.City.Trim().ToLower();
+            query = query.Where(b => b.City.ToLower() == cityLower);
         }
 
         if (!string.IsNullOrWhiteSpace(criteria.Category))
         {
-            query = query.Where(b => b.Category == criteria.Category);
+            var catLower = criteria.Category.Trim().ToLower();
+
+            // Broad sector & semantic preset expansion:
+            if (catLower.Contains("software") || catLower.Contains(" it ") || catLower.EndsWith(" it") || catLower.StartsWith("it ") || catLower.Contains("agency") || catLower.Contains("tech") || catLower.Contains("saas"))
+            {
+                query = query.Where(b =>
+                    b.Category.ToLower() == catLower ||
+                    b.Category.ToLower().Contains("software") ||
+                    b.Category.ToLower().Contains(" it") ||
+                    b.Category.ToLower().Contains("it ") ||
+                    b.Category.ToLower().Contains("tech") ||
+                    b.Category.ToLower().Contains("saas") ||
+                    b.Category.ToLower().Contains("developer") ||
+                    b.Category.ToLower().Contains("computer") ||
+                    b.Category.ToLower().Contains("web"));
+            }
+            else if (catLower.Contains("health") || catLower.Contains("dent") || catLower.Contains("clinic") || catLower.Contains("medic") || catLower.Contains("hospital") || catLower.Contains("pharm"))
+            {
+                query = query.Where(b =>
+                    b.Category.ToLower() == catLower ||
+                    b.Category.ToLower().Contains("health") ||
+                    b.Category.ToLower().Contains("dent") ||
+                    b.Category.ToLower().Contains("clinic") ||
+                    b.Category.ToLower().Contains("medic") ||
+                    b.Category.ToLower().Contains("hospital") ||
+                    b.Category.ToLower().Contains("doctor") ||
+                    b.Category.ToLower().Contains("pharm"));
+            }
+            else if (catLower.Contains("law") || catLower.Contains("legal"))
+            {
+                query = query.Where(b =>
+                    b.Category.ToLower() == catLower ||
+                    b.Category.ToLower().Contains("law") ||
+                    b.Category.ToLower().Contains("legal") ||
+                    b.Category.ToLower().Contains("attorney") ||
+                    b.Category.ToLower().Contains("advocate") ||
+                    b.Category.ToLower().Contains("notary") ||
+                    b.Category.ToLower().Contains("barrister"));
+            }
+            else if (catLower.Contains("rest") || catLower.Contains("food") || catLower.Contains("cafe") || catLower.Contains("dining"))
+            {
+                query = query.Where(b =>
+                    b.Category.ToLower() == catLower ||
+                    b.Category.ToLower().Contains("rest") ||
+                    b.Category.ToLower().Contains("food") ||
+                    b.Category.ToLower().Contains("cafe") ||
+                    b.Category.ToLower().Contains("dining") ||
+                    b.Category.ToLower().Contains("bakery") ||
+                    b.Category.ToLower().Contains("fast food"));
+            }
+            else if (catLower.Contains("hotel") || catLower.Contains("lodg") || catLower.Contains("hospitality"))
+            {
+                query = query.Where(b =>
+                    b.Category.ToLower() == catLower ||
+                    b.Category.ToLower().Contains("hotel") ||
+                    b.Category.ToLower().Contains("lodg") ||
+                    b.Category.ToLower().Contains("resort") ||
+                    b.Category.ToLower().Contains("guest house") ||
+                    b.Category.ToLower().Contains("motel"));
+            }
+            else if (catLower.Contains("estate") || catLower.Contains("propert") || catLower.Contains("builder"))
+            {
+                query = query.Where(b =>
+                    b.Category.ToLower() == catLower ||
+                    b.Category.ToLower().Contains("estate") ||
+                    b.Category.ToLower().Contains("propert") ||
+                    b.Category.ToLower().Contains("builder") ||
+                    b.Category.ToLower().Contains("housing") ||
+                    b.Category.ToLower().Contains("developer"));
+            }
+            else if (catLower.Contains("auto") || catLower.Contains("repair") || catLower.Contains("car") || catLower.Contains("mechanic"))
+            {
+                query = query.Where(b =>
+                    b.Category.ToLower() == catLower ||
+                    b.Category.ToLower().Contains("auto") ||
+                    b.Category.ToLower().Contains("car") ||
+                    b.Category.ToLower().Contains("repair") ||
+                    b.Category.ToLower().Contains("mechanic") ||
+                    b.Category.ToLower().Contains("dealership"));
+            }
+            else if (catLower.Contains("solar") || catLower.Contains("renew") || catLower.Contains("energy"))
+            {
+                query = query.Where(b =>
+                    b.Category.ToLower() == catLower ||
+                    b.Category.ToLower().Contains("solar") ||
+                    b.Category.ToLower().Contains("energy") ||
+                    b.Category.ToLower().Contains("renew") ||
+                    b.Category.ToLower().Contains("photovoltaic"));
+            }
+            else if (catLower.Contains("textile") || catLower.Contains("apparel") || catLower.Contains("fashion") || catLower.Contains("cloth") || catLower.Contains("garment"))
+            {
+                query = query.Where(b =>
+                    b.Category.ToLower() == catLower ||
+                    b.Category.ToLower().Contains("textile") ||
+                    b.Category.ToLower().Contains("apparel") ||
+                    b.Category.ToLower().Contains("fashion") ||
+                    b.Category.ToLower().Contains("garment") ||
+                    b.Category.ToLower().Contains("fabric") ||
+                    b.Category.ToLower().Contains("tailor"));
+            }
+            else
+            {
+                // General flexible category match
+                query = query.Where(b =>
+                    b.Category.ToLower() == catLower ||
+                    b.Category.ToLower().Contains(catLower) ||
+                    catLower.Contains(b.Category.ToLower()));
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(criteria.PipelineStageId))

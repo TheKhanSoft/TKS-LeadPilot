@@ -77,6 +77,26 @@ public class BusinessRepositoryFilterTests
             var khiResults = await repo.GetFilteredAsync(new BusinessFilterCriteria { City = "Karachi" });
             khiResults.Should().Contain(b => b.Name == "Karachi Health Hub");
 
+            // 1b. Test Software Company & IT Agencies Semantic Match
+            await repo.AddAsync(new Business
+            {
+                Name = "TheKhanSoft",
+                Category = "Software company",
+                Country = "Pakistan",
+                City = "Charsadda",
+                PipelineStageId = "stage-discovered"
+            });
+
+            var softwareResults = await repo.GetFilteredAsync(new BusinessFilterCriteria { Category = "Software & IT Agencies" });
+            softwareResults.Should().Contain(b => b.Name == "TheKhanSoft", "Software company must match Software & IT Agencies preset");
+
+            var searchResults = await repo.GetFilteredAsync(new BusinessFilterCriteria
+            {
+                Category = "Software & IT Agencies",
+                SearchQuery = "TheKhanSoft"
+            });
+            searchResults.Should().Contain(b => b.Name == "TheKhanSoft", "Exact name search with preset category must return matching business");
+
             // 2. Filter by Category
             var healthcareResults = await repo.GetFilteredAsync(new BusinessFilterCriteria { Category = "Healthcare" });
             healthcareResults.Should().Contain(b => b.Name == "Karachi Health Hub");

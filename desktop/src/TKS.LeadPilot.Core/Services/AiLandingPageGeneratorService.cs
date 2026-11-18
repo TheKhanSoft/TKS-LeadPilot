@@ -144,12 +144,12 @@ public class AiLandingPageGeneratorService(
         // 2. Build Gemini Prompt
         var prompt = BuildGeminiPrompt(request);
 
-        // Candidate model fallback chain: Google-recommended gemini-3.8-flash, backed by gemini-3.5-flash
-        var candidateModels = new[] { "gemini-3.8-flash", "gemini-3.5-flash" };
+        // Production-verified Gemini model
+        var modelName = "gemini-3.8-flash";
         HttpResponseMessage? lastResponse = null;
         string lastErrorDetail = string.Empty;
 
-        foreach (var modelName in candidateModels)
+        for (int attempt = 1; attempt <= 2; attempt++)
         {
             try
             {
@@ -169,10 +169,10 @@ public class AiLandingPageGeneratorService(
                     },
                     generationConfig = new
                     {
-                        temperature = 0.5,
+                        temperature = 0.4,
                         topK = 40,
                         topP = 0.95,
-                        maxOutputTokens = 8192
+                        maxOutputTokens = 4096
                     }
                 };
 
@@ -182,7 +182,7 @@ public class AiLandingPageGeneratorService(
                     "application/json");
 
                 using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-                cts.CancelAfter(TimeSpan.FromSeconds(45));
+                cts.CancelAfter(TimeSpan.FromSeconds(90));
 
                 var response = await _httpClient.PostAsync(requestUri, jsonContent, cts.Token);
                 lastResponse = response;
@@ -208,10 +208,25 @@ public class AiLandingPageGeneratorService(
                 }
 
                 lastErrorDetail = await response.Content.ReadAsStringAsync(ct);
+
+                // If rate limited (HTTP 429), wait 2 seconds and retry once
+                if ((int)response.StatusCode == 429 && attempt == 1)
+                {
+                    await Task.Delay(2000, ct);
+                    continue;
+                }
+
+                break;
+            }
+            catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+            {
+                lastErrorDetail = "Request reached timeout (90s) generating extensive HTML architecture.";
+                break;
             }
             catch (Exception ex)
             {
                 lastErrorDetail = ex.Message;
+                break;
             }
         }
 
