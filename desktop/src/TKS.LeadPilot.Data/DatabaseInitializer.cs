@@ -255,40 +255,44 @@ public class DatabaseInitializer : IDatabaseInitializer
         await EnsureColumnAsync("WebsiteAuditFindings", "SuggestedServiceId", "TEXT NULL", ct);
 
         // Automatically sync and rectify Google Business Profile (GMB) status for existing database records
-        await _context.Database.ExecuteSqlRawAsync(@"
-            UPDATE ""Businesses"" 
-            SET ""IsGoogleVerified"" = 1 
-            WHERE (""GoogleRating"" IS NOT NULL AND ""GoogleRating"" > 0) 
-               OR (""GoogleReviewCount"" IS NOT NULL AND ""GoogleReviewCount"" > 0) 
-               OR (""GooglePlaceId"" IS NOT NULL AND LENGTH(""GooglePlaceId"") > 0);
+        string[] gmbMigrations = [
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1 WHERE (\"GoogleRating\" IS NOT NULL AND \"GoogleRating\" > 0) OR (\"GoogleReviewCount\" IS NOT NULL AND \"GoogleReviewCount\" > 0) OR (\"GooglePlaceId\" IS NOT NULL AND LENGTH(\"GooglePlaceId\") > 0);",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.0, \"GoogleReviewCount\" = 2582, \"BusinessHours\" = 'Open 24 hours' WHERE \"Name\" LIKE '%Hameed Latif%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 3.4, \"GoogleReviewCount\" = 1007, \"BusinessHours\" = 'Open 24 hours' WHERE \"Name\" LIKE '%National Hospital%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 3.9, \"GoogleReviewCount\" = 1850, \"BusinessHours\" = 'Open 24 hours' WHERE \"Name\" LIKE '%Doctors Hospital%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.1, \"GoogleReviewCount\" = 310, \"BusinessHours\" = '8:00 AM - 10:00 PM' WHERE \"Name\" LIKE '%Al-Razi%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.4, \"GoogleReviewCount\" = 8900, \"BusinessHours\" = 'Open 24 hours' WHERE \"Name\" LIKE '%Pearl Continental%' AND \"City\" LIKE '%Lahore%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.3, \"GoogleReviewCount\" = 3120, \"BusinessHours\" = 'Open 24 hours' WHERE \"Name\" LIKE '%Pearl Continental%' AND \"City\" LIKE '%Peshawar%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.1, \"GoogleReviewCount\" = 4250, \"BusinessHours\" = 'Open 24 hours' WHERE \"Name\" LIKE '%Shifa International%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.0, \"GoogleReviewCount\" = 980, \"BusinessHours\" = 'Open 24 hours' WHERE \"Name\" LIKE '%Maroof International%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.6, \"GoogleReviewCount\" = 9200, \"BusinessHours\" = 'Open 24 hours' WHERE \"Name\" LIKE '%Serena Hotel%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.5, \"GoogleReviewCount\" = 24000 WHERE \"Name\" LIKE '%Monal%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.3, \"GoogleReviewCount\" = 5400, \"BusinessHours\" = 'Open 24 hours' WHERE \"Name\" LIKE '%Aga Khan%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.0, \"GoogleReviewCount\" = 1150, \"BusinessHours\" = 'Open 24 hours' WHERE \"Name\" LIKE '%South City%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.1, \"GoogleReviewCount\" = 2300, \"BusinessHours\" = 'Open 24 hours' WHERE \"Name\" LIKE '%Ziauddin%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.5, \"GoogleReviewCount\" = 14200 WHERE \"Name\" LIKE '%Kolachi%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.4, \"GoogleReviewCount\" = 6800, \"BusinessHours\" = 'Open 24 hours' WHERE \"Name\" LIKE '%Mövenpick%' OR \"Name\" LIKE '%Movenpick%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.2, \"GoogleReviewCount\" = 2100, \"BusinessHours\" = 'Open 24 hours' WHERE \"Name\" LIKE '%Rehman Medical%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.2, \"GoogleReviewCount\" = 1950, \"BusinessHours\" = 'Open 24 hours' WHERE \"Name\" LIKE '%Northwest General%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.0, \"GoogleReviewCount\" = 1600, \"BusinessHours\" = 'Open 24 hours' WHERE \"Name\" LIKE '%Lady Reading%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.1, \"GoogleReviewCount\" = 1450, \"BusinessHours\" = 'Open 24 hours' WHERE \"Name\" LIKE '%Khyber Teaching%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.5, \"GoogleReviewCount\" = 820, \"BusinessHours\" = 'Open 24 hours' WHERE \"Name\" LIKE '%Peshawar Institute of Cardiology%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.4, \"GoogleReviewCount\" = 980 WHERE \"Name\" LIKE '%Chief Grill%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.7, \"GoogleReviewCount\" = 48 WHERE \"Name\" LIKE '%Frontier Technology%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.5, \"GoogleReviewCount\" = 112 WHERE \"Name\" LIKE '%Crown City%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.8, \"GoogleReviewCount\" = 65 WHERE \"Name\" LIKE '%Horizon Physiotherapy%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.6, \"GoogleReviewCount\" = 380 WHERE \"Name\" LIKE '%Sunrise Grand%';",
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.2, \"GoogleReviewCount\" = 29 WHERE \"Name\" LIKE '%Indus Valley%';"
+        ];
 
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 4.0, ""GoogleReviewCount"" = 2582, ""BusinessHours"" = 'Open 24 hours' WHERE ""Name"" LIKE '%Hameed Latif%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 3.4, ""GoogleReviewCount"" = 1007, ""BusinessHours"" = 'Open 24 hours' WHERE ""Name"" LIKE '%National Hospital%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 3.9, ""GoogleReviewCount"" = 1850, ""BusinessHours"" = 'Open 24 hours' WHERE ""Name"" LIKE '%Doctors Hospital%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 4.1, ""GoogleReviewCount"" = 310, ""BusinessHours"" = '8:00 AM - 10:00 PM' WHERE ""Name"" LIKE '%Al-Razi%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 4.4, ""GoogleReviewCount"" = 8900, ""BusinessHours"" = 'Open 24 hours' WHERE ""Name"" LIKE '%Pearl Continental%' AND ""City"" LIKE '%Lahore%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 4.3, ""GoogleReviewCount"" = 3120, ""BusinessHours"" = 'Open 24 hours' WHERE ""Name"" LIKE '%Pearl Continental%' AND ""City"" LIKE '%Peshawar%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 4.1, ""GoogleReviewCount"" = 4250, ""BusinessHours"" = 'Open 24 hours' WHERE ""Name"" LIKE '%Shifa International%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 4.0, ""GoogleReviewCount"" = 980, ""BusinessHours"" = 'Open 24 hours' WHERE ""Name"" LIKE '%Maroof International%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 4.6, ""GoogleReviewCount"" = 9200, ""BusinessHours"" = 'Open 24 hours' WHERE ""Name"" LIKE '%Serena Hotel%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 4.5, ""GoogleReviewCount"" = 24000 WHERE ""Name"" LIKE '%Monal%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 4.3, ""GoogleReviewCount"" = 5400, ""BusinessHours"" = 'Open 24 hours' WHERE ""Name"" LIKE '%Aga Khan%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 4.0, ""GoogleReviewCount"" = 1150, ""BusinessHours"" = 'Open 24 hours' WHERE ""Name"" LIKE '%South City%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 4.1, ""GoogleReviewCount"" = 2300, ""BusinessHours"" = 'Open 24 hours' WHERE ""Name"" LIKE '%Ziauddin%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 4.5, ""GoogleReviewCount"" = 14200 WHERE ""Name"" LIKE '%Kolachi%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 4.4, ""GoogleReviewCount"" = 6800, ""BusinessHours"" = 'Open 24 hours' WHERE ""Name"" LIKE '%Mövenpick%' OR ""Name"" LIKE '%Movenpick%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 4.2, ""GoogleReviewCount"" = 2100, ""BusinessHours"" = 'Open 24 hours' WHERE ""Name"" LIKE '%Rehman Medical%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 4.2, ""GoogleReviewCount"" = 1950, ""BusinessHours"" = 'Open 24 hours' WHERE ""Name"" LIKE '%Northwest General%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 4.0, ""GoogleReviewCount"" = 1600, ""BusinessHours"" = 'Open 24 hours' WHERE ""Name"" LIKE '%Lady Reading%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 4.1, ""GoogleReviewCount"" = 1450, ""BusinessHours"" = 'Open 24 hours' WHERE ""Name"" LIKE '%Khyber Teaching%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 4.5, ""GoogleReviewCount"" = 820, ""BusinessHours"" = 'Open 24 hours' WHERE ""Name"" LIKE '%Peshawar Institute of Cardiology%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 4.4, ""GoogleReviewCount"" = 980 WHERE ""Name"" LIKE '%Chief Grill%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 4.7, ""GoogleReviewCount"" = 48 WHERE ""Name"" LIKE '%Frontier Technology%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 4.5, ""GoogleReviewCount"" = 112 WHERE ""Name"" LIKE '%Crown City%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 4.8, ""GoogleReviewCount"" = 65 WHERE ""Name"" LIKE '%Horizon Physiotherapy%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 4.6, ""GoogleReviewCount"" = 380 WHERE ""Name"" LIKE '%Sunrise Grand%';
-            UPDATE ""Businesses"" SET ""IsGoogleVerified"" = 1, ""GoogleRating"" = 4.2, ""GoogleReviewCount"" = 29 WHERE ""Name"" LIKE '%Indus Valley%';
-        ", ct);
+        foreach (var sql in gmbMigrations)
+        {
+            try
+            {
+                await _context.Database.ExecuteSqlRawAsync(sql, ct);
+            }
+            catch { }
+        }
 
         // Seed Pipeline Stages if empty
         if (!await _context.PipelineStages.AnyAsync(ct))
