@@ -148,7 +148,7 @@ public class AiLandingPageGeneratorService(
         var prompt = BuildGeminiPrompt(request);
 
         // Production multi-model fallback chain ordered by current verified latency and quota availability
-        string[] candidateModels = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-3.1-flash-lite", "gemini-2.0-flash"];
+        string[] candidateModels = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-3.1-flash-lite"];
         HttpResponseMessage? lastResponse = null;
         string lastErrorDetail = string.Empty;
 
@@ -174,10 +174,10 @@ public class AiLandingPageGeneratorService(
                     },
                     generationConfig = new
                     {
-                        temperature = 0.3,
+                        temperature = 0.25,
                         topK = 40,
                         topP = 0.95,
-                        maxOutputTokens = 4096,
+                        maxOutputTokens = 3500,
                         responseMimeType = "application/json"
                     }
                 };
@@ -188,7 +188,7 @@ public class AiLandingPageGeneratorService(
                     "application/json");
 
                 using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-                cts.CancelAfter(TimeSpan.FromSeconds(12));
+                cts.CancelAfter(TimeSpan.FromSeconds(25));
 
                 var response = await _httpClient.PostAsync(requestUri, jsonContent, cts.Token);
                 lastResponse = response;
@@ -220,7 +220,7 @@ public class AiLandingPageGeneratorService(
             }
             catch (OperationCanceledException) when (!ct.IsCancellationRequested)
             {
-                lastErrorDetail = $"{modelName}: Request timed out after 8s.";
+                lastErrorDetail = $"{modelName}: Request timed out after 25s.";
                 continue;
             }
             catch (HttpRequestException ex)
@@ -237,7 +237,7 @@ public class AiLandingPageGeneratorService(
         }
 
         var fallback = GenerateDeterministicLandingPage(request);
-        var statusStr = lastResponse != null ? lastResponse.StatusCode.ToString() : "NetworkError";
+        var statusStr = lastResponse != null ? lastResponse.StatusCode.ToString() : (sw.Elapsed.TotalSeconds >= 24 ? "Timeout" : "NetworkError");
         fallback.Provider = $"TKS Local Neural Synthesizer (Gemini HTTP {statusStr} Fallback)";
         fallback.ErrorMessage = !string.IsNullOrWhiteSpace(lastErrorDetail)
             ? $"Gemini returned HTTP {statusStr}: {lastErrorDetail}"
@@ -2029,7 +2029,397 @@ public class AiLandingPageGeneratorService(
             };
         }
 
-        // 5. Default Commercial Enterprise
+        // 5. Banking, Finance & Investment
+        if (catLower.Contains("bank") || catLower.Contains("financ") || catLower.Contains("invest") || catLower.Contains("wealth") || catLower.Contains("account") || catLower.Contains("loan"))
+        {
+            return new BespokeContentPayload
+            {
+                Headline = $"Empowering Financial Growth, Enterprise Lending & Modern Banking in {city}",
+                Subheadline = $"From commercial working capital and trade finance to high-yield deposit accounts, {bizName} provides secure institutional banking and advisory built for sustainable prosperity.",
+                HeroBadge = $"#1 Rated Financial Institution in {city}",
+                CallToAction = "Open an Account Online",
+                SecondaryCta = "Speak to Private Banker",
+                ConversionScore = 96,
+                Metrics =
+                [
+                    new() { Value = "100%", Label = "Deposit Security & Compliance" },
+                    new() { Value = "24/7", Label = "Encrypted Digital Banking" },
+                    new() { Value = "120+", Label = "Branch & ATM Network" },
+                    new() { Value = "4.8 ★", Label = "Customer Trust Rating" }
+                ],
+                TrustBadges = ["State Bank Regulated", "ISO 27001 Security", "256-Bit SSL Encrypted", "Chamber of Commerce"],
+                Services =
+                [
+                    new() { Icon = "fa-solid fa-building-columns", Title = "Commercial Lending & SME Working Capital", Description = "Flexible corporate credit lines, machinery financing, and fast-track working capital designed to scale regional businesses.", Cta = "Explore SME Loans" },
+                    new() { Icon = "fa-solid fa-money-bill-transfer", Title = "Digital Corporate Treasury & Payroll", Description = "Automated salary disbursement, bulk payment routing, and real-time multi-currency liquidity management.", Cta = "Setup Corporate Treasury" },
+                    new() { Icon = "fa-solid fa-hand-holding-dollar", Title = "Wealth Advisory & High-Yield Deposits", Description = "Bespoke asset management, fixed-income instruments, and personalized wealth preservation strategies.", Cta = "Consult Wealth Advisor" }
+                ],
+                Differentiators =
+                [
+                    new() { Icon = "fa-solid fa-shield-halved", Title = "Institutional-Grade Cyber Defense", Description = "Multi-factor cryptographic authentication and biometric safeguards guaranteeing your enterprise funds remain invulnerable." },
+                    new() { Icon = "fa-solid fa-user-tie", Title = "Dedicated Relationship Manager", Description = $"Direct cell phone access to your assigned senior banker in {city} for immediate approvals without call center hold times." },
+                    new() { Icon = "fa-solid fa-bolt", Title = "Instant SWIFT & RTGS Remittance", Description = "High-velocity domestic clearing and global foreign exchange settlement at competitive interbank rates." }
+                ],
+                CaseStudies =
+                [
+                    new() { ClientName = $"{city} Manufacturing Export Group", Challenge = "Supply chain delays due to slow letter of credit issuance by legacy banks", Solution = "Structured $2.5M digital trade finance facility with 24-hour document turnaround", ResultMetric = "24-Hr Issuance", ResultDescription = "Eliminated port demurrage costs and accelerated factory import cycles by 65%" }
+                ],
+                PricingPlans =
+                [
+                    new() { Name = "Business Preferred", Price = "$0", Period = "no monthly fee", Badge = "", Description = "Complete checking for growing companies", Features = ["Zero Minimum Balance Maintenance", "Free Digital RTGS / IBFT Transfers", "Multi-User Corporate Portal Access", "Complimentary Business Debit Cards"], Cta = "Open Account", IsPopular = false },
+                    new() { Name = "Commercial Enterprise", Price = "Tiered", Period = "/quarter", Badge = "Most Popular", Description = "Full-service treasury suite for mid-market firms", Features = ["Dedicated Corporate Relationship Director", "Tailored Trade Finance & Import LC Lines", "Automated Payroll Management System", "Preferential Foreign Exchange Margins"], Cta = "Request Meeting", IsPopular = true },
+                    new() { Name = "Private Wealth Client", Price = "Custom", Period = "portfolio", Badge = "", Description = "Exclusive wealth management & family office", Features = ["Bespoke Capital Allocation & Bonds", "VIP Airport Lounge & Concierge Access", "Exclusive Private Banker Direct Hotline", "Estate Planning & Generational Trusts"], Cta = "Private Inquiry", IsPopular = false }
+                ],
+                LeaderBio = new BespokeLeaderBio
+                {
+                    Name = $"{bizName} Executive Leadership",
+                    Role = "Chief Executive & Managing Director",
+                    Credentials = "Fellow Chartered Banker • 22+ Yrs Financial Leadership",
+                    Bio = $"Leading {bizName} with uncompromising integrity and digital innovation. Committed to powering economic resilience for families and enterprises across {city}.",
+                    Quote = "Sound banking is built on an unbreakable foundation of trust, prudent risk stewardship, and relentless service to our depositors.",
+                    AvatarInitials = "MD"
+                },
+                Testimonials =
+                [
+                    new() { Quote = $"{bizName} approved our trade credit line in days when other banks took months. Their digital portal and prompt service in {city} keep our supply chain moving flawlessly.", Author = "Haji Munir Ahmad", Role = "Managing Director, Khyber Logistics", Initials = "HM", Rating = 5 },
+                    new() { Quote = "The most responsive relationship managers in the banking sector. Anytime we have a complex foreign exchange transaction, our private banker handles it within minutes.", Author = "Kashif Riaz", Role = "CFO, Horizon Textile Mills", Initials = "KR", Rating = 5 },
+                    new() { Quote = "Seamless digital mobile app, zero hidden charges, and exceptional customer courtesy at the branch. Highly recommended for both personal and corporate accounts.", Author = "Amina Begum", Role = $"Entrepreneur, {city}", Initials = "AB", Rating = 5 }
+                ],
+                Faqs =
+                [
+                    new() { Question = $"What documentation is required to open a corporate business account with {bizName}?", Answer = "We require company registration certificates (NTN/Incorporation), board resolution, authorized signatory CNIC/IDs, and verifiable business address proof." },
+                    new() { Question = "Are online fund transfers and RTGS payments processed on weekends?", Answer = "Yes, our digital banking portal and mobile app operate 24/7/365 with instant IBFT transfers across all domestic financial institutions." },
+                    new() { Question = "How quickly are commercial working capital and trade finance lines approved?", Answer = "Once complete financial statements and security valuations are submitted, formal underwriting decisions are provided within 5 business days." }
+                ],
+                LeadFormTitle = "Schedule an Executive Corporate Banking Consultation",
+                LeadFormSubtitle = $"Submit your company details below. A Senior Relationship Manager in {city} will contact you within 2 hours."
+            };
+        }
+
+        // 6. Legal & Law Chambers
+        if (catLower.Contains("law") || catLower.Contains("legal") || catLower.Contains("attorney") || catLower.Contains("lawyer") || catLower.Contains("court") || catLower.Contains("advocat"))
+        {
+            return new BespokeContentPayload
+            {
+                Headline = $"Formidable Legal Advocacy & Strategic Corporate Counsel in {city}",
+                Subheadline = $"Protecting your commercial rights and assets. {bizName} delivers premier trial representation, corporate transaction advisory, and resolute dispute resolution across all judicial forums.",
+                HeroBadge = $"Top-Ranked Legal Counsel in {city}",
+                CallToAction = "Schedule Confidential Legal Case Evaluation",
+                SecondaryCta = "Call Direct Legal Chambers",
+                ConversionScore = 96,
+                Metrics =
+                [
+                    new() { Value = "98.2%", Label = "Case Resolution Success Rate" },
+                    new() { Value = "20+ Yrs", Label = "Courtroom & Trial Experience" },
+                    new() { Value = "$45M+", Label = "Corporate Disputes Resolved" },
+                    new() { Value = "100%", Label = "Strict Attorney-Client Privilege" }
+                ],
+                TrustBadges = ["High Court Bar Association", "Certified Arbitrators", "Corporate Counsel Network", "Licensed Legal Practice"],
+                Services =
+                [
+                    new() { Icon = "fa-solid fa-scale-balanced", Title = "Commercial Litigation & Dispute Resolution", Description = "Fierce representation in contract breaches, shareholder disputes, debt recovery, and complex high-stakes commercial trials.", Cta = "Retain Trial Counsel" },
+                    new() { Icon = "fa-solid fa-file-contract", Title = "Corporate Governance & M&A Agreements", Description = "Comprehensive contract drafting, cross-border joint ventures, regulatory compliance, and corporate restructuring.", Cta = "Draft Agreements" },
+                    new() { Icon = "fa-solid fa-gavel", Title = "Real Estate, Title & Property Law", Description = "In-depth land title verification, property dispute defense, development zoning permits, and tenancy litigation.", Cta = "Protect Property" }
+                ],
+                Differentiators =
+                [
+                    new() { Icon = "fa-solid fa-chess-knight", Title = "Tactical Trial Preparation", Description = "We analyze every legal contingency before stepping into court, building bulletproof evidentiary strategies that compel favorable outcomes." },
+                    new() { Icon = "fa-solid fa-user-shield", Title = "Uncompromising Discretion & Integrity", Description = "All consultations, corporate documents, and legal strategies are safeguarded by strict confidentiality and legal ethics." },
+                    new() { Icon = "fa-solid fa-handshake", Title = "Predictable Fee Transparency", Description = "Transparent retainer agreements and fixed-fee consultation options with zero unexpected administrative billing surprises." }
+                ],
+                CaseStudies =
+                [
+                    new() { ClientName = $"{city} Real Estate Commercial Dispute", Challenge = "Unlawful encroachment and conflicting land title claim threatening $8M commercial plaza development", Solution = "Secured urgent High Court injunctive order and conducted forensic land revenue record verification", ResultMetric = "Full Injunction Won", ResultDescription = "Cleared title unencumbered and protected client development investment within 21 days" }
+                ],
+                PricingPlans =
+                [
+                    new() { Name = "Legal Evaluation", Price = "$95", Period = "consultation", Badge = "", Description = "Complete 60-minute case audit & merits review", Features = ["Detailed Document & Contract Review", "Legal Merits & Probability Assessment", "Procedural Roadmap & Timeline", "Strict Confidential Attorney Privilege"], Cta = "Book Evaluation", IsPopular = false },
+                    new() { Name = "Corporate Legal Retainer", Price = "$750", Period = "/month", Badge = "Most Popular", Description = "Ongoing advisory for operational companies", Features = ["Unlimited Contract Vetting & Drafting", "Regulatory & Labor Compliance Guidance", "Priority Court & Chamber Availability", "Pre-Litigation Dispute Negotiation"], Cta = "Retain Counsel", IsPopular = true },
+                    new() { Name = "Trial Litigation Defense", Price = "Custom", Period = "case retainer", Badge = "", Description = "Comprehensive high-stakes court representation", Features = ["Full Judicial Pleadings & Evidence Filing", "Senior Advocate Trial Appearance", "Appellate Court Representation", "24/7 Dedicated Legal Case Officer"], Cta = "Schedule Case Review", IsPopular = false }
+                ],
+                LeaderBio = new BespokeLeaderBio
+                {
+                    Name = $"Advocate Senior Counsel",
+                    Role = "Managing Partner & Senior Trial Attorney",
+                    Credentials = "Barrister-at-Law • Advocate Supreme Court • 20+ Yrs",
+                    Bio = $"Founding Partner at {bizName}. Dedicated to defending client rights, upholding constitutional rule of law, and delivering formidable corporate advocacy in {city}.",
+                    Quote = "Justice favors the prepared. In the courtroom, meticulous preparation and commanding legal knowledge win cases.",
+                    AvatarInitials = "SC"
+                },
+                Testimonials =
+                [
+                    new() { Quote = $"{bizName} represented our firm in a multi-million-rupee commercial contract dispute. Their courtroom presence, legal precision, and tactical composure secured a complete victory for us.", Author = "Taimur Shah", Role = $"Managing Director, {city} Commercial Group", Initials = "TS", Rating = 5 },
+                    new() { Quote = "Invaluable corporate counsel. They vet all our vendor contracts, employment agreements, and regulatory filings. Professional, sharp, and always accessible.", Author = "Barrister Daniyal Khan", Role = "Corporate General Counsel", Initials = "DK", Rating = 5 }
+                ],
+                Faqs =
+                [
+                    new() { Question = $"How do I schedule an urgent consultation with {bizName}?", Answer = "You can book directly via our online portal or call our chambers hotline. Initial consultations are scheduled within 24 hours." },
+                    new() { Question = "Is our initial discussion protected by attorney-client privilege?", Answer = "Yes, strictly. Under legal ethics and statutory privilege, every detail shared with our chambers remains 100% confidential." }
+                ],
+                LeadFormTitle = "Schedule a Confidential Legal Case Assessment",
+                LeadFormSubtitle = $"Provide a brief summary of your legal matter below. Our Senior Partner in {city} will review your inquiry under strict confidentiality."
+            };
+        }
+
+        // 7. Hotels, Lodging & Hospitality
+        if (catLower.Contains("hotel") || catLower.Contains("lodging") || catLower.Contains("resort") || catLower.Contains("stay") || catLower.Contains("motel") || catLower.Contains("guest house"))
+        {
+            return new BespokeContentPayload
+            {
+                Headline = $"Experience Elegance, World-Class Hospitality & Luxury Stays in {city}",
+                Subheadline = $"Immerse yourself in refined comfort. {bizName} offers opulent executive suites, authentic fine dining, and grand event spaces tailored for discerning travelers and milestone banquets.",
+                HeroBadge = $"5-Star Rated Luxury Destination in {city}",
+                CallToAction = "Check Room Availability & Best Rates",
+                SecondaryCta = "Book Banquet / Wedding Hall",
+                ConversionScore = 95,
+                Metrics =
+                [
+                    new() { Value = "5-Star", Label = "Luxury Hospitality Standard" },
+                    new() { Value = "4.8 ★", Label = "Guest Review Average" },
+                    new() { Value = "24/7", Label = "Executive Concierge & Room Service" },
+                    new() { Value = "1,500+", Label = "Corporate & Wedding Banquets Hosted" }
+                ],
+                TrustBadges = ["Clean & Safe Certified", "Global Hospitality Partner", "TripAdvisor Travelers' Choice", $"{city} Tourism Board"],
+                Services =
+                [
+                    new() { Icon = "fa-solid fa-bed", Title = "Deluxe Executive Suites & Rooms", Description = "Soundproofed luxury accommodations featuring orthopedic mattresses, high-speed Wi-Fi, marble bathrooms, and scenic panoramic views.", Cta = "View Suites" },
+                    new() { Icon = "fa-solid fa-champagne-glasses", Title = "Grand Banquets & Corporate Event Halls", Description = "Magnificent pillar-less ballrooms equipped with state-of-the-art audiovisual systems for grand weddings, conferences, and exhibitions.", Cta = "Plan Your Event" },
+                    new() { Icon = "fa-solid fa-utensils", Title = "International Fine Dining & Rooftop Lounge", Description = "Master-crafted culinary specialties spanning Continental, Asian, and regional barbecue cuisines paired with ambient live music.", Cta = "Reserve Dining Table" }
+                ],
+                Differentiators =
+                [
+                    new() { Icon = "fa-solid fa-bell-concierge", Title = "Unmatched 24/7 White-Glove Concierge", Description = "From private airport chauffeur transfers to bespoke city excursions, our dedicated hospitality team fulfills every request seamlessly." },
+                    new() { Icon = "fa-solid fa-shield-halved", Title = "Gated Security & Biometric Peace of Mind", Description = "Multi-tier perimeter security, private secured parking, and 24-hour surveillance ensuring complete family privacy." },
+                    new() { Icon = "fa-solid fa-tags", Title = "Guaranteed Best Rate Direct Booking", Description = "Enjoy complimentary gourmet breakfast, flexible cancellation, and priority early check-in when booking direct." }
+                ],
+                CaseStudies =
+                [
+                    new() { ClientName = "International Tech Summit (450 Delegates)", Challenge = "Accommodating 450 global delegates with continuous catering, translation equipment, and executive security", Solution = "Full grand ballroom buyout paired with dedicated floor suites and synchronized 5-course banquet dining", ResultMetric = "Flawless Execution", ResultDescription = "Delivered seamless 3-day conference with 100% positive executive feedback" }
+                ],
+                PricingPlans =
+                [
+                    new() { Name = "Deluxe King Room", Price = "$110", Period = "/night", Badge = "", Description = "Ideal for solo business executives & couples", Features = ["Plush King Bed with 400-Thread Linens", "Complimentary High-Speed Wi-Fi", "Daily Gourmet Breakfast Buffet Included", "Free Airport Shuttle & Secured Parking"], Cta = "Book Room", IsPopular = false },
+                    new() { Name = "Executive Panorama Suite", Price = "$185", Period = "/night", Badge = "Most Popular", Description = "Spacious living lounge with panoramic views", Features = ["All Deluxe Features + Separate Living Room", "Exclusive Executive Lounge Access & High Tea", "Deep Marble Soaking Tub & Rain Shower", "Guaranteed Late 3:00 PM Check-Out"], Cta = "Reserve Suite", IsPopular = true },
+                    new() { Name = "Presidential Luxury Suite", Price = "$350", Period = "/night", Badge = "", Description = "Unrivaled presidential luxury and privacy", Features = ["Master Bedroom + Dining Room + Private Kitchen", "Dedicated 24/7 Personal Butler Service", "Private Chauffeur Airport Limousine Transfer", "Complimentary In-Suite Spa Treatment"], Cta = "Book Presidential", IsPopular = false }
+                ],
+                LeaderBio = new BespokeLeaderBio
+                {
+                    Name = $"{bizName} General Management",
+                    Role = "General Manager & Hospitality Director",
+                    Credentials = "Swiss Hospitality Certified • 24+ Yrs Luxury Hotel Leadership",
+                    Bio = $"Dedicated to elevating luxury hospitality standards in {city}. Ensuring that every guest experiences heartfelt warmth, impeccable culinary artistry, and restful tranquility.",
+                    Quote = "True hospitality is not merely providing a room; it is crafting an atmosphere of grace, elegance, and unforgettable memories.",
+                    AvatarInitials = "GM"
+                },
+                Testimonials =
+                [
+                    new() { Quote = $"{bizName} is easily the premier hotel in {city}. The suites are immaculately maintained, the breakfast buffet is delicious, and the staff treats you like royalty.", Author = "Zulqarnain Haider", Role = $"Corporate Traveler, {city}", Initials = "ZH", Rating = 5 },
+                    new() { Quote = "We held our daughter's wedding in the Grand Ballroom. The lighting, decor, and live barbecue catering were out of this world. Guests are still praising the arrangements!", Author = "Mrs. Parveen Akhtar", Role = "Peshawar Resident", Initials = "PA", Rating = 5 }
+                ],
+                Faqs =
+                [
+                    new() { Question = $"What are the standard check-in and check-out times at {bizName}?", Answer = "Standard check-in is at 2:00 PM and check-out is at 12:00 PM. Early check-in and late check-out are accommodated based on availability." },
+                    new() { Question = "Do you offer airport pickup and drop-off services?", Answer = "Yes, complimentary airport shuttle transfers are available for suite bookings, and private executive chauffeurs can be arranged upon request." }
+                ],
+                LeadFormTitle = "Check Room Rates & Request Event Availability",
+                LeadFormSubtitle = $"Select your dates below. Our front desk reservations team in {city} will confirm your booking with instant best-rate guarantee."
+            };
+        }
+
+        // 8. Real Estate, Builders & Construction
+        if (catLower.Contains("real estate") || catLower.Contains("builder") || catLower.Contains("construct") || catLower.Contains("property") || catLower.Contains("architect"))
+        {
+            return new BespokeContentPayload
+            {
+                Headline = $"Premier Real Estate Development, Architectural Construction & Properties in {city}",
+                Subheadline = $"Build with uncompromising structural excellence. {bizName} delivers turnkey architectural design, commercial construction, and verified high-yield property investments across prime locations.",
+                HeroBadge = $"#1 Rated Construction & Real Estate Group in {city}",
+                CallToAction = "Schedule Free Site & Project Consultation",
+                SecondaryCta = "Explore Prime Property Listings",
+                ConversionScore = 95,
+                Metrics =
+                [
+                    new() { Value = "250+", Label = "Properties & Plazas Built" },
+                    new() { Value = "100%", Label = "Earthquake-Resistant Engineering" },
+                    new() { Value = "18+ Yrs", Label = $"Development Leadership in {city}" },
+                    new() { Value = "Zero", Label = "Project Delivery Delay Record" }
+                ],
+                TrustBadges = ["Licensed Master Builder", "Structural Engineering Certified", "Zoning & CDA/PDA Approved", "ISO 9001 Construction"],
+                Services =
+                [
+                    new() { Icon = "fa-solid fa-trowel-bricks", Title = "Turnkey Commercial & Residential Construction", Description = "End-to-end building construction covering structural engineering, premium grey structure, and bespoke luxury interior finishes.", Cta = "Build Your Property" },
+                    new() { Icon = "fa-solid fa-compass-drafting", Title = "3D Architectural Design & Interior Planning", Description = "Award-winning modern architectural blueprints, structural load calculations, and photorealistic 3D interior renders.", Cta = "Commission Architecture" },
+                    new() { Icon = "fa-solid fa-house-circle-check", Title = "Prime Property Sales & Verified Land Titles", Description = "Guaranteed unencumbered commercial plots, residential homes, and high-ROI rental investment portfolios with verified documentation.", Cta = "View Verified Deals" }
+                ],
+                Differentiators =
+                [
+                    new() { Icon = "fa-solid fa-award", Title = "Grade-60 Steel & Premium Certified Materials", Description = "We never cut corners. All foundations utilize laboratory-tested concrete mixes, Grade-60 deformed steel, and verified branded fittings." },
+                    new() { Icon = "fa-solid fa-calendar-check", Title = "Milestone-Linked Escrow Payments", Description = "You pay only as each physical construction milestone is inspected, certified, and approved by your independent engineer." },
+                    new() { Icon = "fa-solid fa-file-shield", Title = "100% Legal Title Due Diligence", Description = "Every property sold undergoes comprehensive revenue authority vetting, registry verification, and zero-litigation certification." }
+                ],
+                CaseStudies =
+                [
+                    new() { ClientName = $"{city} 7-Story Commercial Plaza", Challenge = "Complex urban foundation requiring deep piling near adjacent existing structures", Solution = "Engineered rotary bored pile foundation paired with seismic-resistant shear wall frame", ResultMetric = "Delivered on Budget", ResultDescription = "Completed 14 months from groundbreaking with 100% retail space pre-leased" }
+                ],
+                PricingPlans =
+                [
+                    new() { Name = "Grey Structure Package", Price = "$28", Period = "/sq ft", Badge = "", Description = "Heavy-duty structural framework & brickwork", Features = ["Grade-60 Deformed Steel Framing", "Termite & Anti-Damp Waterproofing Barrier", "Underground Concrete Water Tank Construction", "Full Architectural & Structural Working Drawings"], Cta = "Get Construction Quote", IsPopular = false },
+                    new() { Name = "Turnkey Luxury Finish", Price = "$52", Period = "/sq ft", Badge = "Most Popular", Description = "Complete move-in ready architectural elegance", Features = ["Imported Porcelain Tile / Hardwood Flooring", "Designer Kitchen Cabinets & Quartz Countertops", "Modern False Ceilings with Ambient LED Lighting", "10-Year Structural Engineering Warranty"], Cta = "Build Turnkey", IsPopular = true },
+                    new() { Name = "Architectural & Interior Design", Price = "Custom", Period = "design", Badge = "", Description = "Bespoke blueprint & 3D visualization suite", Features = ["Complete Structural & MEP Working Blueprints", "High-Definition 3D Exterior & Interior Walkthrough", "Municipal Authority Submission & NOC Approvals", "Weekly Onsite Construction Supervision Visits"], Cta = "Hire Architect", IsPopular = false }
+                ],
+                LeaderBio = new BespokeLeaderBio
+                {
+                    Name = $"Engr. Tariq Aziz",
+                    Role = "Chief Structural Engineer & Developer",
+                    Credentials = "PEC Certified Professional Engineer • MS Structural Engineering",
+                    Bio = $"Over two decades building landmark residences, commercial towers, and housing communities in {city}. Renowned for engineering precision and uncompromising construction integrity.",
+                    Quote = "A building is a monument to family legacy. We build every square foot as if our own children will live there.",
+                    AvatarInitials = "TA"
+                },
+                Testimonials =
+                [
+                    new() { Quote = $"{bizName} constructed our 1-kanal dream residence in {city}. They finished 3 weeks ahead of schedule and the finishing quality is breathtaking. Honest, dependable builders.", Author = "Brig. (R) Javed Iqbal", Role = $"Homeowner, {city}", Initials = "JI", Rating = 5 },
+                    new() { Quote = "We bought two commercial plaza units through their agency. All land documents were clean, transfer was painless, and rental yield is currently over 9% annually.", Author = "Shahid Mehmood", Role = "Commercial Investor", Initials = "SM", Rating = 5 }
+                ],
+                Faqs =
+                [
+                    new() { Question = $"What is included in the Turnkey Construction contract with {bizName}?", Answer = "Our turnkey contract covers everything from excavation, grey structure, plumbing, electrical, to designer flooring, woodwork, sanitary fixtures, and paint." },
+                    new() { Question = "How do you protect clients against escalating raw material market prices?", Answer = "We offer guaranteed fixed-cost contracts once architectural blueprints and material specification sheets are locked in." }
+                ],
+                LeadFormTitle = "Request a Free Site Inspection & Construction Cost Estimate",
+                LeadFormSubtitle = $"Enter your plot size and preferred construction specifications below. Our Senior Structural Engineer in {city} will provide a comprehensive bill of quantities."
+            };
+        }
+
+        // 9. Pharmacy & Healthcare Supplies
+        if (catLower.Contains("pharmacy") || catLower.Contains("chemist") || catLower.Contains("drug") || catLower.Contains("medicine"))
+        {
+            return new BespokeContentPayload
+            {
+                Headline = $"Certified Pharmaceuticals, Cold-Chain Vaccines & Surgical Supplies in {city}",
+                Subheadline = $"Your health deserves uncompromised authenticity. {bizName} dispenses 100% genuine prescription medications, surgical consumables, and provides rapid 24/7 temperature-controlled home delivery.",
+                HeroBadge = $"#1 Trusted Licensed Pharmacy in {city}",
+                CallToAction = "Order Prescription Medicines Online",
+                SecondaryCta = "Call 24/7 Urgent Pharmacy Hotline",
+                ConversionScore = 96,
+                Metrics =
+                [
+                    new() { Value = "100%", Label = "Verified Genuine Medicines" },
+                    new() { Value = "24/7", Label = "Urgent Delivery Across {City}" },
+                    new() { Value = "2° - 8°C", Label = "Active Cold-Chain Storage" },
+                    new() { Value = "50,000+", Label = "Prescriptions Accurately Filled" }
+                ],
+                TrustBadges = ["DRAP Regulated", "Licensed Pharmacists", "Cold-Chain Certified", "100% Genuine Guarantee"],
+                Services =
+                [
+                    new() { Icon = "fa-solid fa-pills", Title = "Genuine Prescription Dispensing & Consulting", Description = "Computerized prescription screening by licensed pharmacists to ensure accurate dosage, zero drug interactions, and manufacturer batch verification.", Cta = "Refill Prescription" },
+                    new() { Icon = "fa-solid fa-truck-medical", Title = "24/7 Fast Temperature-Controlled Home Delivery", Description = "Insulated cold-chain delivery riders bringing your urgent medications and insulin directly to your doorstep in under 45 minutes.", Cta = "Order Delivery" },
+                    new() { Icon = "fa-solid fa-box-tissue", Title = "Surgical, Orthopedic & Diagnostic Equipment", Description = "Complete surgical disposables, glucometers, digital blood pressure monitors, nebulizers, and orthopedic support braces.", Cta = "View Equipment" }
+                ],
+                Differentiators =
+                [
+                    new() { Icon = "fa-solid fa-snowflake", Title = "Unbroken Cold-Chain Guarantee", Description = "Biologics, vaccines, and insulins are stored in backup-powered pharmaceutical refrigeration and dispatched in monitored cold packs." },
+                    new() { Icon = "fa-solid fa-prescription-bottle-medical", Title = "Direct Manufacturer Sourcing", Description = "We purchase exclusively from licensed multinational pharmaceutical distributors, completely eliminating counterfeit drug risks." },
+                    new() { Icon = "fa-solid fa-user-doctor", Title = "Free Pharmacist Medication Counseling", Description = "Our attending clinical pharmacists explain dosage schedules, side-effect prevention, and dietary contraindications with every refill." }
+                ],
+                CaseStudies =
+                [
+                    new() { ClientName = "Urgent Midnight Pediatric Medication", Challenge = "A child developed high asthma distress at 2:00 AM requiring immediate nebulization solutions unavailable in local stores", Solution = "Dispatched emergency rider with pediatric nebulizer and medication in specialized cold bag within 25 minutes", ResultMetric = "25 Min Delivery", ResultDescription = "Immediate relief provided without requiring hospital emergency room admission" }
+                ],
+                PricingPlans =
+                [
+                    new() { Name = "Walk-In / Direct Refill", Price = "Retail -10%", Period = "discount", Badge = "", Description = "Standard genuine medicine purchase", Features = ["100% Guaranteed Manufacturer Genuine", "Free Blood Pressure Check Onsite", "Computerized Batch & Expiry Receipt", "Pharmacist Dosage Instructions"], Cta = "Visit Pharmacy", IsPopular = false },
+                    new() { Name = "Monthly Chronic Refill Program", Price = "Retail -15%", Period = "recurring", Badge = "Most Popular", Description = "Automated monthly delivery for diabetes, BP & heart patients", Features = ["Automatic Scheduled Monthly Home Delivery", "Free Insulin Cold-Chain Cool Packs", "Priority Pharmacist Dedicated WhatsApp", "Free Quarterly Blood Glucose Checkups"], Cta = "Enroll in Chronic Care", IsPopular = true }
+                ],
+                LeaderBio = new BespokeLeaderBio
+                {
+                    Name = $"Dr. Faisal Farooq, PharmD",
+                    Role = "Chief Clinical Pharmacist & Director",
+                    Credentials = "Doctor of Pharmacy • Member Pharmacy Council • 15+ Yrs",
+                    Bio = $"Founded {bizName} in {city} to protect families against counterfeit drugs and ensure accessible, high-standard pharmaceutical care 24 hours a day.",
+                    Quote = "Medicine is life. Dispensing genuine drugs with absolute accuracy is not just our profession; it is our sacred responsibility.",
+                    AvatarInitials = "FF"
+                },
+                Testimonials =
+                [
+                    new() { Quote = $"{bizName} is the only pharmacy in {city} I trust for my mother's diabetes injections. Their cold-chain delivery arrives on time in ice packs, and prices are fair.", Author = "Dr. Imran Khattak", Role = $"Consultant, {city}", Initials = "IK", Rating = 5 },
+                    new() { Quote = "Needed critical surgery supplies on a Sunday night. Their rider delivered everything to the hospital room in 30 minutes flat. Exceptional service!", Author = "Sardar Ali", Role = $"{city} Resident", Initials = "SA", Rating = 5 }
+                ],
+                Faqs =
+                [
+                    new() { Question = $"How do I send my prescription for home delivery from {bizName}?", Answer = "Simply photograph your doctor's prescription and send it via WhatsApp to our hotline. Our pharmacist will review it and confirm your delivery address immediately." },
+                    new() { Question = "Are your pharmacies open during late nights and public holidays?", Answer = "Yes, our main branches and urgent dispatch riders operate 24 hours a day, 7 days a week, 365 days a year." }
+                ],
+                LeadFormTitle = "Upload Prescription for Instant 24/7 Home Delivery",
+                LeadFormSubtitle = $"Enter your contact details and medicine requirements below. A licensed pharmacist in {city} will confirm your order within 10 minutes."
+            };
+        }
+
+        // 10. Agriculture, Chemicals & Agro Supplies
+        if (catLower.Contains("agro") || catLower.Contains("agri") || catLower.Contains("seed") || catLower.Contains("fertiliz") || catLower.Contains("crop") || catLower.Contains("chem"))
+        {
+            return new BespokeContentPayload
+            {
+                Headline = $"Maximize Crop Yields & Farm Productivity with Certified Agro Supplies in {city}",
+                Subheadline = $"Empowering progressive growers. {bizName} supplies certified high-yield hybrid seeds, balanced soil nutrients, and precision crop protection backed by expert agronomic field advisory.",
+                HeroBadge = $"#1 Rated Agricultural Supply Partner in {city}",
+                CallToAction = "Request Commercial Agro Supply Catalog",
+                SecondaryCta = "Book Free Soil & Agronomy Audit",
+                ConversionScore = 95,
+                Metrics =
+                [
+                    new() { Value = "+35%", Label = "Average Acreage Yield Increase" },
+                    new() { Value = "100%", Label = "Certified Germination Rate" },
+                    new() { Value = "25k+", Label = "Acres Protected & Nourished" },
+                    new() { Value = "15+ Yrs", Label = "Trusted Regional Farming Partner" }
+                ],
+                TrustBadges = ["Ministry of Agriculture Approved", "Certified Hybrid Seeds", "Lab-Tested Formulations", "Farmers Alliance Member"],
+                Services =
+                [
+                    new() { Icon = "fa-solid fa-wheat-awn", Title = "Certified Hybrid Seeds & Seed Treatments", Description = "Disease-tolerant, drought-resilient certified seeds engineered for high germination vigor and maximum harvest tonnage.", Cta = "Browse Seeds" },
+                    new() { Icon = "fa-solid fa-vial-circle-check", Title = "Precision Crop Nutrition & Bio-Fertilizers", Description = "Micro-nutrient foliar sprays, chelated zinc, soluble NPK formulations, and organic soil regenerators that restore soil vitality.", Cta = "Explore Fertilizers" },
+                    new() { Icon = "fa-solid fa-shield-virus", Title = "Targeted Crop Protection & Pest Management", Description = "Selective herbicides, systemic fungicides, and environmental insecticides formulated to neutralize infestations with zero crop stress.", Cta = "Protect Crops" }
+                ],
+                Differentiators =
+                [
+                    new() { Icon = "fa-solid fa-flask-vial", Title = "Free On-Farm Soil & Salinity Testing", Description = $"Our mobile laboratory visits your farm in {city} and surrounding areas to map exact soil pH and nutrient deficiencies before planting." },
+                    new() { Icon = "fa-solid fa-handshake-angle", Title = "Season-Long Agronomic Field Support", Description = "Our certified agronomists inspect your fields at critical growth stages, guiding fertilizer timing and spray calibration." },
+                    new() { Icon = "fa-solid fa-truck-ramp-box", Title = "Bulk Wholesale Farmgate Delivery", Description = "Direct warehouse dispatch to your farm estate with transparent wholesale pricing and guaranteed batch authenticity." }
+                ],
+                CaseStudies =
+                [
+                    new() { ClientName = $"{city} Cotton & Wheat Farming Enterprise (300 Acres)", Challenge = "Severe whitefly resistance and nitrogen leaching resulting in falling yields", Solution = "Introduced targeted systemic IPM spray schedule paired with foliar chelated micronutrient booster", ResultMetric = "+42% Bumper Yield", ResultDescription = "Harvested 48 maunds per acre, yielding $28,000 in additional net farm revenue" }
+                ],
+                PricingPlans =
+                [
+                    new() { Name = "Smallholder Acre Package", Price = "$35", Period = "/acre", Badge = "", Description = "Complete seed-to-harvest basic nutrition", Features = ["Certified High-Yield Hybrid Seed Packet", "Pre-Emergence Weed Management Spray", "Balanced Starter Soluble NPK Boost", "Onsite Field Advisory Hotline Access"], Cta = "Order Acre Pack", IsPopular = false },
+                    new() { Name = "Commercial Farm Maximizer", Price = "$65", Period = "/acre", Badge = "Most Popular", Description = "High-performance agronomy for maximum yield", Features = ["Premium Disease-Resistant Hybrid Seeds", "Complete 4-Stage Foliar Nutrient Program", "Full-Spectrum Targeted Pest & Blight Shield", "Bi-Weekly Onsite Agronomist Field Visits"], Cta = "Deploy Farm Plan", IsPopular = true }
+                ],
+                LeaderBio = new BespokeLeaderBio
+                {
+                    Name = $"Engr. Muhammad Tariq Khan",
+                    Role = "Chief Agronomist & Technical Director",
+                    Credentials = "M.Sc (Hons) Agronomy • Registered Agricultural Consultant",
+                    Bio = $"Dedicated to revitalizing soil health and farmer prosperity in {city}. Has counseled thousands of progressive growers to achieve record harvests through precision science.",
+                    Quote = "When a farmer succeeds, the entire nation thrives. We bring scientific agronomy to the soil so every acre produces its true potential.",
+                    AvatarInitials = "MT"
+                },
+                Testimonials =
+                [
+                    new() { Quote = $"{bizName}'s hybrid seeds and foliar nutrients transformed my wheat crop. We achieved 52 maunds per acre where we previously struggled to get 36. Truly genuine products.", Author = "Chaudhry Riaz Ahmad", Role = $"Farm Owner, {city}", Initials = "CR", Rating = 5 },
+                    new() { Quote = "Their agronomist visited our sugarcane fields, tested our tubewell water, and diagnosed our yellowing leaves accurately. Saved our crop!", Author = "Malik Sher Zaman", Role = "Progressive Farmer", Initials = "MS", Rating = 5 }
+                ],
+                Faqs =
+                [
+                    new() { Question = $"Are the agricultural chemicals and seeds from {bizName} guaranteed genuine?", Answer = "Yes, 100%. All products come in tamper-evident sealed packaging with official QR verification codes and government lot certifications." },
+                    new() { Question = "How do I book an agronomy field inspection for my farm?", Answer = "Contact our agronomy desk via phone or form. An agronomist will schedule a complimentary farm visit within 48 hours." }
+                ],
+                LeadFormTitle = "Request Bulk Agro Supply Quote & Free Soil Advisory",
+                LeadFormSubtitle = $"Enter your farm acreage and crop details below. Our technical agronomist in {city} will prepare a customized nutrient schedule."
+            };
+        }
+
+        // 11. Default Commercial Enterprise
         return new BespokeContentPayload
         {
             Headline = $"Unlock Rapid Growth & Unrivaled {category} Excellence in {city}",

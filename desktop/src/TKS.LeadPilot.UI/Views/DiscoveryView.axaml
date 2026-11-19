@@ -348,14 +348,24 @@
                                 </ContextMenu>
                             </DataGrid.ContextMenu>
 
+                            <DataGrid.Styles>
+                                <Style Selector="DataGridCell:nth-child(1)">
+                                    <Setter Property="Padding" Value="4,0"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                </Style>
+                            </DataGrid.Styles>
+
                             <DataGrid.Columns>
                                 <!-- Selection Checkbox Column -->
-                                <DataGridTemplateColumn Header="Import" Width="55">
+                                <DataGridTemplateColumn Header="Import" Width="60">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="m:DiscoveredLead">
-                                            <CheckBox IsChecked="{Binding IsSelectedForImport}" 
-                                                      HorizontalAlignment="Center" 
-                                                      VerticalAlignment="Center"/>
+                                            <Border HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0" Padding="0">
+                                                <CheckBox IsChecked="{Binding IsSelectedForImport}" 
+                                                          HorizontalAlignment="Center" 
+                                                          VerticalAlignment="Center"
+                                                          MinWidth="0" MinHeight="0" Margin="0" Padding="0"/>
+                                            </Border>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
