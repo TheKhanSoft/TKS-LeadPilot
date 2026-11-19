@@ -211,11 +211,7 @@ public class BusinessRepository : IBusinessRepository
             var stageNav = business.PipelineStage;
             try
             {
-                var trackedStage = _context.ChangeTracker.Entries<PipelineStage>().FirstOrDefault(e => e.Entity.Id == business.PipelineStageId);
-                if (trackedStage != null && stageNav != null && !ReferenceEquals(trackedStage.Entity, stageNav))
-                {
-                    business.PipelineStage = null;
-                }
+                business.PipelineStage = null;
                 _context.Businesses.Update(business);
             }
             finally
@@ -248,11 +244,7 @@ public class BusinessRepository : IBusinessRepository
                 var stageNav = b.PipelineStage;
                 try
                 {
-                    var trackedStage = _context.ChangeTracker.Entries<PipelineStage>().FirstOrDefault(e => e.Entity.Id == b.PipelineStageId);
-                    if (trackedStage != null && stageNav != null && !ReferenceEquals(trackedStage.Entity, stageNav))
-                    {
-                        b.PipelineStage = null;
-                    }
+                    b.PipelineStage = null;
                     _context.Businesses.Update(b);
                 }
                 finally
