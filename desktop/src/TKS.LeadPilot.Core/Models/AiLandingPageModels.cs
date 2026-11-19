@@ -73,6 +73,7 @@ public class LandingPageGenerationResult
     public TimeSpan ExecutionDuration { get; set; }
     public int RequestsUsedToday { get; set; }
     public int DailyLimit { get; set; } = 1200;
+    public BespokeContentPayload? ContentPayload { get; set; }
 }
 
 public class BespokeServiceItem

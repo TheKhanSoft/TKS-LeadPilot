@@ -362,9 +362,9 @@ public class GooglePlacesEnrichmentService : IGooglePlacesEnrichmentService
         var results = new List<Business>();
         var config = await GetConfigAsync(ct);
 
-        if (!config.IsEnabled) return results;
-
-        var apiKey = _secretVault.GetSecret(ApiKeyVaultKey);
+        var apiKey = _secretVault.GetSecret(ApiKeyVaultKey)
+                  ?? _secretVault.GetSecret("PLACES_API_KEY")
+                  ?? _secretVault.GetSecret("GooglePlacesApiKey");
         if (string.IsNullOrWhiteSpace(apiKey)) return results;
 
         if (config.DailyRequestsUsed >= config.DailyRequestCeiling) return results;
@@ -679,7 +679,7 @@ public class GooglePlacesEnrichmentService : IGooglePlacesEnrichmentService
     public static string GetSearchTextFieldMask(PlacesSkuTier tier)
     {
         // Essentials SKU: Free up to 10,000 requests / month
-        var essentials = "places.id,places.displayName,places.formattedAddress,places.location,places.nationalPhoneNumber,places.internationalPhoneNumber,places.websiteUri,places.businessStatus";
+        var essentials = "places.id,places.displayName,places.formattedAddress,places.location,places.nationalPhoneNumber,places.internationalPhoneNumber,places.websiteUri,places.businessStatus,places.primaryType,places.types";
 
         if (tier == PlacesSkuTier.Essentials)
         {
@@ -693,7 +693,7 @@ public class GooglePlacesEnrichmentService : IGooglePlacesEnrichmentService
     public static string GetPlaceDetailsFieldMask(PlacesSkuTier tier)
     {
         // Essentials SKU: Free up to 10,000 requests / month
-        var essentials = "id,displayName,formattedAddress,location,nationalPhoneNumber,internationalPhoneNumber,websiteUri,businessStatus";
+        var essentials = "id,displayName,formattedAddress,location,nationalPhoneNumber,internationalPhoneNumber,websiteUri,businessStatus,primaryType,types";
 
         if (tier == PlacesSkuTier.Essentials)
         {

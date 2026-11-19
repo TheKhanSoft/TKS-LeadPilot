@@ -349,14 +349,39 @@
                                                     </Button>
                                                 </WrapPanel>
 
-                                                <!-- Trust Badges Strip -->
-                                                <Border Background="#070D18" BorderBrush="#1A283D" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,8,0,0">
-                                                    <WrapPanel VerticalAlignment="Center">
-                                                        <TextBlock Text="🛡️ Verified Local Enterprise" FontSize="10.5" Foreground="#94A3B8" Margin="0,0,14,0"/>
-                                                        <TextBlock Text="⭐ 4.9/5 Client Score" FontSize="10.5" Foreground="#F59E0B" Margin="0,0,14,0"/>
-                                                        <TextBlock Text="✓ ISO 9001 Standard" FontSize="10.5" Foreground="#10B981" Margin="0,0,14,0"/>
-                                                        <TextBlock Text="⚡ Instant Response Guarantee" FontSize="10.5" Foreground="#38BDF8"/>
-                                                    </WrapPanel>
+                                                <!-- Bespoke Generated Services Pills -->
+                                                <ItemsControl ItemsSource="{Binding PreviewServicesList}" Margin="0,4,0,0">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <WrapPanel/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="8,3" Margin="0,0,6,6">
+                                                                <TextBlock Text="{Binding}" FontSize="10.5" Foreground="#38BDF8" FontWeight="SemiBold"/>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+
+                                                <!-- Dynamic Trust Badges Strip -->
+                                                <Border Background="#070D18" BorderBrush="#1A283D" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,2,0,0">
+                                                    <ItemsControl ItemsSource="{Binding PreviewTrustBadges}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <WrapPanel VerticalAlignment="Center"/>
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,0,12,0" VerticalAlignment="Center">
+                                                                    <TextBlock Text="🛡️" FontSize="9.5" VerticalAlignment="Center"/>
+                                                                    <TextBlock Text="{Binding}" FontSize="10" Foreground="#34D399" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                                </StackPanel>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
                                                 </Border>
                                             </StackPanel>
                                         </Border>

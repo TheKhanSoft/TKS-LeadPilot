@@ -13,6 +13,12 @@ public class Business : INotifyPropertyChanged
 
     private bool _isSelected = false;
     private bool _isStarred = false;
+    private string? _websiteUrl;
+    private string? _googlePlaceId;
+    private double? _googleRating;
+    private int? _googleReviewCount;
+    private string? _businessHours;
+    private bool _isGoogleVerified = false;
 
     public string Id { get; set; } = Guid.NewGuid().ToString();
     public string Name { get; set; } = string.Empty;
@@ -35,7 +41,19 @@ public class Business : INotifyPropertyChanged
     // Contact
     public string? PhonePrimary { get; set; }
     public string? EmailPrimary { get; set; }
-    public string? WebsiteUrl { get; set; }
+    public string? WebsiteUrl
+    {
+        get => _websiteUrl;
+        set
+        {
+            if (_websiteUrl != value)
+            {
+                _websiteUrl = value;
+                OnPropertyChanged(nameof(WebsiteUrl));
+                OnPropertyChanged(nameof(HasWebsite));
+            }
+        }
+    }
     public WebsiteStatus WebsiteStatus { get; set; } = WebsiteStatus.NoWebsite;
     
     // CRM & Scoring
@@ -105,7 +123,31 @@ public class Business : INotifyPropertyChanged
 
     [NotMapped]
     [JsonIgnore]
-    public bool HasGmb => IsGoogleVerified || !string.IsNullOrWhiteSpace(GooglePlaceId);
+    public bool HasGmb => IsGoogleVerified || !string.IsNullOrWhiteSpace(GooglePlaceId) || (GoogleRating.HasValue && GoogleRating.Value > 0) || (GoogleReviewCount.HasValue && GoogleReviewCount.Value > 0);
+
+    [NotMapped]
+    [JsonIgnore]
+    public string GmbRatingDisplay => (GoogleRating.HasValue && GoogleRating.Value > 0)
+        ? $"★ {GoogleRating.Value:F1}"
+        : "✓ GMB";
+
+    [NotMapped]
+    [JsonIgnore]
+    public string GmbTooltip => HasGmb
+        ? $"Verified Google Business Profile • Rating: {(GoogleRating.HasValue ? GoogleRating.Value.ToString("F1") + "★" : "Listed")} • Reviews: {(GoogleReviewCount.HasValue ? GoogleReviewCount.Value.ToString("N0") : "Available")}"
+        : "Unverified / No Google Business Profile detected (Outreach Opportunity)";
+
+    public void NotifyGmbChanged()
+    {
+        OnPropertyChanged(nameof(IsGoogleVerified));
+        OnPropertyChanged(nameof(GooglePlaceId));
+        OnPropertyChanged(nameof(GoogleRating));
+        OnPropertyChanged(nameof(GoogleReviewCount));
+        OnPropertyChanged(nameof(BusinessHours));
+        OnPropertyChanged(nameof(HasGmb));
+        OnPropertyChanged(nameof(GmbRatingDisplay));
+        OnPropertyChanged(nameof(GmbTooltip));
+    }
 
     [NotMapped]
     [JsonIgnore]
@@ -124,11 +166,80 @@ public class Business : INotifyPropertyChanged
     public string? SourceReferenceId { get; set; }
 
     // Google Places Enrichment (Stage 7)
-    public string? GooglePlaceId { get; set; }
-    public double? GoogleRating { get; set; }
-    public int? GoogleReviewCount { get; set; }
-    public string? BusinessHours { get; set; }
-    public bool IsGoogleVerified { get; set; } = false;
+    public string? GooglePlaceId
+    {
+        get => _googlePlaceId;
+        set
+        {
+            if (_googlePlaceId != value)
+            {
+                _googlePlaceId = value;
+                OnPropertyChanged(nameof(GooglePlaceId));
+                OnPropertyChanged(nameof(HasGmb));
+                OnPropertyChanged(nameof(GmbTooltip));
+            }
+        }
+    }
+
+    public double? GoogleRating
+    {
+        get => _googleRating;
+        set
+        {
+            if (_googleRating != value)
+            {
+                _googleRating = value;
+                OnPropertyChanged(nameof(GoogleRating));
+                OnPropertyChanged(nameof(HasGmb));
+                OnPropertyChanged(nameof(GmbRatingDisplay));
+                OnPropertyChanged(nameof(GmbTooltip));
+            }
+        }
+    }
+
+    public int? GoogleReviewCount
+    {
+        get => _googleReviewCount;
+        set
+        {
+            if (_googleReviewCount != value)
+            {
+                _googleReviewCount = value;
+                OnPropertyChanged(nameof(GoogleReviewCount));
+                OnPropertyChanged(nameof(HasGmb));
+                OnPropertyChanged(nameof(GmbRatingDisplay));
+                OnPropertyChanged(nameof(GmbTooltip));
+            }
+        }
+    }
+
+    public string? BusinessHours
+    {
+        get => _businessHours;
+        set
+        {
+            if (_businessHours != value)
+            {
+                _businessHours = value;
+                OnPropertyChanged(nameof(BusinessHours));
+            }
+        }
+    }
+
+    public bool IsGoogleVerified
+    {
+        get => _isGoogleVerified;
+        set
+        {
+            if (_isGoogleVerified != value)
+            {
+                _isGoogleVerified = value;
+                OnPropertyChanged(nameof(IsGoogleVerified));
+                OnPropertyChanged(nameof(HasGmb));
+                OnPropertyChanged(nameof(GmbTooltip));
+            }
+        }
+    }
     public DateTime? LastEnrichedAtUtc { get; set; }
     
     // Sync & Soft Delete

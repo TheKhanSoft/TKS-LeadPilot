@@ -148,7 +148,7 @@ public class AiLandingPageGeneratorService(
         var prompt = BuildGeminiPrompt(request);
 
         // Production multi-model fallback chain ordered by current verified latency and quota availability
-        string[] candidateModels = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-3.1-flash-lite", "gemini-3.8-flash"];
+        string[] candidateModels = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-3.1-flash-lite"];
         HttpResponseMessage? lastResponse = null;
         string lastErrorDetail = string.Empty;
 
@@ -188,7 +188,7 @@ public class AiLandingPageGeneratorService(
                     "application/json");
 
                 using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-                cts.CancelAfter(TimeSpan.FromSeconds(15));
+                cts.CancelAfter(TimeSpan.FromSeconds(8));
 
                 var response = await _httpClient.PostAsync(requestUri, jsonContent, cts.Token);
                 lastResponse = response;
@@ -220,14 +220,14 @@ public class AiLandingPageGeneratorService(
             }
             catch (OperationCanceledException) when (!ct.IsCancellationRequested)
             {
-                lastErrorDetail = $"{modelName}: Request timed out after 15s.";
+                lastErrorDetail = $"{modelName}: Request timed out after 8s.";
                 continue;
             }
             catch (HttpRequestException ex)
             {
                 // Network unreachable or DNS resolution failure - fail fast to offline neural synthesizer
                 lastErrorDetail = $"{modelName}: Network connectivity error ({ex.Message}).";
-                break;
+                continue;
             }
             catch (Exception ex)
             {
@@ -451,7 +451,8 @@ public class AiLandingPageGeneratorService(
                 DeveloperPrompts = payload.DeveloperPrompts,
                 AdCopyPrompts = payload.AdCopyPrompts,
                 MidjourneyPrompts = payload.MidjourneyPrompts,
-                RequestsUsedToday = _dailyRequestsUsed
+                RequestsUsedToday = _dailyRequestsUsed,
+                ContentPayload = payload
             };
         }
         catch (Exception ex)
@@ -773,7 +774,8 @@ public class AiLandingPageGeneratorService(
             MidjourneyPrompts = midjourney,
             DeveloperPrompts = developerPrompts,
             AdCopyPrompts = adCopy,
-            RequestsUsedToday = _dailyRequestsUsed
+            RequestsUsedToday = _dailyRequestsUsed,
+            ContentPayload = payload
         };
     }
 
@@ -1095,20 +1097,49 @@ public class AiLandingPageGeneratorService(
                     break;
 
                 default:
-                    // STANDARD HIGH-CONVERTING HERO (LeadGenerationFunnel & Ecommerce)
-                    sb.AppendLine("        <!-- Standard High-Converting Hero -->");
-                    sb.AppendLine("        <section class=\"relative pt-20 pb-24 md:pt-28 md:pb-36 overflow-hidden text-center\">");
-                    sb.AppendLine($"            <div class=\"absolute -top-40 left-1/2 transform -translate-x-1/2 w-[800px] h-[500px] rounded-full blur-3xl opacity-20 pointer-events-none\" style=\"background: radial-gradient(circle, {accentHex}, transparent 70%);\"></div>");
-                    sb.AppendLine("            <div class=\"max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10\">");
-                    sb.AppendLine($"                <div class=\"inline-flex items-center space-x-2 px-4 py-1.5 rounded-full border border-slate-700/80 bg-slate-900/60 text-xs font-semibold uppercase tracking-wider mb-8 text-slate-300\">");
-                    sb.AppendLine($"                    <span class=\"w-2 h-2 rounded-full animate-pulse\" style=\"background-color: {accentHex};\"></span>");
-                    sb.AppendLine($"                    <span>{payload.HeroBadge}</span>");
-                    sb.AppendLine("                </div>");
-                    sb.AppendLine($"                <h1 class=\"text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white leading-[1.1] mb-6\">{payload.Headline}</h1>");
-                    sb.AppendLine($"                <p class=\"max-w-3xl mx-auto text-lg sm:text-xl text-slate-300 leading-relaxed mb-10\">{payload.Subheadline}</p>");
-                    sb.AppendLine("                <div class=\"flex flex-col sm:flex-row items-center justify-center gap-4\">");
-                    sb.AppendLine($"                    <a href=\"#contact\" class=\"w-full sm:w-auto px-8 py-4 rounded-xl text-base shadow-2xl transition transform hover:scale-105 {buttonClass}\"><i class=\"fa-solid fa-calendar-check mr-2\"></i>{payload.CallToAction}</a>");
-                    sb.AppendLine($"                    <a href=\"tel:{phone}\" class=\"w-full sm:w-auto px-8 py-4 rounded-xl text-base font-semibold border border-slate-700 bg-slate-900/80 hover:bg-slate-800 text-white transition\"><i class=\"fa-solid fa-phone mr-2 text-cyan-400\"></i>{phone}</a>");
+                    // HIGH-CONVERTING 2-COLUMN SPLIT HERO (LeadGenerationFunnel & Ecommerce)
+                    sb.AppendLine("        <!-- High-Converting 2-Column Split Hero -->");
+                    sb.AppendLine("        <section class=\"relative pt-16 pb-20 md:pt-24 md:pb-28 overflow-hidden\">");
+                    sb.AppendLine($"            <div class=\"absolute -top-40 left-1/2 transform -translate-x-1/2 w-[900px] h-[550px] rounded-full blur-3xl opacity-20 pointer-events-none\" style=\"background: radial-gradient(circle, {accentHex}, transparent 70%);\"></div>");
+                    sb.AppendLine("            <div class=\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10\">");
+                    sb.AppendLine("                <div class=\"grid grid-cols-1 lg:grid-cols-12 gap-12 items-center\">");
+                    sb.AppendLine("                    <div class=\"lg:col-span-7 text-left\">");
+                    sb.AppendLine($"                        <div class=\"inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full border border-cyan-500/40 bg-cyan-950/40 text-xs font-semibold uppercase tracking-wider mb-6 text-cyan-400\">");
+                    sb.AppendLine($"                            <span class=\"w-2 h-2 rounded-full animate-pulse\" style=\"background-color: {accentHex};\"></span>");
+                    sb.AppendLine($"                            <span>{payload.HeroBadge}</span>");
+                    sb.AppendLine("                        </div>");
+                    sb.AppendLine($"                        <h1 class=\"text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1] mb-6\">{payload.Headline}</h1>");
+                    sb.AppendLine($"                        <p class=\"text-base sm:text-lg text-slate-300 font-normal leading-relaxed mb-8\">{payload.Subheadline}</p>");
+                    sb.AppendLine("                        <div class=\"space-y-3 mb-8\">");
+                    sb.AppendLine($"                            <div class=\"flex items-center space-x-3 text-sm text-slate-200\"><i class=\"fa-solid fa-circle-check text-emerald-400\"></i><span>Verified industry track record serving {city} and regional clients</span></div>");
+                    sb.AppendLine($"                            <div class=\"flex items-center space-x-3 text-sm text-slate-200\"><i class=\"fa-solid fa-circle-check text-emerald-400\"></i><span>Direct transparent pricing with zero unexpected overages or delays</span></div>");
+                    sb.AppendLine($"                            <div class=\"flex items-center space-x-3 text-sm text-slate-200\"><i class=\"fa-solid fa-circle-check text-emerald-400\"></i><span>Dedicated priority support and continuous performance guarantee</span></div>");
+                    sb.AppendLine("                        </div>");
+                    sb.AppendLine("                        <div class=\"flex flex-wrap items-center gap-4\">");
+                    sb.AppendLine($"                            <a href=\"#contact\" class=\"px-7 py-3.5 rounded-xl text-base shadow-xl {buttonClass} transition transform hover:scale-105\"><i class=\"fa-solid fa-calendar-check mr-2\"></i>{payload.CallToAction}</a>");
+                    sb.AppendLine($"                            <a href=\"tel:{phone}\" class=\"px-6 py-3.5 rounded-xl text-base font-semibold border border-slate-700 bg-slate-900/80 hover:bg-slate-800 text-white transition\"><i class=\"fa-solid fa-phone mr-2 text-cyan-400\"></i>{phone}</a>");
+                    sb.AppendLine("                        </div>");
+                    sb.AppendLine("                    </div>");
+                    sb.AppendLine("                    <div class=\"lg:col-span-5\">");
+                    sb.AppendLine("                        <div class=\"p-7 rounded-3xl glass-card border border-cyan-500/30 shadow-2xl\">");
+                    sb.AppendLine("                            <div class=\"flex items-center justify-between pb-4 border-b border-slate-800 mb-5\">");
+                    sb.AppendLine($"                                <div><h3 class=\"text-lg font-bold text-white\">Instant Consultation</h3><p class=\"text-xs text-slate-400\">Request project proposal &amp; quote</p></div>");
+                    sb.AppendLine("                                <span class=\"px-2.5 py-1 rounded bg-cyan-500/20 text-cyan-400 text-xs font-bold\">🟢 Priority Dispatch</span>");
+                    sb.AppendLine("                            </div>");
+                    sb.AppendLine("                            <form onsubmit=\"handleFormSubmit(event)\" class=\"space-y-4\">");
+                    sb.AppendLine("                                <div>");
+                    sb.AppendLine("                                    <label class=\"block text-xs uppercase text-slate-400 font-bold mb-1.5\">Service Requested</label>");
+                    sb.AppendLine("                                    <select class=\"w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs\">");
+                    foreach (var s in payload.Services) sb.AppendLine($"                                        <option value=\"{s.Title}\">{s.Title}</option>");
+                    sb.AppendLine("                                    </select>");
+                    sb.AppendLine("                                </div>");
+                    sb.AppendLine($"                                <div><label class=\"block text-xs uppercase text-slate-400 font-bold mb-1.5\">Client / Business Name</label><input type=\"text\" required placeholder=\"Full Name / Company\" class=\"w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs\"></div>");
+                    sb.AppendLine($"                                <div><label class=\"block text-xs uppercase text-slate-400 font-bold mb-1.5\">Direct Phone / WhatsApp</label><input type=\"tel\" required placeholder=\"{phone}\" class=\"w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs\"></div>");
+                    sb.AppendLine($"                                <button type=\"submit\" class=\"w-full py-3.5 rounded-xl font-bold text-sm {buttonClass} transition transform hover:scale-[1.01] shadow-lg\"><i class=\"fa-solid fa-paper-plane mr-2\"></i>Claim Free Consultation</button>");
+                    sb.AppendLine($"                                <p class=\"text-[11px] text-center text-slate-500\">Direct response from {bizName} within 2 hours</p>");
+                    sb.AppendLine("                            </form>");
+                    sb.AppendLine("                        </div>");
+                    sb.AppendLine("                    </div>");
                     sb.AppendLine("                </div>");
                     sb.AppendLine("            </div>");
                     sb.AppendLine("        </section>");
@@ -1188,9 +1219,9 @@ public class AiLandingPageGeneratorService(
             sb.AppendLine("        <section id=\"services\" class=\"py-24 relative\">");
             sb.AppendLine("            <div class=\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8\">");
             sb.AppendLine("                <div class=\"text-center max-w-3xl mx-auto mb-16\">");
-            sb.AppendLine($"                    <h2 class=\"text-xs font-bold uppercase tracking-widest text-cyan-400 mb-3\">Tailored Offerings</h2>");
-            sb.AppendLine($"                    <p class=\"text-3xl sm:text-4xl font-extrabold text-white tracking-tight\">Everything Your Project Demands Under One Roof</p>");
-            sb.AppendLine($"                    <p class=\"text-slate-400 mt-4 text-base\">Engineered with precision, industry-leading methodology, and personalized care for every {city} client.</p>");
+            sb.AppendLine("                    <h2 class=\"text-xs font-bold uppercase tracking-widest text-cyan-400 mb-3\">Comprehensive Offerings</h2>");
+            sb.AppendLine($"                    <p class=\"text-3xl sm:text-4xl font-extrabold text-white tracking-tight\">Engineered for Exceptional Results</p>");
+            sb.AppendLine($"                    <p class=\"text-slate-400 mt-4 text-base\">Tailored commercial services for demanding enterprises in {city}.</p>");
             sb.AppendLine("                </div>");
             sb.AppendLine("                <div class=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8\">");
 
@@ -1546,6 +1577,60 @@ public class AiLandingPageGeneratorService(
         return sb.ToString();
     }
 
+    private static (string eyebrow, string title, string subtitle) GetCategoryServicesContent(string category, string bizName, string city)
+    {
+        var catLower = category.ToLowerInvariant();
+        if (catLower.Contains("health") || catLower.Contains("clinic") || catLower.Contains("medic") || catLower.Contains("doctor") || catLower.Contains("dental"))
+            return ("Clinical Specialties", $"Comprehensive Healthcare Specialties & Diagnostics in {city}", $"Every treatment plan is directed by board-certified practitioners at {bizName} with zero waiting times.");
+        if (catLower.Contains("soft") || catLower.Contains("it") || catLower.Contains("tech") || catLower.Contains("saas") || catLower.Contains("developer"))
+            return ("Full-Stack Capabilities", $"Engineering Scalable Cloud, AI & Software Systems", $"Modern architectural standards, robust security frameworks, and rapid execution sprints designed for scale.");
+        if (catLower.Contains("educat") || catLower.Contains("school") || catLower.Contains("attend") || catLower.Contains("academ"))
+            return ("Campus Solutions", $"Automated Attendance & Cloud Campus ERP Infrastructure", $"Empowering educators, students, and parents with real-time biometric tracking and seamless communication.");
+        if (catLower.Contains("real") || catLower.Contains("prop") || catLower.Contains("build") || catLower.Contains("construct"))
+            return ("Portfolio & Developments", $"Prime Residential & Commercial Developments in {city}", $"Turnkey property developments, architectural excellence, and transparent investment opportunities.");
+        if (catLower.Contains("law") || catLower.Contains("legal") || catLower.Contains("consult"))
+            return ("Practice Areas", $"Specialized Advisory & Strategic Corporate Counsel in {city}", $"Uncompromising advocacy, regulatory compliance, and confidential partner-level representation.");
+        if (catLower.Contains("solar") || catLower.Contains("energy"))
+            return ("Clean Energy Solutions", $"Turnkey Solar Infrastructure & Net-Metering Systems", $"Tier-1 solar engineering, customized load calculations, and long-term utility bill elimination in {city}.");
+        return ("Tailored Offerings", $"High-Impact {category} Capabilities in {city}", $"Engineered with precision, industry-leading methodology, and personalized care for every {bizName} client.");
+    }
+
+    private static string GetCategoryCaseStudiesHeading(string category, string city)
+    {
+        var catLower = category.ToLowerInvariant();
+        if (catLower.Contains("health") || catLower.Contains("clinic") || catLower.Contains("dental"))
+            return $"Proven Clinical Transformations & Patient Outcomes in {city}";
+        if (catLower.Contains("soft") || catLower.Contains("it") || catLower.Contains("tech") || catLower.Contains("saas"))
+            return $"Architecture Benchmarks & Deployed Infrastructure in {city}";
+        if (catLower.Contains("educat") || catLower.Contains("school") || catLower.Contains("attend"))
+            return $"Campus Transformations & Attendance Benchmarks in {city}";
+        return $"Measurable Commercial Benchmarks Delivered Across {city}";
+    }
+
+    private static string GetCategoryPricingHeading(string category, string city)
+    {
+        var catLower = category.ToLowerInvariant();
+        if (catLower.Contains("health") || catLower.Contains("clinic") || catLower.Contains("dental"))
+            return "Transparent Clinical Care & Diagnostic Investment Schedules";
+        if (catLower.Contains("soft") || catLower.Contains("it") || catLower.Contains("tech") || catLower.Contains("saas"))
+            return "Predictable Development Sprints & Cloud Infrastructure Retainers";
+        if (catLower.Contains("educat") || catLower.Contains("school") || catLower.Contains("attend"))
+            return "Institutional School Licensing & Biometric Deployment Packages";
+        return $"Transparent Packages Designed for Every Stage in {city}";
+    }
+
+    private static string GetCategoryReviewsHeading(string category, string city, string bizName = "Our Platform")
+    {
+        var catLower = category.ToLowerInvariant();
+        if (catLower.Contains("health") || catLower.Contains("clinic") || catLower.Contains("dental"))
+            return $"Verified Patient Experiences & Health Outcomes in {city}";
+        if (catLower.Contains("soft") || catLower.Contains("it") || catLower.Contains("tech") || catLower.Contains("saas"))
+            return $"What Engineering Leaders & CTOs Say About Our Systems";
+        if (catLower.Contains("educat") || catLower.Contains("school") || catLower.Contains("attend"))
+            return $"What Principals & Educators Say in {city}";
+        return $"Real Results from Real Clients in {city}";
+    }
+
     private static BespokeContentPayload GetCategoryDefaults(string category, string bizName, string city, string country)
     {
         var catLower = category.ToLowerInvariant();
@@ -1713,6 +1798,86 @@ public class AiLandingPageGeneratorService(
                 ],
                 LeadFormTitle = "Request Technical Consultation & Architecture Review",
                 LeadFormSubtitle = "Share your project vision below. Our Principal Solutions Architect will respond with actionable technical insights within 2 business hours."
+            };
+        }
+
+        // 2b. Education, Attendance & EdTech
+        if (catLower.Contains("educat") || catLower.Contains("school") || catLower.Contains("attend") || catLower.Contains("academ") || catLower.Contains("train") || catLower.Contains("college") || catLower.Contains("student"))
+        {
+            return new BespokeContentPayload
+            {
+                Headline = $"Smart Biometric Attendance & Cloud School Management in {city}",
+                Subheadline = $"Eliminate manual paper registers, notify parents instantly via automated WhatsApp/SMS alerts upon student entry, and streamline school tuition fees with {bizName}.",
+                HeroBadge = $"#1 Rated School Automation Partner in {city}",
+                CallToAction = "Schedule Live Campus Demo",
+                SecondaryCta = "Calculate Campus ROI",
+                ConversionScore = 96,
+                Metrics =
+                [
+                    new() { Value = "99.8%", Label = "Attendance Tracking Accuracy" },
+                    new() { Value = "0 Mins", Label = "Manual Register Paperwork" },
+                    new() { Value = "45+", Label = $"Institutions Modernized in {city}" },
+                    new() { Value = "18,000+", Label = "Daily Student Logins" }
+                ],
+                TrustBadges = ["Biometric Hardware Certified", "ISO 27001 Data Security", "Parent WhatsApp Gateway", $"{city} Educational Alliance"],
+                Services =
+                [
+                    new() { Icon = "fa-solid fa-fingerprint", Title = "Biometric & RFID Attendance Tracking", Description = "Instant student arrival logging using high-speed facial recognition and RFID smart cards with automated parent notifications.", Cta = "Explore Biometrics" },
+                    new() { Icon = "fa-solid fa-graduation-cap", Title = "All-in-One Cloud School ERP", Description = "Streamlined fee voucher collection, online examination gradebooks, teacher timetables, and mobile campus portal.", Cta = "View ERP Modules" },
+                    new() { Icon = "fa-solid fa-bell", Title = "Instant Parent Alert SMS & WhatsApp", Description = "Automated real-time broadcast system for unexcused absences, examination dates, emergency campus closures, and fee reminders.", Cta = "Test Alert Gateway" }
+                ],
+                Differentiators =
+                [
+                    new() { Icon = "fa-solid fa-shield-halved", Title = "Bank-Grade Student Data Privacy", Description = "Encrypted biometric storage conforming strictly to international student privacy standards and local data governance laws." },
+                    new() { Icon = "fa-solid fa-wifi", Title = "Offline-First Sync Capability", Description = "Biometric terminals operate reliably during power or internet interruptions, auto-syncing the moment connection restores." },
+                    new() { Icon = "fa-solid fa-chalkboard-user", Title = "Turnkey Teacher & Staff Training", Description = "Our local field team conducts hands-on on-campus training for your administrative staff and teachers." }
+                ],
+                CaseStudies =
+                [
+                    new() { ClientName = $"{city} Model High School (1,400 Students)", Challenge = "Morning roll calls consumed 25 minutes of instructional time per class with frequent unauthorized departures", Solution = "Installed 4 biometric entrance terminals paired with automated SMS parent dispatch", ResultMetric = "0 Min Roll Call", ResultDescription = "Student punctuality improved 42% and unverified absences dropped to near zero" }
+                ],
+                PricingPlans =
+                [
+                    new() { Name = "Starter Campus (Up to 500)", Price = "$49", Period = "/month", Badge = "", Description = "Complete attendance & basic student records", Features = ["2x Biometric Terminal Integration", "Automated Daily SMS / WhatsApp Alerts", "Digital Fee Voucher Tracking", "Basic Teacher & Student Portals"], Cta = "Start Pilot", IsPopular = false },
+                    new() { Name = "Standard Academy (Up to 1,500)", Price = "$99", Period = "/month", Badge = "Most Popular", Description = "Full-featured cloud school ERP suite", Features = ["4x High-Speed Facial/RFID Terminals", "Full Examination & Report Card Engine", "Parent Mobile App with Fee Payments", "Dedicated Local Field Support Specialist"], Cta = "Deploy Standard", IsPopular = true },
+                    new() { Name = "Multi-Campus Enterprise", Price = "$199", Period = "/month", Badge = "", Description = "Centralized governance across campus networks", Features = ["Unlimited Campus Terminals", "Centralized Super-Admin Dashboard", "Custom Ministry Reporting Export", "24/7 Priority Emergency Hotline"], Cta = "Contact Sales", IsPopular = false }
+                ],
+                LeaderBio = new BespokeLeaderBio
+                {
+                    Name = $"Director of Educational Technology",
+                    Role = "Chief Academic Solutions Architect",
+                    Credentials = "EdTech Systems Specialist • 14+ Yrs",
+                    Bio = $"Leading the modernization of regional educational institutions in {city}. Passionate about empowering teachers and ensuring transparent parent-school partnerships.",
+                    Quote = "When schools digitize attendance and communication, teachers get back their time to do what matters most: inspire students.",
+                    AvatarInitials = "ED"
+                },
+                Calculator = new BespokeCalculatorConfig
+                {
+                    Title = "Campus Administrative Time & Fee Recovery Estimator",
+                    Subtitle = "Adjust the slider to your student body size to preview estimated weekly hours saved and fee collection recovery.",
+                    SliderLabel = "Total Enrolled Students",
+                    Unit = "Students: ",
+                    Min = 200,
+                    Max = 3000,
+                    DefaultValue = 800,
+                    Multiplier = 1.75,
+                    ResultLabel = "Estimated Hours of Administrative Paperwork Saved Monthly",
+                    ResultSuffix = " hrs/mo"
+                },
+                Testimonials =
+                [
+                    new() { Quote = $"{bizName} transformed our morning routine. Parents receive an SMS within 3 seconds of their child tapping in. Attendance disputes have vanished completely.", Author = "Prof. Tariq Mahmood", Role = $"Principal, {city} Cambridge School", Initials = "TM", Rating = 5 },
+                    new() { Quote = $"The fee collection module alone paid for the system in 2 months. Parents can pay directly online and our accounts office has zero paperwork backlogs.", Author = "Mrs. Farzana Khan", Role = "Administrator, City Grammar Campus", Initials = "FK", Rating = 5 },
+                    new() { Quote = $"Super reliable hardware. Even during power cuts, the backup batteries keep attendance running smoothly. Highly recommended for any serious school.", Author = "Engr. Asadullah", Role = "Campus Operations Director", Initials = "EA", Rating = 5 }
+                ],
+                Faqs =
+                [
+                    new() { Question = "What happens if our school internet connection goes down during morning entry?", Answer = "Our biometric terminals operate with full onboard offline memory. Students tap in normally, and all records sync to the cloud the instant internet returns." },
+                    new() { Question = "Are parents charged any extra fees to receive WhatsApp or SMS notifications?", Answer = "No, all parent notifications are included within your institutional monthly plan with zero per-message charges." },
+                    new() { Question = "How quickly can the system and hardware be deployed on our campus?", Answer = $"Our local team in {city} completes hardware mounting, network configuration, and student enrollment within 3 business days." }
+                ],
+                LeadFormTitle = "Schedule a Free On-Campus ERP Demonstration",
+                LeadFormSubtitle = $"Enter your school details below. Our {city} academic specialist will visit your campus for a live demonstration."
             };
         }
 

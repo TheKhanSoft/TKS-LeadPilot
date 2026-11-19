@@ -627,7 +627,14 @@ public class BusinessRepository : IBusinessRepository
 
         if (criteria.IsGoogleVerified.HasValue)
         {
-            query = query.Where(b => b.IsGoogleVerified == criteria.IsGoogleVerified.Value);
+            if (criteria.IsGoogleVerified.Value)
+            {
+                query = query.Where(b => b.IsGoogleVerified || (b.GooglePlaceId != null && b.GooglePlaceId != "") || (b.GoogleRating != null && b.GoogleRating > 0) || (b.GoogleReviewCount != null && b.GoogleReviewCount > 0));
+            }
+            else
+            {
+                query = query.Where(b => !b.IsGoogleVerified && (b.GooglePlaceId == null || b.GooglePlaceId == "") && (b.GoogleRating == null || b.GoogleRating == 0) && (b.GoogleReviewCount == null || b.GoogleReviewCount == 0));
+            }
         }
 
         if (criteria.MinRating.HasValue)
@@ -690,7 +697,7 @@ public class BusinessRepository : IBusinessRepository
                 query = query.Where(b => string.IsNullOrWhiteSpace(b.WebsiteUrl));
                 break;
             case QuickFilterType.GoogleVerified:
-                query = query.Where(b => b.IsGoogleVerified);
+                query = query.Where(b => b.IsGoogleVerified || (b.GooglePlaceId != null && b.GooglePlaceId != "") || (b.GoogleRating != null && b.GoogleRating > 0) || (b.GoogleReviewCount != null && b.GoogleReviewCount > 0));
                 break;
             case QuickFilterType.TopRated:
                 query = query.Where(b => b.GoogleRating != null && b.GoogleRating >= 4.5);
@@ -699,7 +706,7 @@ public class BusinessRepository : IBusinessRepository
                 query = query.Where(b => !string.IsNullOrWhiteSpace(b.WebsiteUrl) && !b.Audits.Any());
                 break;
             case QuickFilterType.MissingGmb:
-                query = query.Where(b => !b.IsGoogleVerified && (b.GooglePlaceId == null || b.GooglePlaceId == ""));
+                query = query.Where(b => !b.IsGoogleVerified && (b.GooglePlaceId == null || b.GooglePlaceId == "") && (b.GoogleRating == null || b.GoogleRating == 0) && (b.GoogleReviewCount == null || b.GoogleReviewCount == 0));
                 break;
             case QuickFilterType.StarredOnly:
                 query = query.Where(b => b.IsStarred);

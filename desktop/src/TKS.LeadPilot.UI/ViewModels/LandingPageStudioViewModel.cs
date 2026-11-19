@@ -87,6 +87,12 @@ public partial class LandingPageStudioViewModel : ViewModelBase
     [ObservableProperty]
     private ObservableCollection<SynthesizedModuleItem> _synthesizedModulesFlow = [];
 
+    [ObservableProperty]
+    private ObservableCollection<string> _previewTrustBadges = [];
+
+    [ObservableProperty]
+    private ObservableCollection<string> _previewServicesList = [];
+
     // Generation State
     [ObservableProperty]
     private bool _isGenerating = false;
@@ -223,6 +229,20 @@ public partial class LandingPageStudioViewModel : ViewModelBase
             SelectedDesignStyle = "Midnight Luxury Gold (Clinics, Law & Executive)";
             TargetAudience = $"Food lovers, families, tourists, and event organizers in {City}.";
             CustomInstructions = $"Highlight signature cuisine, private VIP banquet reservations, hygienic open-kitchen prep, and instant table booking via WhatsApp.";
+        }
+        else if (cat.Contains("educat") || cat.Contains("school") || cat.Contains("attend") || cat.Contains("academ") || cat.Contains("train"))
+        {
+            SelectedArchetype = "Modern SaaS & Tech Product";
+            SelectedDesignStyle = "Modern Slate & Cyan (Tech, SaaS & Corporate)";
+            TargetAudience = $"School principals, administrators, and campus directors in {City}.";
+            CustomInstructions = $"Highlight automated biometric attendance, instant SMS parent alerts, cloud school management, and a live pilot demonstration in {City}.";
+        }
+        else if (b.Name.ToLowerInvariant().Contains("soft") || b.Name.ToLowerInvariant().Contains("tech") || b.Name.ToLowerInvariant().Contains("nexa"))
+        {
+            SelectedArchetype = "Modern SaaS & Tech Product";
+            SelectedDesignStyle = "Modern Slate & Cyan (Tech, SaaS & Corporate)";
+            TargetAudience = $"Tech founders, enterprises, and institutions in {City} requiring custom digital infrastructure.";
+            CustomInstructions = "Modern web applications, high-throughput cloud architecture, dedicated SLA, and agile project delivery.";
         }
         else
         {
@@ -492,20 +512,84 @@ public partial class LandingPageStudioViewModel : ViewModelBase
             active = ["mod-hero", "mod-trust-bar", "mod-services", "mod-before-after", "mod-team", "mod-testimonials", "mod-pricing", "mod-calculator", "mod-faq", "mod-lead-form", "mod-whatsapp", "mod-seo"];
         }
 
+        var payload = CurrentResult?.ContentPayload;
+
+        // Update live preview collections for in-app visual studio
+        if (payload != null && payload.TrustBadges.Count > 0)
+        {
+            PreviewTrustBadges = new ObservableCollection<string>(payload.TrustBadges);
+        }
+        else
+        {
+            PreviewTrustBadges = new ObservableCollection<string>(["Verified Local Enterprise", "4.9/5 Client Score", "ISO 9001 Standard", "Instant Response Guarantee"]);
+        }
+
+        if (payload != null && payload.Services.Count > 0)
+        {
+            PreviewServicesList = new ObservableCollection<string>(payload.Services.Select(s => s.Title));
+        }
+        else
+        {
+            PreviewServicesList = new ObservableCollection<string>(["Bespoke Architecture", "Strategic Optimization", "VIP Retainer"]);
+        }
+
+        var heroDesc = CurrentResult?.Headline != null
+            ? $"{CurrentResult.Headline} — {CurrentResult.Subheadline}"
+            : "High-converting hero value proposition tailored to target market";
+
+        var trustDesc = payload != null && payload.TrustBadges.Count > 0
+            ? string.Join(" • ", payload.TrustBadges)
+            : "Google Guaranteed, ISO 9001, Chamber of Commerce & Verified rating emblems";
+
+        var servicesDesc = payload != null && payload.Services.Count > 0
+            ? string.Join(" • ", payload.Services.Select(s => s.Title))
+            : "Interactive cards detailing key commercial offerings, deliverables & CTAs";
+
+        var caseDesc = payload != null && payload.CaseStudies.Count > 0
+            ? $"{payload.CaseStudies[0].ClientName}: {payload.CaseStudies[0].ResultMetric} ({payload.CaseStudies[0].Solution})"
+            : "Measurable client before & after benchmarks with quantified metrics";
+
+        var teamDesc = payload?.LeaderBio != null
+            ? $"{payload.LeaderBio.Name} ({payload.LeaderBio.Role}) — {payload.LeaderBio.Credentials}"
+            : "Executive credentials, founder story, certifications & personal quote";
+
+        var testDesc = payload != null && payload.Testimonials.Count > 0
+            ? $"\"{payload.Testimonials[0].Quote}\" — {payload.Testimonials[0].Author} ({payload.Testimonials[0].Role})"
+            : "4.9★ composite review score with verified regional customer feedback";
+
+        var pricingDesc = payload != null && payload.PricingPlans.Count > 0
+            ? string.Join(" • ", payload.PricingPlans.Select(p => $"{p.Name} ({p.Price})"))
+            : "Multi-tier commercial package matrix with feature checklists & badges";
+
+        var calcDesc = payload?.Calculator != null
+            ? $"{payload.Calculator.Title}: {payload.Calculator.SliderLabel} -> {payload.Calculator.ResultLabel}"
+            : "Client-side interactive budget or savings slider computing real-time value";
+
+        var faqDesc = payload != null && payload.Faqs.Count > 0
+            ? $"{payload.Faqs[0].Question} — {payload.Faqs[0].Answer}"
+            : "Expandable objection-handling resolving pricing, timeline & scope doubts";
+
+        var leadFormDesc = payload != null && !string.IsNullOrWhiteSpace(payload.LeadFormTitle)
+            ? $"{payload.LeadFormTitle} • Priority hotline: {PhonePrimary ?? "+92 300 1234567"}"
+            : "Low-friction lead capture form with instant validation & reassurance";
+
+        var whatsappDesc = $"Sticky WhatsApp float & instant hotline direct to {BusinessName} ({PhonePrimary ?? "+92 300 1234567"})";
+        var seoDesc = $"Schema.org LocalBusiness JSON-LD, OpenGraph & meta tags for {BusinessName} in {City}";
+
         var moduleDict = new Dictionary<string, (string Title, string Desc, string Icon)>
         {
-            ["mod-hero"] = ("Hero & Value Proposition", CurrentResult?.Headline ?? "High-converting hero value proposition tailored to target market", "🎯"),
-            ["mod-trust-bar"] = ("Trust & Certification Bar", "Google Guaranteed, ISO 9001, Chamber of Commerce & Verified rating emblems", "🛡️"),
-            ["mod-services"] = ("Core Solutions & Services Grid", "Interactive cards detailing key commercial offerings, deliverables & CTAs", "💼"),
-            ["mod-before-after"] = ("Transformation & Case Studies", "Measurable client before & after benchmarks with quantified metrics", "📈"),
-            ["mod-team"] = ("Leadership & Authority Bio", "Executive credentials, founder story, certifications & personal quote", "👔"),
-            ["mod-testimonials"] = ("Testimonials & Social Proof", "4.9★ composite review score with verified regional customer feedback", "⭐"),
-            ["mod-pricing"] = ("Transparent Pricing & Packages", "Multi-tier commercial package matrix with feature checklists & badges", "🏷️"),
-            ["mod-calculator"] = ("Interactive ROI / Cost Estimator", "Client-side interactive budget or savings slider computing real-time value", "🧮"),
-            ["mod-faq"] = ("Interactive FAQ Accordion", "Expandable objection-handling resolving pricing, timeline & scope doubts", "❓"),
-            ["mod-lead-form"] = ("Lead Capture Booking Form", "Low-friction lead capture form with instant validation & reassurance", "📝"),
-            ["mod-whatsapp"] = ("Floating WhatsApp & Direct Call", "Persistent sticky instant messaging & click-to-call direct contact widget", "💬"),
-            ["mod-seo"] = ("LocalBusiness Schema & Meta Tags", "Automated JSON-LD rich snippet schema, OpenGraph tags & Twitter Cards", "🔍")
+            ["mod-hero"] = ("Hero & Value Proposition", heroDesc, "🎯"),
+            ["mod-trust-bar"] = ("Trust & Certification Bar", trustDesc, "🛡️"),
+            ["mod-services"] = ("Core Solutions & Services Grid", servicesDesc, "💼"),
+            ["mod-before-after"] = ("Transformation & Case Studies", caseDesc, "📈"),
+            ["mod-team"] = ("Leadership & Authority Bio", teamDesc, "👔"),
+            ["mod-testimonials"] = ("Testimonials & Social Proof", testDesc, "⭐"),
+            ["mod-pricing"] = ("Transparent Pricing & Packages", pricingDesc, "🏷️"),
+            ["mod-calculator"] = ("Interactive ROI / Cost Estimator", calcDesc, "🧮"),
+            ["mod-faq"] = ("Interactive FAQ Accordion", faqDesc, "❓"),
+            ["mod-lead-form"] = ("Lead Capture Booking Form", leadFormDesc, "📝"),
+            ["mod-whatsapp"] = ("Floating WhatsApp & Direct Call", whatsappDesc, "💬"),
+            ["mod-seo"] = ("LocalBusiness Schema & Meta Tags", seoDesc, "🔍")
         };
 
         foreach (var (modId, (title, desc, icon)) in moduleDict)

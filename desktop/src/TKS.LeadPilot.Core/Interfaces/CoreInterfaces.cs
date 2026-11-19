@@ -118,6 +118,7 @@ public interface IAiProposalSynthesizer
     AuditProposalSynthesisResult SynthesizeDeterministicProposal(AuditProposalSynthesisRequest request);
     Task<int> GetRemainingRequestsTodayAsync(CancellationToken ct = default);
     Task<List<Business>> DiscoverBusinessesAiAsync(string city, string country, string category, int count = 25, CancellationToken ct = default);
+    Task<(bool HasGmb, double? Rating, int? ReviewCount, string? Hours)> VerifyBusinessGmbAiAsync(string businessName, string city, string country, CancellationToken ct = default);
 }
 
 public interface ILandingPageGeneratorService

@@ -81,6 +81,14 @@ public class OverpassDiscoveryService : IDiscoveryService
             }
         }
 
+        // Ensure TargetAmenities is populated from CategoryPreset if missing
+        if ((query.TargetAmenities == null || query.TargetAmenities.Count == 0) &&
+            !string.IsNullOrWhiteSpace(query.CategoryPreset) &&
+            OverpassQueryBuilder.CategoryPresets.TryGetValue(query.CategoryPreset, out var presetAmenities))
+        {
+            query.TargetAmenities = presetAmenities;
+        }
+
         var result = new DiscoveryResult
         {
             QueryExecuted = $"Engine: {query.SearchEngine}, City: {query.City}, Category: {query.CategoryPreset ?? "All Commercial"}",
@@ -258,9 +266,9 @@ public class OverpassDiscoveryService : IDiscoveryService
             if (query.TargetMissingWebsiteOnly && !string.IsNullOrWhiteSpace(candidate.WebsiteUrl)) continue;
             if (query.TargetMissingGmbOnly && (candidate.IsGoogleVerified || !string.IsNullOrWhiteSpace(candidate.GooglePlaceId))) continue;
 
-            // Strict specificity filter: if searching for specific keyword or niche, discard 0-relevance entries
+            // Strict specificity filter: if searching for specific keyword or niche, discard entries with negligible relevance
             var relevance = CalculateRelevanceScore(candidate, query);
-            if (query.StrictKeywordFilter && hasSpecificNiche && relevance <= 0)
+            if (query.StrictKeywordFilter && hasSpecificNiche && relevance < 15)
             {
                 continue;
             }
@@ -412,7 +420,7 @@ public class OverpassDiscoveryService : IDiscoveryService
                 ]);
 
                 using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-                cts.CancelAfter(TimeSpan.FromSeconds(10));
+                cts.CancelAfter(TimeSpan.FromSeconds(25));
 
                 var response = await _httpClient.PostAsync(endpoint, content, cts.Token);
                 if (response.IsSuccessStatusCode)
@@ -580,6 +588,10 @@ public class OverpassDiscoveryService : IDiscoveryService
                 "address": "Street / Area, City",
                 "phone": "Phone with country code",
                 "website": "https://... or null if unknown",
+                "has_gmb": true,
+                "google_rating": 4.2,
+                "google_reviews": 150,
+                "business_hours": "9:00 AM - 9:00 PM or Open 24 hours",
                 "tags": "Commercial Niche, Keywords"
               }
             ]
@@ -784,6 +796,19 @@ public class OverpassDiscoveryService : IDiscoveryService
         }
 
         int score = 0;
+
+        // 1. If lead was returned by a targeted commercial API or AI engine, award strong baseline score
+        if (!string.IsNullOrWhiteSpace(candidate.SourceProvider) &&
+            (candidate.SourceProvider.Contains("Gemini", StringComparison.OrdinalIgnoreCase) ||
+             candidate.SourceProvider.Contains("Google", StringComparison.OrdinalIgnoreCase) ||
+             candidate.SourceProvider.Contains("Groq", StringComparison.OrdinalIgnoreCase) ||
+             candidate.SourceProvider.Contains("Brave", StringComparison.OrdinalIgnoreCase) ||
+             candidate.SourceProvider.Contains("Serper", StringComparison.OrdinalIgnoreCase) ||
+             candidate.SourceProvider.Contains("Wikidata", StringComparison.OrdinalIgnoreCase)))
+        {
+            score = 75;
+        }
+
         var nameLower = (candidate.Name ?? string.Empty).ToLowerInvariant();
         var catLower = (candidate.Category ?? string.Empty).ToLowerInvariant();
         var subcatLower = (candidate.Subcategory ?? string.Empty).ToLowerInvariant();
@@ -791,6 +816,7 @@ public class OverpassDiscoveryService : IDiscoveryService
         var descLower = (candidate.Description ?? string.Empty).ToLowerInvariant();
         var urlLower = (candidate.WebsiteUrl ?? string.Empty).ToLowerInvariant();
 
+        // 2. Custom Keyword Matching
         if (!string.IsNullOrWhiteSpace(custom))
         {
             var customLower = custom.ToLowerInvariant();
@@ -798,28 +824,43 @@ public class OverpassDiscoveryService : IDiscoveryService
             // Direct full phrase match in name
             if (nameLower.Contains(customLower))
             {
-                score += 65;
+                score += 70;
             }
 
-            var tokens = customLower.Split([' ', ',', '-', '/', '&'], StringSplitOptions.RemoveEmptyEntries)
-                .Where(t => t.Length >= 3)
+            var tokens = customLower.Split([' ', ',', '-', '/', '&', '.'], StringSplitOptions.RemoveEmptyEntries)
+                .Where(t => t.Length >= 2)
                 .ToList();
 
             foreach (var tok in tokens)
             {
-                if (nameLower.Contains(tok)) score += 30;
-                if (catLower.Contains(tok) || subcatLower.Contains(tok)) score += 25;
-                if (tagsLower.Contains(tok) || descLower.Contains(tok)) score += 20;
-                if (urlLower.Contains(tok)) score += 15;
+                if (nameLower.Contains(tok)) score += 35;
+                if (catLower.Contains(tok) || subcatLower.Contains(tok)) score += 30;
+                if (tagsLower.Contains(tok) || descLower.Contains(tok)) score += 25;
+                if (urlLower.Contains(tok)) score += 20;
             }
         }
 
+        // 3. Category Preset Matching
         if (!isAllCommercial && !string.IsNullOrWhiteSpace(preset))
         {
             var presetLower = preset.ToLowerInvariant();
             if (catLower.Contains(presetLower) || presetLower.Contains(catLower) || nameLower.Contains(presetLower))
             {
-                score += 40;
+                score += 50;
+            }
+
+            // Check specific target amenities mapped to this preset
+            if (OverpassQueryBuilder.CategoryPresets.TryGetValue(preset, out var targetAmenities))
+            {
+                foreach (var a in targetAmenities)
+                {
+                    var aLower = a.ToLowerInvariant();
+                    if (catLower.Contains(aLower) || subcatLower.Contains(aLower) || tagsLower.Contains(aLower))
+                    {
+                        score += 45;
+                        break;
+                    }
+                }
             }
 
             var presetTokens = presetLower.Split([' ', ',', '-', '/', '&', '⭐'], StringSplitOptions.RemoveEmptyEntries)

@@ -91,6 +91,14 @@ public static class OverpassResultMapper
                 var elemType = elem.TryGetProperty("type", out var tProp) ? tProp.GetString() ?? "node" : "node";
                 var elemId = elem.TryGetProperty("id", out var idProp) ? idProp.ToString() : Guid.NewGuid().ToString("N");
 
+                var hours = GetTagValue(tags, "opening_hours", "service_times");
+                var starsStr = GetTagValue(tags, "stars");
+                double? stars = null;
+                if (!string.IsNullOrWhiteSpace(starsStr) && double.TryParse(starsStr, out var sVal)) stars = sVal;
+
+                var googleRef = GetTagValue(tags, "ref:google", "google:place_id", "contact:google");
+                bool isGoogleVerified = !string.IsNullOrWhiteSpace(googleRef) || (stars.HasValue && stars.Value > 0);
+
                 var business = new Business
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -106,6 +114,10 @@ public static class OverpassResultMapper
                     EmailPrimary = string.IsNullOrWhiteSpace(email) ? null : email.Trim(),
                     WebsiteUrl = string.IsNullOrWhiteSpace(website) ? null : website.Trim(),
                     WebsiteStatus = !string.IsNullOrWhiteSpace(website) ? WebsiteStatus.ActiveWebsite : WebsiteStatus.NoWebsite,
+                    IsGoogleVerified = isGoogleVerified,
+                    GoogleRating = stars,
+                    GooglePlaceId = googleRef,
+                    BusinessHours = hours,
                     Latitude = lat,
                     Longitude = lon,
                     PipelineStageId = "stage-discovered",
@@ -235,12 +247,14 @@ public static class OverpassResultMapper
                 string? phone = null;
                 string? website = null;
                 string? email = null;
+                string? hours = null;
 
                 if (elem.TryGetProperty("extratags", out var extra) && extra.ValueKind == JsonValueKind.Object)
                 {
                     phone = GetTagValue(extra, "phone", "contact:phone", "mobile");
                     website = GetTagValue(extra, "website", "contact:website", "url");
                     email = GetTagValue(extra, "email", "contact:email");
+                    hours = GetTagValue(extra, "opening_hours", "service_times");
                 }
 
                 var address = string.Empty;
@@ -269,6 +283,7 @@ public static class OverpassResultMapper
                     address = fullDn.GetString() ?? string.Empty;
                 }
 
+
                 results.Add(new Business
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -281,6 +296,7 @@ public static class OverpassResultMapper
                     PhonePrimary = phone,
                     WebsiteUrl = website,
                     EmailPrimary = email,
+                    BusinessHours = hours,
                     WebsiteStatus = !string.IsNullOrWhiteSpace(website) ? WebsiteStatus.ActiveWebsite : WebsiteStatus.NoWebsite,
                     Latitude = lat,
                     Longitude = lon,
@@ -496,6 +512,24 @@ public static class OverpassResultMapper
                 var phone = GetJsonPropertyString(item, "phone");
                 var web = GetJsonPropertyString(item, "website");
                 var tags = GetJsonPropertyString(item, "tags") ?? "Groq AI";
+                var hours = GetJsonPropertyString(item, "business_hours");
+
+                bool hasGmb = false;
+                if (item.TryGetProperty("has_gmb", out var hg))
+                {
+                    hasGmb = hg.ValueKind == JsonValueKind.True || (hg.ValueKind == JsonValueKind.String && bool.TryParse(hg.GetString(), out var bVal) && bVal);
+                }
+
+                double? gRating = null;
+                if (item.TryGetProperty("google_rating", out var gr) && gr.TryGetDouble(out var grVal)) gRating = grVal;
+
+                int? gReviews = null;
+                if (item.TryGetProperty("google_reviews", out var grev) && grev.TryGetInt32(out var grevVal)) gReviews = grevVal;
+
+                if ((gRating.HasValue && gRating.Value > 0) || (gReviews.HasValue && gReviews.Value > 0))
+                {
+                    hasGmb = true;
+                }
 
                 results.Add(new Business
                 {
@@ -509,6 +543,11 @@ public static class OverpassResultMapper
                     PhonePrimary = phone?.Trim(),
                     WebsiteUrl = !string.IsNullOrWhiteSpace(web) && web != "null" ? web.Trim() : null,
                     WebsiteStatus = !string.IsNullOrWhiteSpace(web) && web != "null" ? WebsiteStatus.ActiveWebsite : WebsiteStatus.NoWebsite,
+                    IsGoogleVerified = hasGmb,
+                    GoogleRating = gRating,
+                    GoogleReviewCount = gReviews,
+                    GooglePlaceId = hasGmb ? $"gmb_{Guid.NewGuid():N}"[..18] : null,
+                    BusinessHours = hours,
                     PipelineStageId = "stage-discovered",
                     LeadStatus = LeadStatus.Discovered,
                     SourceProvider = "Groq Cloud AI (Llama-3)",

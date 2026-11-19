@@ -411,6 +411,13 @@ public partial class DiscoveryViewModel : ViewModelBase
         {
             var sw = Stopwatch.StartNew();
 
+            List<string>? targetAmenities = null;
+            if (!string.IsNullOrWhiteSpace(SelectedCategory) &&
+                _discoveryService.GetPresetCategories().TryGetValue(SelectedCategory, out var presetAmen))
+            {
+                targetAmenities = presetAmen;
+            }
+
             var query = new DiscoveryQuery
             {
                 City = targetCity,
@@ -418,6 +425,7 @@ public partial class DiscoveryViewModel : ViewModelBase
                 StateProvince = SelectedState != "All States/Provinces" ? SelectedState : string.Empty,
                 CategoryPreset = SelectedCategory,
                 CustomSearchTerm = CustomSearchKeyword,
+                TargetAmenities = targetAmenities,
                 SearchEngine = SelectedEngine,
                 TargetMissingWebsiteOnly = TargetMissingWebsite,
                 TargetMissingGmbOnly = TargetMissingGmb,
