@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using TKS.LeadPilot.Core.Common;
 using TKS.LeadPilot.Core.Enums;
 
 namespace TKS.LeadPilot.Core.Models;
@@ -242,6 +243,19 @@ public class Business : INotifyPropertyChanged
     }
     public DateTime? LastEnrichedAtUtc { get; set; }
     
+    // UI Helpers in PKT (Pakistan Standard Time, UTC+5)
+    [NotMapped]
+    [JsonIgnore]
+    public string CreatedAtPktDisplay => TimeHelper.ToPktString(CreatedAtUtc, "yyyy-MM-dd HH:mm");
+
+    [NotMapped]
+    [JsonIgnore]
+    public string UpdatedAtPktDisplay => TimeHelper.ToPktString(UpdatedAtUtc, "yyyy-MM-dd HH:mm");
+
+    [NotMapped]
+    [JsonIgnore]
+    public string LastEnrichedAtPktDisplay => LastEnrichedAtUtc.HasValue ? $"{TimeHelper.ToPktString(LastEnrichedAtUtc.Value, "yyyy-MM-dd HH:mm")} PKT" : "Never";
+
     // Sync & Soft Delete
     public bool IsDeleted { get; set; } = false;
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;

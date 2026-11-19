@@ -714,7 +714,7 @@
                                       VerticalScrollBarVisibility="Auto"
                                       BorderThickness="0">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Timestamp (UTC)" Binding="{Binding CreatedAtUtc, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Width="140"/>
+                                    <DataGridTextColumn Header="Timestamp (PKT)" Binding="{Binding CreatedAtPktDisplay}" Width="150"/>
                                     <DataGridTextColumn Header="Target URL" Binding="{Binding TargetUrl}" Width="2*"/>
                                     <DataGridTextColumn Header="Overall Score" Binding="{Binding OverallScore, StringFormat='{}{0}%'}" Width="100"/>
                                     <DataGridTextColumn Header="Security" Binding="{Binding SecurityScore, StringFormat='{}{0}%'}" Width="90"/>
@@ -830,7 +830,7 @@
                                 <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding HistoricalAuditsForBusiness}" SelectedItem="{Binding SelectedHistoricalAudit}" Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#334155" CornerRadius="6">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="m:WebsiteAudit">
-                                            <TextBlock Text="{Binding CreatedAtUtc, StringFormat='Audit on {0:yyyy-MM-dd HH:mm} UTC'}" />
+                                            <TextBlock Text="{Binding CreatedAtPktDisplay, StringFormat='Audit on {0} PKT'}" />
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>

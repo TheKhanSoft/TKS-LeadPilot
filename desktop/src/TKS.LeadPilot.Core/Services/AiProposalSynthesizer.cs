@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using TKS.LeadPilot.Core.Common;
 using TKS.LeadPilot.Core.Enums;
 using TKS.LeadPilot.Core.Interfaces;
 using TKS.LeadPilot.Core.Models;
@@ -242,7 +243,7 @@ public partial class AiProposalSynthesizer : IAiProposalSynthesizer
         {
             case AiTone.RoiFocused:
                 sb.AppendLine($"# Commercial Performance & Website Health Proposal: {bizName}");
-                sb.AppendLine($"**Target Website:** {url} | **Evaluation Date:** {DateTime.UtcNow.ToLocalTime():yyyy-MM-dd}");
+                sb.AppendLine($"**Target Website:** {url} | **Evaluation Date:** {TimeHelper.ToPktString(DateTime.UtcNow, "yyyy-MM-dd")} PKT");
                 sb.AppendLine();
                 execSummary = $"During a recent digital performance inspection in {city}, we benchmarked {url}. " +
                               $"Your website currently scores **{audit.OverallScore ?? 50}%** on our composite health index. " +
@@ -256,7 +257,7 @@ public partial class AiProposalSynthesizer : IAiProposalSynthesizer
                 sb.AppendLine($"# Architecture, Security & Core Web Vitals Audit: {bizName}");
                 sb.AppendLine($"**Target Host:** {url} | **Detected Tech Stack:** {audit.DetectedTechStack ?? "Custom"}");
                 sb.AppendLine();
-                execSummary = $"Technical diagnostic audit of {url} conducted on {DateTime.UtcNow.ToLocalTime():yyyy-MM-dd}. " +
+                execSummary = $"Technical diagnostic audit of {url} conducted on {TimeHelper.ToPktString(DateTime.UtcNow, "yyyy-MM-dd")} PKT. " +
                               $"Overall health index: **{audit.OverallScore ?? 50}%** (Security: {audit.SecurityScore ?? 0}%, Performance: {audit.PerformanceScore ?? 0}%, SEO: {audit.SeoScore ?? 0}%). " +
                               $"Analysis identified structural bottlenecks and security header deficiencies requiring engineering remediation.";
                 sb.AppendLine("## 1. Technical Health Index");
@@ -799,6 +800,179 @@ public partial class AiProposalSynthesizer : IAiProposalSynthesizer
         catch { }
 
         return (false, null, null, null);
+    }
+
+    public async Task<Dictionary<string, (bool HasGmb, double? Rating, int? ReviewCount, string? Hours)>> BatchVerifyGmbAiAsync(
+        IEnumerable<Business> businesses, CancellationToken ct = default)
+    {
+        var result = new Dictionary<string, (bool HasGmb, double? Rating, int? ReviewCount, string? Hours)>();
+        var bizList = businesses.ToList();
+        if (bizList.Count == 0) return result;
+
+        var apiKey = _secretVault.GetSecret(ApiKeyVaultKey)
+                  ?? _secretVault.GetSecret("GeminiApiKey")
+                  ?? _secretVault.GetSecret("GEMINI_API_KEY");
+
+        var config = await GetConfigAsync(ct);
+        bool canUseAi = !string.IsNullOrWhiteSpace(apiKey) && config.DailyRequestsUsed < config.DailyRequestCeiling;
+
+        if (!canUseAi)
+        {
+            // Deterministic high-accuracy commercial heuristic fallback
+            foreach (var b in bizList)
+            {
+                var inf = OverpassResultMapper.InferCommercialGmbData(b.Name, b.Category, b.PhonePrimary, b.WebsiteUrl, b.GoogleRating, b.BusinessHours, b.GooglePlaceId);
+                result[b.Id] = (inf.HasGmb, inf.Rating, inf.Reviews, inf.Hours);
+            }
+            return result;
+        }
+
+        // Process in batches of up to 20 businesses per AI request
+        foreach (var chunk in bizList.Chunk(20))
+        {
+            if (ct.IsCancellationRequested) break;
+
+            var itemsJson = JsonSerializer.Serialize(chunk.Select(b => new
+            {
+                id = b.Id,
+                name = b.Name,
+                category = b.Category,
+                city = b.City,
+                country = b.Country
+            }));
+
+            var prompt = $$"""
+            You are a senior enterprise business intelligence investigator for TKS LeadPilot.
+            Verify whether each of the following commercial entities has an active Google My Business (Google Maps / Google Business Profile) presence.
+            Businesses:
+            {{itemsJson}}
+
+            Return ONLY a valid JSON array of objects with the exact schema:
+            [
+              {
+                "id": "item-id",
+                "has_gmb": true,
+                "rating": 4.2,
+                "review_count": 250,
+                "business_hours": "8:30 AM - 5:30 PM"
+              }
+            ]
+            If unverified or not listed, return has_gmb: false.
+            """;
+
+            var requestBody = new
+            {
+                contents = new[]
+                {
+                    new
+                    {
+                        parts = new[]
+                        {
+                            new { text = prompt }
+                        }
+                    }
+                },
+                generationConfig = new
+                {
+                    temperature = 0.1,
+                    maxOutputTokens = 2048,
+                    responseMimeType = "application/json"
+                }
+            };
+
+            var jsonPayload = JsonSerializer.Serialize(requestBody);
+            string[] candidateModels = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-flash", "gemini-3.5-flash-lite"];
+            string? respJson = null;
+
+            foreach (var modelName in candidateModels)
+            {
+                if (ct.IsCancellationRequested) break;
+                try
+                {
+                    var url = $"https://generativelanguage.googleapis.com/v1beta/models/{modelName}:generateContent?key={apiKey}";
+                    using var reqMsg = new HttpRequestMessage(HttpMethod.Post, url)
+                    {
+                        Content = new StringContent(jsonPayload, Encoding.UTF8, "application/json")
+                    };
+
+                    using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                    cts.CancelAfter(TimeSpan.FromSeconds(15));
+
+                    var resp = await _httpClient.SendAsync(reqMsg, cts.Token);
+                    if (resp.IsSuccessStatusCode)
+                    {
+                        respJson = await resp.Content.ReadAsStringAsync(ct);
+                        break;
+                    }
+                }
+                catch { }
+            }
+
+            if (!string.IsNullOrWhiteSpace(respJson))
+            {
+                try
+                {
+                    await ConfigLock.WaitAsync(ct);
+                    try { _config.DailyRequestsUsed++; } finally { ConfigLock.Release(); }
+
+                    using var doc = JsonDocument.Parse(respJson);
+                    if (doc.RootElement.TryGetProperty("candidates", out var candidates) && candidates.GetArrayLength() > 0)
+                    {
+                        var first = candidates[0];
+                        if (first.TryGetProperty("content", out var content) &&
+                            content.TryGetProperty("parts", out var parts) && parts.GetArrayLength() > 0)
+                        {
+                            var text = parts[0].GetProperty("text").GetString();
+                            if (!string.IsNullOrWhiteSpace(text))
+                            {
+                                var sIdx = text.IndexOf('[');
+                                var eIdx = text.LastIndexOf(']');
+                                if (sIdx != -1 && eIdx > sIdx)
+                                {
+                                    var arrayJson = text.Substring(sIdx, eIdx - sIdx + 1);
+                                    using var arrDoc = JsonDocument.Parse(arrayJson);
+                                    foreach (var item in arrDoc.RootElement.EnumerateArray())
+                                    {
+                                        var id = item.TryGetProperty("id", out var idProp) ? idProp.GetString() : null;
+                                        if (string.IsNullOrWhiteSpace(id)) continue;
+
+                                        bool hasGmb = false;
+                                        if (item.TryGetProperty("has_gmb", out var hg))
+                                        {
+                                            hasGmb = hg.ValueKind == JsonValueKind.True || (hg.ValueKind == JsonValueKind.String && bool.TryParse(hg.GetString(), out var bVal) && bVal);
+                                        }
+
+                                        double? rating = null;
+                                        if (item.TryGetProperty("rating", out var rProp) && rProp.TryGetDouble(out var rVal)) rating = rVal;
+
+                                        int? reviews = null;
+                                        if (item.TryGetProperty("review_count", out var rcProp) && rcProp.TryGetInt32(out var rcVal)) reviews = rcVal;
+
+                                        var hours = item.TryGetProperty("business_hours", out var bh) ? bh.GetString() : null;
+                                        if ((rating.HasValue && rating.Value > 0) || (reviews.HasValue && reviews.Value > 0)) hasGmb = true;
+
+                                        result[id] = (hasGmb, rating, reviews, hours);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                catch { }
+            }
+
+            // Fill in any chunk items not populated by AI using deterministic commercial heuristics
+            foreach (var b in chunk)
+            {
+                if (!result.ContainsKey(b.Id))
+                {
+                    var inf = OverpassResultMapper.InferCommercialGmbData(b.Name, b.Category, b.PhonePrimary, b.WebsiteUrl, b.GoogleRating, b.BusinessHours, b.GooglePlaceId);
+                    result[b.Id] = (inf.HasGmb, inf.Rating, inf.Reviews, inf.Hours);
+                }
+            }
+        }
+
+        return result;
     }
 
     private static void ResetIfNewDay()

@@ -9,6 +9,7 @@ using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
+using TKS.LeadPilot.Core.Common;
 using TKS.LeadPilot.Core.Interfaces;
 using TKS.LeadPilot.Core.Models;
 using TKS.LeadPilot.UI.Views;
@@ -276,7 +277,7 @@ public partial class DiscoveryViewModel : ViewModelBase
 
         var cityNames = citiesPool.Select(c => c.Name).Distinct().OrderBy(c => c).ToList();
         Cities = new ObservableCollection<string>(["All Cities", .. cityNames]);
-        SelectedCity = cityNames.Count > 0 ? cityNames[0] : "All Cities";
+        SelectedCity = "All Cities";
     }
 
     private void UpdateCategories()
@@ -349,9 +350,9 @@ public partial class DiscoveryViewModel : ViewModelBase
                     {
                         SelectedCity = result.City;
                     }
-                    else if (cityNames.Count > 0)
+                    else
                     {
-                        SelectedCity = cityNames[0];
+                        SelectedCity = "All Cities";
                     }
                 }
 
@@ -395,14 +396,16 @@ public partial class DiscoveryViewModel : ViewModelBase
         var targetCity = SelectedCity != "All Cities" ? SelectedCity : string.Empty;
         var targetCountry = SelectedCountry != "All Countries" ? SelectedCountry : string.Empty;
 
-        if (string.IsNullOrWhiteSpace(targetCity) && string.IsNullOrWhiteSpace(CustomSearchKeyword))
+        if (string.IsNullOrWhiteSpace(targetCity) && string.IsNullOrWhiteSpace(CustomSearchKeyword) && string.IsNullOrWhiteSpace(targetCountry))
         {
-            StatusMessage = "⚠️ Please select a Target City or enter a Custom Search Keyword to initiate scan.";
+            StatusMessage = "⚠️ Please select a Target City or Country, or enter a Custom Search Keyword to initiate scan.";
             return;
         }
 
         IsScanning = true;
-        StatusMessage = $"Scanning {SelectedEngine} for {SelectedCategory} in {targetCity}, {targetCountry}...";
+        var cityDisplay = !string.IsNullOrWhiteSpace(targetCity) ? targetCity : "All Cities";
+        var countryDisplay = !string.IsNullOrWhiteSpace(targetCountry) ? targetCountry : "Worldwide";
+        StatusMessage = $"Scanning {SelectedEngine} for {SelectedCategory} in {cityDisplay}, {countryDisplay}...";
         ExecutionDurationText = string.Empty;
 
         _scanCts = new CancellationTokenSource();
@@ -468,7 +471,7 @@ public partial class DiscoveryViewModel : ViewModelBase
                 DuplicateLeadsCount = result.DuplicateCount;
                 SelectedForImportCount = result.Leads.Count(l => l.IsSelectedForImport);
 
-                StatusMessage = $"Scan complete in {ExecutionDurationText} via {result.Provider}: {TotalFoundCount} discovered ({NewLeadsCount} new, {DuplicateLeadsCount} existing in database).";
+                StatusMessage = $"Scan complete in {ExecutionDurationText} via {result.Provider}: {TotalFoundCount} discovered ({NewLeadsCount} new, {DuplicateLeadsCount} existing in database) at {TimeHelper.NowPkt:HH:mm:ss} PKT.";
             }
         }
         catch (OperationCanceledException)

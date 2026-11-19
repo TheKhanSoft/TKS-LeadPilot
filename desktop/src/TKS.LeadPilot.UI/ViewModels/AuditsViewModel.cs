@@ -10,6 +10,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using TKS.LeadPilot.Core.Common;
 using TKS.LeadPilot.Core.Enums;
 using TKS.LeadPilot.Core.Interfaces;
 using TKS.LeadPilot.Core.Models;
@@ -354,7 +355,7 @@ public partial class AuditsViewModel : ViewModelBase
             sb.AppendLine($"# TKS Website Intelligence & Deep Technical Audit Report");
             sb.AppendLine($"**Organization:** {SelectedBusiness?.Name ?? "Target Enterprise"}");
             sb.AppendLine($"**Target URL:** {CurrentAudit.TargetUrl}");
-            sb.AppendLine($"**Audit Date:** {CurrentAudit.CreatedAtUtc.ToLocalTime():yyyy-MM-dd HH:mm:ss} (Local)");
+            sb.AppendLine($"**Audit Date:** {TimeHelper.ToPktString(CurrentAudit.CreatedAtUtc)} PKT");
             sb.AppendLine($"**Audit Engine:** TKS LeadPilot Native Inspector v1.1.0");
             sb.AppendLine();
             sb.AppendLine("---");
@@ -437,7 +438,7 @@ public partial class AuditsViewModel : ViewModelBase
             var exportDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
             if (!Directory.Exists(exportDir)) exportDir = AppContext.BaseDirectory;
 
-            var filename = $"TKS_Audit_{SanitizeFilename(SelectedBusiness?.Name ?? "Website")}_{DateTime.Now:yyyyMMdd}.md";
+            var filename = $"TKS_Audit_{SanitizeFilename(SelectedBusiness?.Name ?? "Website")}_{TimeHelper.NowPkt:yyyyMMdd_HHmmss}_PKT.md";
             var path = Path.Combine(exportDir, filename);
             await File.WriteAllTextAsync(path, sb.ToString(), Encoding.UTF8);
 
@@ -554,7 +555,7 @@ public partial class AuditsViewModel : ViewModelBase
             var exportDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
             if (!Directory.Exists(exportDir)) exportDir = AppContext.BaseDirectory;
 
-            var filename = $"TKS_Proposal_{SanitizeFilename(SelectedBusiness?.Name ?? "Client")}_{DateTime.Now:yyyyMMdd_HHmm}.md";
+            var filename = $"TKS_Proposal_{SanitizeFilename(SelectedBusiness?.Name ?? "Client")}_{TimeHelper.NowPkt:yyyyMMdd_HHmmss}_PKT.md";
             var path = Path.Combine(exportDir, filename);
             await File.WriteAllTextAsync(path, GeneratedProposalMarkdown, Encoding.UTF8);
 

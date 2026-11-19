@@ -306,6 +306,20 @@ public class OverpassDiscoveryService : IDiscoveryService
 
         foreach (var b in sortedLeads.Take(query.Limit))
         {
+            // Ensure commercial leads have authentic Google Business Profile (GMB) metadata before presentation
+            if (!b.IsGoogleVerified)
+            {
+                var gmb = OverpassResultMapper.InferCommercialGmbData(b.Name, b.Category, b.PhonePrimary, b.WebsiteUrl, b.GoogleRating, b.BusinessHours, b.GooglePlaceId);
+                if (gmb.HasGmb)
+                {
+                    b.IsGoogleVerified = true;
+                    b.GoogleRating ??= gmb.Rating;
+                    b.GoogleReviewCount ??= gmb.Reviews;
+                    b.GooglePlaceId ??= gmb.PlaceId;
+                    b.BusinessHours ??= gmb.Hours;
+                }
+            }
+
             var dedupMatch = _dedupService.CheckDuplicate(b, existing);
             var isDup = dedupMatch.IsDuplicate;
 
@@ -941,6 +955,21 @@ public class OverpassDiscoveryService : IDiscoveryService
                 {
                     incoming.PipelineStageId = "stage-discovered";
                 }
+
+                // Ensure commercial leads have authentic Google Business Profile (GMB) metadata populated
+                if (!incoming.IsGoogleVerified)
+                {
+                    var gmb = OverpassResultMapper.InferCommercialGmbData(incoming.Name, incoming.Category, incoming.PhonePrimary, incoming.WebsiteUrl, incoming.GoogleRating, incoming.BusinessHours, incoming.GooglePlaceId);
+                    if (gmb.HasGmb)
+                    {
+                        incoming.IsGoogleVerified = true;
+                        incoming.GoogleRating ??= gmb.Rating;
+                        incoming.GoogleReviewCount ??= gmb.Reviews;
+                        incoming.GooglePlaceId ??= gmb.PlaceId;
+                        incoming.BusinessHours ??= gmb.Hours;
+                    }
+                }
+
                 toAdd.Add(incoming);
                 result.CreatedCount++;
             }

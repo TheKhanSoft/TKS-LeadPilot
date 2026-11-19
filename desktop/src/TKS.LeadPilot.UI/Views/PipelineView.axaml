@@ -198,7 +198,7 @@
                                                                   Margin="0,0,10,0"/>
                                                         <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
                                                             <TextBlock Text="{Binding Title}" FontSize="12" Foreground="#F8FAFC" FontWeight="SemiBold"/>
-                                                            <TextBlock Text="{Binding DueDateUtc, StringFormat='Due: {0:yyyy-MM-dd}'}" FontSize="10" Foreground="#64748B"/>
+                                                            <TextBlock Text="{Binding DueDatePktDisplay, StringFormat='Due: {0}'}" FontSize="10" Foreground="#64748B"/>
                                                         </StackPanel>
                                                         <Button Grid.Column="2" Content="✕" 
                                                                 Command="{Binding ((vm:PipelineViewModel)DataContext).DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
@@ -233,7 +233,7 @@
                                                     <Grid ColumnDefinitions="*,Auto">
                                                         <StackPanel Grid.Column="0" Spacing="2">
                                                             <TextBlock Text="{Binding Content}" FontSize="12" Foreground="#F8FAFC" TextWrapping="Wrap"/>
-                                                            <TextBlock Text="{Binding CreatedAtUtc, StringFormat='By {0} on {1:yyyy-MM-dd HH:mm}'}" FontSize="10" Foreground="#64748B"/>
+                                                            <TextBlock Text="{Binding FormattedPktTimestamp}" FontSize="10" Foreground="#64748B"/>
                                                         </StackPanel>
                                                         <Button Grid.Column="1" Content="✕" 
                                                                 Command="{Binding ((vm:PipelineViewModel)DataContext).DeleteNoteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"

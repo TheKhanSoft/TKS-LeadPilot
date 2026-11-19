@@ -10,6 +10,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using TKS.LeadPilot.Core.Common;
 using TKS.LeadPilot.Core.Interfaces;
 using TKS.LeadPilot.Core.Models;
 using TKS.LeadPilot.UI.Views;
@@ -426,8 +427,8 @@ public partial class LandingPageStudioViewModel : ViewModelBase
             catch { }
 
             // Timestamped unique file name guarantees browser cache-busting
-            var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            var filePath = Path.Combine(tempDir, $"{cleanName}_LandingPage_{timestamp}.html");
+            var timestamp = TimeHelper.NowPkt.ToString("yyyyMMdd_HHmmss");
+            var filePath = Path.Combine(tempDir, $"{cleanName}_LandingPage_{timestamp}_PKT.html");
 
             // Inject anti-cache meta headers into HTML so browser never serves stale static assets
             var html = CurrentResult.GeneratedHtml;
@@ -446,7 +447,7 @@ public partial class LandingPageStudioViewModel : ViewModelBase
                 UseShellExecute = true
             });
 
-            StatusMessage = $"🌐 Fresh landing page preview opened in web browser ({Path.GetFileName(filePath)} at {DateTime.Now:T})...";
+            StatusMessage = $"🌐 Fresh landing page preview opened in web browser ({Path.GetFileName(filePath)} at {TimeHelper.NowPkt:HH:mm:ss} PKT)...";
         }
         catch (Exception ex)
         {
@@ -489,7 +490,7 @@ public partial class LandingPageStudioViewModel : ViewModelBase
             if (!Directory.Exists(downloadsDir)) downloadsDir = AppContext.BaseDirectory;
 
             var cleanName = string.Concat(BusinessName.Where(char.IsLetterOrDigit));
-            var filename = $"{cleanName}_LandingPage_{DateTime.Now:yyyyMMdd_HHmmss}.html";
+            var filename = $"{cleanName}_LandingPage_{TimeHelper.NowPkt:yyyyMMdd_HHmmss}_PKT.html";
             var filePath = Path.Combine(downloadsDir, filename);
 
             await File.WriteAllTextAsync(filePath, CurrentResult.GeneratedHtml);

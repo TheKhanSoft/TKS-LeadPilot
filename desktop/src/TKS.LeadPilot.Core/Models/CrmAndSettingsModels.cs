@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+using TKS.LeadPilot.Core.Common;
 using TKS.LeadPilot.Core.Enums;
 
 namespace TKS.LeadPilot.Core.Models;
@@ -57,6 +59,9 @@ public class SalesTask
     public bool IsCompleted { get; set; } = false;
     public DateTime? CompletedAtUtc { get; set; }
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
+
+    [NotMapped]
+    public string DueDatePktDisplay => DueDateUtc.HasValue ? $"{TimeHelper.ToPktString(DueDateUtc.Value, "yyyy-MM-dd")} PKT" : "No due date";
 }
 
 public class SalesNote
@@ -69,6 +74,9 @@ public class SalesNote
     public string AuthorName { get; set; } = "Operator";
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAtUtc { get; set; } = DateTime.UtcNow;
+
+    [NotMapped]
+    public string FormattedPktTimestamp => $"{AuthorName} on {TimeHelper.ToPktString(CreatedAtUtc, "yyyy-MM-dd HH:mm")} PKT";
 }
 
 public class AppSetting

@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using TKS.LeadPilot.Core.Common;
 using TKS.LeadPilot.Core.Enums;
 
 namespace TKS.LeadPilot.Core.Models;
@@ -62,6 +63,14 @@ public class WebsiteAudit
     public List<WebsiteAuditFinding> Findings { get; set; } = [];
 
     // UI Helpers (Transient, NotMapped, JsonIgnore)
+    [NotMapped]
+    [JsonIgnore]
+    public string CreatedAtPktDisplay => TimeHelper.ToPktString(CreatedAtUtc, "yyyy-MM-dd HH:mm");
+
+    [NotMapped]
+    [JsonIgnore]
+    public string CompletedAtPktDisplay => CompletedAtUtc.HasValue ? TimeHelper.ToPktString(CompletedAtUtc.Value, "yyyy-MM-dd HH:mm") : "-";
+
     [NotMapped]
     [JsonIgnore]
     public string OverallScoreDisplay => OverallScore.HasValue ? $"{OverallScore}%" : "--";
