@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -897,11 +898,152 @@ public partial class DiscoveryViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    public async Task CopyFullAddressAsync(DiscoveredLead? lead)
+    {
+        var b = lead?.Business ?? SelectedLead?.Business;
+        if (b == null) return;
+
+        var addr = b.FullAddress;
+        if (string.IsNullOrWhiteSpace(addr) || addr == "—")
+        {
+            StatusMessage = $"⚠️ No street address registered for '{b.Name}'.";
+            return;
+        }
+
+        if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.Clipboard != null)
+        {
+            await desktop.MainWindow.Clipboard.SetTextAsync(addr);
+            StatusMessage = $"📍 Full address for \"{b.Name}\" copied to clipboard!";
+        }
+    }
+
+    [RelayCommand]
+    public async Task FindFullAddressAsync(DiscoveredLead? lead)
+    {
+        var targetLead = lead ?? SelectedLead;
+        var b = targetLead?.Business;
+        if (b == null) return;
+
+        try
+        {
+            StatusMessage = $"🔍 Resolving full street address for '{b.Name}'...";
+
+            DetailedAddressResult? res = null;
+            if (b.Latitude.HasValue && b.Longitude.HasValue)
+            {
+                res = await _geoLocationService.ReverseGeocodeAsync(b.Latitude.Value, b.Longitude.Value);
+            }
+
+            if (res == null || string.IsNullOrWhiteSpace(res.AddressLine1))
+            {
+                res = await _geoLocationService.FindAddressAsync(b.Name, b.City, b.Country);
+            }
+
+            if (res != null && (!string.IsNullOrWhiteSpace(res.AddressLine1) || !string.IsNullOrWhiteSpace(res.FullAddress)))
+            {
+                if (!string.IsNullOrWhiteSpace(res.AddressLine1)) b.AddressLine1 = res.AddressLine1;
+                else if (!string.IsNullOrWhiteSpace(res.FullAddress)) b.AddressLine1 = res.FullAddress;
+
+                if (!string.IsNullOrWhiteSpace(res.Locality) && string.IsNullOrWhiteSpace(b.Locality)) b.Locality = res.Locality;
+                if (!string.IsNullOrWhiteSpace(res.PostalCode) && string.IsNullOrWhiteSpace(b.PostalCode)) b.PostalCode = res.PostalCode;
+                if (res.Latitude.HasValue && !b.Latitude.HasValue) b.Latitude = res.Latitude;
+                if (res.Longitude.HasValue && !b.Longitude.HasValue) b.Longitude = res.Longitude;
+
+                b.NotifyAddressChanged();
+                StatusMessage = $"📍 Found full address for '{b.Name}': {b.FullAddress}";
+            }
+            else
+            {
+                StatusMessage = $"ℹ️ Location for '{b.Name}' is {b.FullAddress}. No further street-level detail found.";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Address lookup error: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public async Task ExportDiscoveredLeadsCsvAsync()
+    {
+        if (DiscoveredLeads == null || DiscoveredLeads.Count == 0)
+        {
+            StatusMessage = "⚠️ No discovered leads to export. Run a scan first.";
+            return;
+        }
+
+        try
+        {
+            var csvImporter = _serviceProvider?.GetService(typeof(ICsvImporterService)) as ICsvImporterService;
+            var businesses = DiscoveredLeads.Select(l => l.Business).ToList();
+
+            var exportDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+            if (!Directory.Exists(exportDir)) exportDir = AppContext.BaseDirectory;
+
+            var filename = $"TKS_LeadPilot_DiscoveredLeads_{TimeHelper.NowPkt:yyyyMMdd_HHmmss}_PKT.csv";
+            var filePath = Path.Combine(exportDir, filename);
+
+            if (csvImporter != null)
+            {
+                var bytes = await csvImporter.ExportToCsvAsync(businesses);
+                await File.WriteAllBytesAsync(filePath, bytes);
+            }
+            else
+            {
+                var sb = new System.Text.StringBuilder();
+                sb.AppendLine("Id,Name,Category,FullAddress,AddressLine1,Locality,City,StateProvince,PostalCode,Country,PhonePrimary,EmailPrimary,WebsiteUrl,SourceEngine");
+                foreach (var b in businesses)
+                {
+                    sb.AppendLine($"\"{b.Id}\",\"{b.Name.Replace("\"", "\"\"")}\",\"{b.Category.Replace("\"", "\"\"")}\",\"{b.FullAddress.Replace("\"", "\"\"")}\",\"{b.AddressLine1?.Replace("\"", "\"\"")}\",\"{b.Locality?.Replace("\"", "\"\"")}\",\"{b.City.Replace("\"", "\"\"")}\",\"{b.StateProvince?.Replace("\"", "\"\"")}\",\"{b.PostalCode?.Replace("\"", "\"\"")}\",\"{b.Country.Replace("\"", "\"\"")}\",\"{b.PhonePrimary}\",\"{b.EmailPrimary}\",\"{b.WebsiteUrl}\",\"{b.SourceProvider}\"");
+                }
+                await File.WriteAllTextAsync(filePath, sb.ToString(), System.Text.Encoding.UTF8);
+            }
+
+            StatusMessage = $"📥 Exported {businesses.Count} discovered leads with full addresses to: {filePath}";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Export Error: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public async Task ExportDiscoveredLeadsJsonAsync()
+    {
+        if (DiscoveredLeads == null || DiscoveredLeads.Count == 0)
+        {
+            StatusMessage = "⚠️ No discovered leads to export. Run a scan first.";
+            return;
+        }
+
+        try
+        {
+            var exportDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+            if (!Directory.Exists(exportDir)) exportDir = AppContext.BaseDirectory;
+
+            var filename = $"TKS_LeadPilot_DiscoveredLeads_{TimeHelper.NowPkt:yyyyMMdd_HHmmss}_PKT.json";
+            var filePath = Path.Combine(exportDir, filename);
+
+            var businesses = DiscoveredLeads.Select(l => l.Business).ToList();
+            var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
+            var json = System.Text.Json.JsonSerializer.Serialize(businesses, options);
+            await File.WriteAllTextAsync(filePath, json);
+
+            StatusMessage = $"📥 Exported {businesses.Count} discovered leads to: {filePath}";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Export Error: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
     public async Task CopyContactCardAsync(DiscoveredLead? lead)
     {
         var b = lead?.Business ?? SelectedLead?.Business;
         if (b == null) return;
 
+        var addr = !string.IsNullOrWhiteSpace(b.FullAddress) && b.FullAddress != "—" ? b.FullAddress : $"{b.AddressLine1 ?? "N/A"}, {b.City}, {b.Country}";
         var card = $"BUSINESS CONTACT CARD\n" +
                    $"=====================\n" +
                    $"Name:     {b.Name}\n" +
@@ -909,7 +1051,7 @@ public partial class DiscoveryViewModel : ViewModelBase
                    $"Phone:    {b.PhonePrimary ?? "N/A"}\n" +
                    $"Email:    {b.EmailPrimary ?? "N/A"}\n" +
                    $"Website:  {b.WebsiteUrl ?? "N/A"}\n" +
-                   $"Address:  {b.AddressLine1 ?? "N/A"}, {b.City}, {b.Country}\n" +
+                   $"Address:  {addr}\n" +
                    $"Source:   {b.SourceProvider ?? "Discovery Station"}";
 
         if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.Clipboard != null)

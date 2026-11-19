@@ -289,12 +289,12 @@
                                 </Border>
 
                                 <!-- In-App Simulated Landing Page Hero Canvas -->
-                                <Border Grid.Row="1" Background="#070D18" Padding="20">
-                                    <StackPanel Spacing="16">
+                                <Border Grid.Row="1" Background="{Binding PreviewBgColor}" Padding="20">
+                                    <StackPanel Spacing="14">
                                         <!-- Simulated Web Navbar -->
                                         <Grid ColumnDefinitions="Auto,*,Auto">
                                             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                                <Border Background="#0284C7" CornerRadius="6" Width="24" Height="24">
+                                                <Border Background="{Binding PreviewPrimaryColor}" CornerRadius="6" Width="24" Height="24">
                                                     <TextBlock Text="★" FontSize="13" Foreground="#FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                 </Border>
                                                 <TextBlock Text="{Binding CurrentResult.BusinessName, FallbackValue='Horizon Clinic'}" FontSize="13" FontWeight="Bold" Foreground="#F8FAFC" VerticalAlignment="Center"/>
@@ -307,19 +307,19 @@
                                                 <TextBlock Text="FAQ" FontSize="10.5" Foreground="#94A3B8"/>
                                             </StackPanel>
 
-                                            <Border Grid.Column="2" Background="#064E3B" BorderBrush="#059669" BorderThickness="1" CornerRadius="14" Padding="8,3">
-                                                <TextBlock Text="{Binding PhonePrimary, StringFormat='📞 {0}'}" FontSize="10.5" FontWeight="SemiBold" Foreground="#34D399"/>
+                                            <Border Grid.Column="2" Background="{Binding PreviewBadgeBg}" BorderBrush="{Binding PreviewBadgeBorder}" BorderThickness="1" CornerRadius="14" Padding="8,3">
+                                                <TextBlock Text="{Binding PhonePrimary, StringFormat='📞 {0}'}" FontSize="10.5" FontWeight="SemiBold" Foreground="{Binding PreviewBadgeText}"/>
                                             </Border>
                                         </Grid>
 
-                                        <!-- Hero Content -->
-                                        <Border Background="#0D1626" BorderBrush="#1E2F48" BorderThickness="1" CornerRadius="10" Padding="20">
+                                        <!-- Hero Content Module -->
+                                        <Border Background="{Binding PreviewCardBgColor}" BorderBrush="{Binding PreviewBadgeBorder}" BorderThickness="1" CornerRadius="10" Padding="18" IsVisible="{Binding HasHeroModule}">
                                             <StackPanel Spacing="10">
                                                 <!-- Authority Badge -->
-                                                <Border Background="#1E293B" CornerRadius="12" Padding="8,3" HorizontalAlignment="Left">
+                                                <Border Background="{Binding PreviewBadgeBg}" BorderBrush="{Binding PreviewBadgeBorder}" BorderThickness="1" CornerRadius="12" Padding="8,3" HorizontalAlignment="Left">
                                                     <StackPanel Orientation="Horizontal" Spacing="5">
                                                         <TextBlock Text="⭐" FontSize="10" VerticalAlignment="Center"/>
-                                                        <TextBlock Text="{Binding City, StringFormat='Premier Rated Local Partner in {0}'}" FontSize="10" FontWeight="Bold" Foreground="#38BDF8"/>
+                                                        <TextBlock Text="{Binding City, StringFormat='Premier Rated Local Partner in {0}'}" FontSize="10" FontWeight="Bold" Foreground="{Binding PreviewBadgeText}"/>
                                                     </StackPanel>
                                                 </Border>
 
@@ -332,7 +332,7 @@
                                                            FontSize="11.5" Foreground="#CBD5E1" TextWrapping="Wrap" MaxWidth="720"/>
 
                                                 <!-- Hero Action CTAs -->
-                                                <WrapPanel Margin="0,6,0,0">
+                                                <WrapPanel Margin="0,4,0,0">
                                                     <Button Command="{Binding OpenInBrowserCommand}" Classes="btn-accent" Padding="16,8" FontSize="11" FontWeight="Bold" Margin="0,0,10,6">
                                                         <TextBlock Text="{Binding CurrentResult.CallToActionText, FallbackValue='Claim Free Consultation'}"/>
                                                     </Button>
@@ -344,8 +344,8 @@
                                                     </Button>
                                                 </WrapPanel>
 
-                                                <!-- Bespoke Generated Services Pills -->
-                                                <ItemsControl ItemsSource="{Binding PreviewServicesList}" Margin="0,4,0,0">
+                                                <!-- Bespoke Generated Services Pills (Hero Embedded) -->
+                                                <ItemsControl ItemsSource="{Binding PreviewServicesList}" Margin="0,2,0,0" IsVisible="{Binding HasServicesModule}">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
                                                             <WrapPanel/>
@@ -361,7 +361,7 @@
                                                 </ItemsControl>
 
                                                 <!-- Dynamic Trust Badges Strip -->
-                                                <Border Background="#070D18" BorderBrush="#1A283D" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,2,0,0">
+                                                <Border Background="#070D18" BorderBrush="#1A283D" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,2,0,0" IsVisible="{Binding HasTrustBarModule}">
                                                     <ItemsControl ItemsSource="{Binding PreviewTrustBadges}">
                                                         <ItemsControl.ItemsPanel>
                                                             <ItemsPanelTemplate>
@@ -378,6 +378,106 @@
                                                         </ItemsControl.ItemTemplate>
                                                     </ItemsControl>
                                                 </Border>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- Before & After / Transformation Case Study Module -->
+                                        <Border Background="{Binding PreviewCardBgColor}" BorderBrush="#1E2F48" BorderThickness="1" CornerRadius="8" Padding="14" IsVisible="{Binding HasBeforeAfterModule}">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <StackPanel Grid.Column="0" Spacing="4">
+                                                    <TextBlock Text="📈 TRANSFORMATION &amp; CASE STUDY" FontSize="10" FontWeight="Bold" Foreground="{Binding PreviewAccentColor}"/>
+                                                    <TextBlock Text="{Binding PreviewCaseStudyTitle}" FontSize="12.5" FontWeight="Bold" Foreground="#F8FAFC"/>
+                                                    <TextBlock Text="{Binding PreviewCaseStudyDetail}" FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                                <Border Grid.Column="1" Background="{Binding PreviewBadgeBg}" BorderBrush="{Binding PreviewBadgeBorder}" BorderThickness="1" CornerRadius="8" Padding="10,6" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding PreviewCaseStudyResult}" FontSize="12" FontWeight="Bold" Foreground="{Binding PreviewBadgeText}"/>
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Leadership & Professional Bio Module -->
+                                        <Border Background="{Binding PreviewCardBgColor}" BorderBrush="#1E2F48" BorderThickness="1" CornerRadius="8" Padding="14" IsVisible="{Binding HasTeamModule}">
+                                            <StackPanel Spacing="5">
+                                                <TextBlock Text="👔 LEADERSHIP &amp; AUTHORITY BIO" FontSize="10" FontWeight="Bold" Foreground="{Binding PreviewAccentColor}"/>
+                                                <TextBlock Text="{Binding PreviewLeaderName}" FontSize="12.5" FontWeight="Bold" Foreground="#F8FAFC"/>
+                                                <TextBlock Text="{Binding PreviewLeaderRole}" FontSize="11" Foreground="{Binding PreviewBadgeText}" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding PreviewLeaderQuote, StringFormat='&quot;{0}&quot;'}" FontSize="11" Foreground="#CBD5E1" FontStyle="Italic" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- Client Testimonials & Social Proof Module -->
+                                        <Border Background="{Binding PreviewCardBgColor}" BorderBrush="#1E2F48" BorderThickness="1" CornerRadius="8" Padding="14" IsVisible="{Binding HasTestimonialsModule}">
+                                            <StackPanel Spacing="6">
+                                                <Grid ColumnDefinitions="*,Auto">
+                                                    <TextBlock Text="⭐ CLIENT TESTIMONIAL &amp; VERIFIED REVIEWS" FontSize="10" FontWeight="Bold" Foreground="{Binding PreviewAccentColor}"/>
+                                                    <TextBlock Grid.Column="1" Text="★★★★★" FontSize="12" Foreground="#FBBF24"/>
+                                                </Grid>
+                                                <TextBlock Text="{Binding PreviewTestimonialQuote, StringFormat='&quot;{0}&quot;'}" FontSize="11.5" Foreground="#F8FAFC" FontStyle="Italic" TextWrapping="Wrap"/>
+                                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                                    <TextBlock Text="{Binding PreviewTestimonialAuthor}" FontSize="11" FontWeight="Bold" Foreground="#38BDF8"/>
+                                                    <TextBlock Text="•" FontSize="11" Foreground="#64748B"/>
+                                                    <TextBlock Text="{Binding PreviewTestimonialRole}" FontSize="10.5" Foreground="#94A3B8"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- Transparent Pricing & Packages Matrix Module -->
+                                        <Border Background="{Binding PreviewCardBgColor}" BorderBrush="#1E2F48" BorderThickness="1" CornerRadius="8" Padding="14" IsVisible="{Binding HasPricingModule}">
+                                            <StackPanel Spacing="8">
+                                                <TextBlock Text="🏷️ TRANSPARENT COMMERCIAL PACKAGES" FontSize="10" FontWeight="Bold" Foreground="{Binding PreviewAccentColor}"/>
+                                                <Grid ColumnDefinitions="*,*">
+                                                    <Border Grid.Column="0" Background="#070D18" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,6,0">
+                                                        <StackPanel Spacing="4">
+                                                            <TextBlock Text="{Binding PreviewPricingTier1}" FontSize="11.5" FontWeight="Bold" Foreground="#F8FAFC"/>
+                                                            <TextBlock Text="✓ Standard SLA • Full scope • Dedicated rep" FontSize="10" Foreground="#94A3B8"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                    <Border Grid.Column="1" Background="{Binding PreviewBadgeBg}" BorderBrush="{Binding PreviewBadgeBorder}" BorderThickness="1" CornerRadius="6" Padding="10" Margin="6,0,0,0">
+                                                        <StackPanel Spacing="4">
+                                                            <TextBlock Text="{Binding PreviewPricingTier2}" FontSize="11.5" FontWeight="Bold" Foreground="{Binding PreviewBadgeText}"/>
+                                                            <TextBlock Text="✓ Priority SLA • VIP deliverables • 24/7 hotline" FontSize="10" Foreground="#CBD5E1"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- Interactive FAQ Accordion Module -->
+                                        <Border Background="{Binding PreviewCardBgColor}" BorderBrush="#1E2F48" BorderThickness="1" CornerRadius="8" Padding="14" IsVisible="{Binding HasFaqModule}">
+                                            <StackPanel Spacing="6">
+                                                <TextBlock Text="❓ FREQUENTLY ASKED QUESTIONS" FontSize="10" FontWeight="Bold" Foreground="{Binding PreviewAccentColor}"/>
+                                                <Border Background="#070D18" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="6" Padding="10">
+                                                    <StackPanel Spacing="4">
+                                                        <TextBlock Text="{Binding PreviewFaqQuestion, StringFormat='Q: {0}'}" FontSize="11.5" FontWeight="Bold" Foreground="#F8FAFC"/>
+                                                        <TextBlock Text="{Binding PreviewFaqAnswer, StringFormat='A: {0}'}" FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- High-Converting Lead Capture Form Module -->
+                                        <Border Background="{Binding PreviewCardBgColor}" BorderBrush="{Binding PreviewBadgeBorder}" BorderThickness="1" CornerRadius="8" Padding="14" IsVisible="{Binding HasLeadFormModule}">
+                                            <StackPanel Spacing="8">
+                                                <TextBlock Text="📝 PRIORITY LEAD INQUIRY &amp; BOOKING" FontSize="10" FontWeight="Bold" Foreground="{Binding PreviewAccentColor}"/>
+                                                <TextBlock Text="{Binding PreviewLeadFormTitle}" FontSize="12.5" FontWeight="Bold" Foreground="#F8FAFC"/>
+                                                <TextBlock Text="{Binding PreviewLeadFormSubtitle}" FontSize="11" Foreground="#94A3B8"/>
+                                                <Grid ColumnDefinitions="*,*,Auto">
+                                                    <Border Grid.Column="0" Background="#070D18" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="6" Padding="8,5" Margin="0,0,6,0">
+                                                        <TextBlock Text="Your Full Name..." FontSize="10.5" Foreground="#64748B"/>
+                                                    </Border>
+                                                    <Border Grid.Column="1" Background="#070D18" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="6" Padding="8,5" Margin="0,0,6,0">
+                                                        <TextBlock Text="Phone / WhatsApp Number..." FontSize="10.5" Foreground="#64748B"/>
+                                                    </Border>
+                                                    <Button Grid.Column="2" Content="Confirm Reservation" Classes="btn-accent" Padding="12,5" FontSize="10.5" FontWeight="Bold"/>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- Floating WhatsApp & Direct Call Widget -->
+                                        <Border Background="#14532D" BorderBrush="#22C55E" BorderThickness="1" CornerRadius="16" Padding="12,6" HorizontalAlignment="Right" IsVisible="{Binding HasWhatsAppModule}">
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <TextBlock Text="💬" FontSize="12"/>
+                                                <TextBlock Text="Direct WhatsApp Hotline" FontSize="11" FontWeight="Bold" Foreground="#86EFAC"/>
                                             </StackPanel>
                                         </Border>
                                     </StackPanel>

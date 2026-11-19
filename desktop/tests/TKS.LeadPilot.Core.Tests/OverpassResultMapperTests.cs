@@ -121,4 +121,47 @@ public class OverpassResultMapperTests
         var businesses = OverpassResultMapper.MapJsonToBusinesses(sampleJson, "Karachi");
         businesses.Should().BeEmpty("unnamed points of interest should be discarded");
     }
+
+    [Fact]
+    public void MapJsonToBusinesses_ParsesExhaustiveOsmAddressTagsAndBuildsFullAddress()
+    {
+        var sampleJson = """
+        {
+          "version": 0.6,
+          "elements": [
+            {
+              "type": "node",
+              "id": 999888,
+              "lat": 31.5204,
+              "lon": 74.3587,
+              "tags": {
+                "name": "Al-Rehman Diagnostic Complex",
+                "amenity": "clinic",
+                "addr:housename": "Al-Rehman Center",
+                "addr:housenumber": "Plot 45",
+                "addr:street": "Main Boulevard",
+                "addr:block": "Block H",
+                "addr:suburb": "Gulberg II",
+                "addr:city": "Lahore",
+                "addr:state": "Punjab",
+                "addr:postcode": "54660",
+                "addr:country": "Pakistan"
+              }
+            }
+          ]
+        }
+        """;
+
+        var businesses = OverpassResultMapper.MapJsonToBusinesses(sampleJson, "Lahore");
+
+        businesses.Should().HaveCount(1);
+        var b = businesses[0];
+        b.Name.Should().Be("Al-Rehman Diagnostic Complex");
+        b.AddressLine1.Should().Contain("Al-Rehman Center");
+        b.AddressLine1.Should().Contain("Plot 45 Main Boulevard");
+        b.AddressLine1.Should().Contain("Block H");
+        b.Locality.Should().Be("Gulberg II");
+        b.PostalCode.Should().Be("54660");
+        b.FullAddress.Should().Be("Al-Rehman Center, Plot 45 Main Boulevard, Block H, Gulberg II, Lahore, Punjab, 54660, Pakistan");
+    }
 }

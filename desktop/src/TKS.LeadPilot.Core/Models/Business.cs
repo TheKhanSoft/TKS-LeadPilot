@@ -20,6 +20,13 @@ public class Business : INotifyPropertyChanged
     private int? _googleReviewCount;
     private string? _businessHours;
     private bool _isGoogleVerified = false;
+    private string? _addressLine1;
+    private string? _addressLine2;
+    private string? _locality;
+    private string _city = string.Empty;
+    private string? _stateProvince;
+    private string? _postalCode;
+    private string _country = "Pakistan";
 
     public string Id { get; set; } = Guid.NewGuid().ToString();
     public string Name { get; set; } = string.Empty;
@@ -29,15 +36,148 @@ public class Business : INotifyPropertyChanged
     public string? Description { get; set; }
     
     // Address
-    public string? AddressLine1 { get; set; }
-    public string? AddressLine2 { get; set; }
-    public string? Locality { get; set; }
-    public string City { get; set; } = string.Empty;
-    public string? StateProvince { get; set; }
-    public string? PostalCode { get; set; }
-    public string Country { get; set; } = "Pakistan";
+    public string? AddressLine1
+    {
+        get => _addressLine1;
+        set
+        {
+            if (_addressLine1 != value)
+            {
+                _addressLine1 = value;
+                OnPropertyChanged(nameof(AddressLine1));
+                OnPropertyChanged(nameof(FullAddress));
+            }
+        }
+    }
+
+    public string? AddressLine2
+    {
+        get => _addressLine2;
+        set
+        {
+            if (_addressLine2 != value)
+            {
+                _addressLine2 = value;
+                OnPropertyChanged(nameof(AddressLine2));
+                OnPropertyChanged(nameof(FullAddress));
+            }
+        }
+    }
+
+    public string? Locality
+    {
+        get => _locality;
+        set
+        {
+            if (_locality != value)
+            {
+                _locality = value;
+                OnPropertyChanged(nameof(Locality));
+                OnPropertyChanged(nameof(FullAddress));
+            }
+        }
+    }
+
+    public string City
+    {
+        get => _city;
+        set
+        {
+            if (_city != value)
+            {
+                _city = value;
+                OnPropertyChanged(nameof(City));
+                OnPropertyChanged(nameof(FullAddress));
+            }
+        }
+    }
+
+    public string? StateProvince
+    {
+        get => _stateProvince;
+        set
+        {
+            if (_stateProvince != value)
+            {
+                _stateProvince = value;
+                OnPropertyChanged(nameof(StateProvince));
+                OnPropertyChanged(nameof(RegionAndCountryDisplay));
+                OnPropertyChanged(nameof(FullAddress));
+            }
+        }
+    }
+
+    public string? PostalCode
+    {
+        get => _postalCode;
+        set
+        {
+            if (_postalCode != value)
+            {
+                _postalCode = value;
+                OnPropertyChanged(nameof(PostalCode));
+                OnPropertyChanged(nameof(FullAddress));
+            }
+        }
+    }
+
+    public string Country
+    {
+        get => _country;
+        set
+        {
+            if (_country != value)
+            {
+                _country = value;
+                OnPropertyChanged(nameof(Country));
+                OnPropertyChanged(nameof(RegionAndCountryDisplay));
+                OnPropertyChanged(nameof(FullAddress));
+            }
+        }
+    }
+
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
+
+    [NotMapped]
+    public string FullAddress
+    {
+        get
+        {
+            var parts = new List<string>();
+            if (!string.IsNullOrWhiteSpace(AddressLine1))
+                parts.Add(AddressLine1.Trim());
+            if (!string.IsNullOrWhiteSpace(AddressLine2) && !parts.Any(p => p.Contains(AddressLine2.Trim(), StringComparison.OrdinalIgnoreCase)))
+                parts.Add(AddressLine2.Trim());
+            if (!string.IsNullOrWhiteSpace(Locality) && !parts.Any(p => p.Contains(Locality.Trim(), StringComparison.OrdinalIgnoreCase)))
+                parts.Add(Locality.Trim());
+            if (!string.IsNullOrWhiteSpace(City) && !parts.Any(p => p.Contains(City.Trim(), StringComparison.OrdinalIgnoreCase)))
+                parts.Add(City.Trim());
+            if (!string.IsNullOrWhiteSpace(StateProvince) && !parts.Any(p => p.Contains(StateProvince.Trim(), StringComparison.OrdinalIgnoreCase)))
+                parts.Add(StateProvince.Trim());
+            if (!string.IsNullOrWhiteSpace(PostalCode) && !parts.Any(p => p.Contains(PostalCode.Trim(), StringComparison.OrdinalIgnoreCase)))
+                parts.Add(PostalCode.Trim());
+            if (!string.IsNullOrWhiteSpace(Country) && !parts.Any(p => p.Contains(Country.Trim(), StringComparison.OrdinalIgnoreCase)))
+                parts.Add(Country.Trim());
+
+            return parts.Count > 0 ? string.Join(", ", parts) : (!string.IsNullOrWhiteSpace(City) ? City : "—");
+        }
+    }
+
+    public void NotifyAddressChanged()
+    {
+        OnPropertyChanged(nameof(AddressLine1));
+        OnPropertyChanged(nameof(AddressLine2));
+        OnPropertyChanged(nameof(Locality));
+        OnPropertyChanged(nameof(City));
+        OnPropertyChanged(nameof(StateProvince));
+        OnPropertyChanged(nameof(PostalCode));
+        OnPropertyChanged(nameof(Country));
+        OnPropertyChanged(nameof(Latitude));
+        OnPropertyChanged(nameof(Longitude));
+        OnPropertyChanged(nameof(RegionAndCountryDisplay));
+        OnPropertyChanged(nameof(FullAddress));
+    }
     
     // Contact
     public string? PhonePrimary { get; set; }
@@ -74,10 +214,12 @@ public class Business : INotifyPropertyChanged
                 _isStarred = value;
                 OnPropertyChanged(nameof(IsStarred));
                 OnPropertyChanged(nameof(StarDisplay));
+                OnPropertyChanged(nameof(StarColor));
             }
         }
     }
     public string StarDisplay => IsStarred ? "★" : "☆";
+    public string StarColor => IsStarred ? "#FBBF24" : "#64748B";
 
     // Transient UI Selection (Not stored in DB, ignored in JSON)
     [NotMapped]

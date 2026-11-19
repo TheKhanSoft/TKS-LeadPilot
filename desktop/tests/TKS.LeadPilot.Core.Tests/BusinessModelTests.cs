@@ -77,4 +77,52 @@ public class BusinessModelTests
         changedProps.Should().Contain(nameof(Business.IsStarred));
         changedProps.Should().Contain(nameof(Business.StarDisplay));
     }
+
+    [Fact]
+    public void FullAddress_CombinesAllComponents_WithoutDuplicatingTokens()
+    {
+        var business = new Business
+        {
+            Name = "TheKhanSoft Solutions",
+            AddressLine1 = "Plot 12-B, Main Boulevard",
+            Locality = "Gulberg III",
+            City = "Lahore",
+            StateProvince = "Punjab",
+            PostalCode = "54000",
+            Country = "Pakistan"
+        };
+
+        var full = business.FullAddress;
+        full.Should().Be("Plot 12-B, Main Boulevard, Gulberg III, Lahore, Punjab, 54000, Pakistan");
+    }
+
+    [Fact]
+    public void FullAddress_FiresPropertyChanged_WhenAddressFieldsChange()
+    {
+        var business = new Business { Name = "Test Co", City = "Islamabad" };
+        var changedProps = new List<string>();
+        business.PropertyChanged += (s, e) => changedProps.Add(e.PropertyName!);
+
+        business.AddressLine1 = "Sector F-7/2, Street 15";
+
+        changedProps.Should().Contain(nameof(Business.AddressLine1));
+        changedProps.Should().Contain(nameof(Business.FullAddress));
+        business.FullAddress.Should().Contain("Sector F-7/2, Street 15");
+        business.FullAddress.Should().Contain("Islamabad");
+    }
+
+    [Fact]
+    public void FullAddress_HandlesPartialOrMissingAddress_Gracefully()
+    {
+        var businessOnlyCity = new Business { City = "Karachi", Country = "Pakistan" };
+        businessOnlyCity.FullAddress.Should().Be("Karachi, Pakistan");
+
+        var businessWithNoStreet = new Business
+        {
+            Locality = "DHA Phase 5",
+            City = "Lahore",
+            Country = "Pakistan"
+        };
+        businessWithNoStreet.FullAddress.Should().Be("DHA Phase 5, Lahore, Pakistan");
+    }
 }

@@ -66,6 +66,12 @@ public partial class LandingPageStudioViewModel : ViewModelBase
     [ObservableProperty]
     private string _selectedArchetype = "Local Service Booking & Clinic Funnel";
 
+    partial void OnSelectedArchetypeChanged(string value)
+    {
+        ApplyArchetypeRecommendedModules(value);
+        UpdateThemeBrushes();
+    }
+
     [ObservableProperty]
     private ObservableCollection<string> _designStyles =
     [
@@ -79,11 +85,24 @@ public partial class LandingPageStudioViewModel : ViewModelBase
     [ObservableProperty]
     private string _selectedDesignStyle = "Trustworthy Emerald (Healthcare, Dental & Eco)";
 
+    partial void OnSelectedDesignStyleChanged(string value)
+    {
+        UpdateThemeBrushes();
+        RebuildHtmlForActiveModules();
+    }
+
     [ObservableProperty]
     private string _customInstructions = "Highlight painless dental implants, Hollywood veneers, 24/7 emergency appointments, UK-trained doctors, transparent pricing, and instant WhatsApp consultation booking.";
 
     [ObservableProperty]
     private ObservableCollection<LandingPageModuleOption> _availableModules = [];
+
+    partial void OnAvailableModulesChanged(ObservableCollection<LandingPageModuleOption> value)
+    {
+        SubscribeToModuleChanges();
+        UpdateSynthesizedModulesFlow();
+        UpdateModuleVisibilityProperties();
+    }
 
     [ObservableProperty]
     private ObservableCollection<SynthesizedModuleItem> _synthesizedModulesFlow = [];
@@ -93,6 +112,109 @@ public partial class LandingPageStudioViewModel : ViewModelBase
 
     [ObservableProperty]
     private ObservableCollection<string> _previewServicesList = [];
+
+    // Theme Preview Brushes & Colors
+    [ObservableProperty]
+    private string _previewPrimaryColor = "#059669";
+
+    [ObservableProperty]
+    private string _previewAccentColor = "#10B981";
+
+    [ObservableProperty]
+    private string _previewBgColor = "#051610";
+
+    [ObservableProperty]
+    private string _previewCardBgColor = "#0B261D";
+
+    [ObservableProperty]
+    private string _previewBadgeBg = "#064E3B";
+
+    [ObservableProperty]
+    private string _previewBadgeBorder = "#059669";
+
+    [ObservableProperty]
+    private string _previewBadgeText = "#34D399";
+
+    [ObservableProperty]
+    private string _previewButtonGradient = "#059669";
+
+    // Dynamic Module Visibility for Simulated In-App Canvas
+    public bool HasHeroModule => IsModuleActive("mod-hero");
+    public bool HasTrustBarModule => IsModuleActive("mod-trust-bar");
+    public bool HasServicesModule => IsModuleActive("mod-services");
+    public bool HasBeforeAfterModule => IsModuleActive("mod-before-after");
+    public bool HasTeamModule => IsModuleActive("mod-team");
+    public bool HasTestimonialsModule => IsModuleActive("mod-testimonials");
+    public bool HasPricingModule => IsModuleActive("mod-pricing");
+    public bool HasCalculatorModule => IsModuleActive("mod-calculator");
+    public bool HasFaqModule => IsModuleActive("mod-faq");
+    public bool HasLeadFormModule => IsModuleActive("mod-lead-form");
+    public bool HasWhatsAppModule => IsModuleActive("mod-whatsapp");
+    public bool HasSeoModule => IsModuleActive("mod-seo");
+
+    public bool IsModuleActive(string id) => AvailableModules.Any(m => m.Id == id && m.IsSelected);
+
+    public void UpdateModuleVisibilityProperties()
+    {
+        OnPropertyChanged(nameof(HasHeroModule));
+        OnPropertyChanged(nameof(HasTrustBarModule));
+        OnPropertyChanged(nameof(HasServicesModule));
+        OnPropertyChanged(nameof(HasBeforeAfterModule));
+        OnPropertyChanged(nameof(HasTeamModule));
+        OnPropertyChanged(nameof(HasTestimonialsModule));
+        OnPropertyChanged(nameof(HasPricingModule));
+        OnPropertyChanged(nameof(HasCalculatorModule));
+        OnPropertyChanged(nameof(HasFaqModule));
+        OnPropertyChanged(nameof(HasLeadFormModule));
+        OnPropertyChanged(nameof(HasWhatsAppModule));
+        OnPropertyChanged(nameof(HasSeoModule));
+    }
+
+    // Dynamic Simulated Canvas Preview Content
+    [ObservableProperty]
+    private string _previewCaseStudyTitle = "Regional Market Transformation";
+
+    [ObservableProperty]
+    private string _previewCaseStudyResult = "+140% Growth";
+
+    [ObservableProperty]
+    private string _previewCaseStudyDetail = "Modernized full conversion infrastructure and same-day booking response funnel.";
+
+    [ObservableProperty]
+    private string _previewLeaderName = "Leadership & Practice Directorate";
+
+    [ObservableProperty]
+    private string _previewLeaderRole = "Principal Director & Lead Specialist";
+
+    [ObservableProperty]
+    private string _previewLeaderQuote = "Uncompromising standards and customer care are the cornerstones of lasting trust.";
+
+    [ObservableProperty]
+    private string _previewTestimonialQuote = "The highest caliber of service in the region. Highly professional, responsive, and seamless experience.";
+
+    [ObservableProperty]
+    private string _previewTestimonialAuthor = "Satisfied Client";
+
+    [ObservableProperty]
+    private string _previewTestimonialRole = "Verified Regional Customer";
+
+    [ObservableProperty]
+    private string _previewPricingTier1 = "Essential Retainer";
+
+    [ObservableProperty]
+    private string _previewPricingTier2 = "Premier Enterprise (Most Popular)";
+
+    [ObservableProperty]
+    private string _previewFaqQuestion = "How quickly can appointments or orders be scheduled?";
+
+    [ObservableProperty]
+    private string _previewFaqAnswer = "Our priority desk responds immediately with confirmation within minutes via SMS and WhatsApp.";
+
+    [ObservableProperty]
+    private string _previewLeadFormTitle = "Schedule Priority Booking & Consultation";
+
+    [ObservableProperty]
+    private string _previewLeadFormSubtitle = "Direct confirmation dispatched to your phone within 15 minutes.";
 
     // Generation State
     [ObservableProperty]
@@ -134,7 +256,10 @@ public partial class LandingPageStudioViewModel : ViewModelBase
 
         var modules = _generatorService.GetAvailableModules();
         AvailableModules = new ObservableCollection<LandingPageModuleOption>(modules);
+        SubscribeToModuleChanges();
+        UpdateThemeBrushes();
         UpdateSynthesizedModulesFlow();
+        UpdateModuleVisibilityProperties();
 
         if (TargetBusinessForStudio != null)
         {
@@ -238,6 +363,13 @@ public partial class LandingPageStudioViewModel : ViewModelBase
             TargetAudience = $"School principals, administrators, and campus directors in {City}.";
             CustomInstructions = $"Highlight automated biometric attendance, instant SMS parent alerts, cloud school management, and a live pilot demonstration in {City}.";
         }
+        else if (cat.Contains("department") || cat.Contains("retail") || cat.Contains("store") || cat.Contains("supermarket") || cat.Contains("mart") || cat.Contains("shop") || cat.Contains("mall") || cat.Contains("boutique") || cat.Contains("apparel"))
+        {
+            SelectedArchetype = "E-Commerce & Special Offer Showcase";
+            SelectedDesignStyle = "Midnight Luxury Gold (Clinics, Law & Executive)";
+            TargetAudience = $"Shoppers, families, and residents in {City} seeking premium lifestyle, apparel, and grocery retail.";
+            CustomInstructions = $"Spotlight genuine branded collections, multi-floor air-conditioned shopping in {City}, weekly promotional bundles, and express same-day doorstep delivery via WhatsApp.";
+        }
         else if (b.Name.ToLowerInvariant().Contains("soft") || b.Name.ToLowerInvariant().Contains("tech") || b.Name.ToLowerInvariant().Contains("nexa"))
         {
             SelectedArchetype = "Modern SaaS & Tech Product";
@@ -339,25 +471,7 @@ public partial class LandingPageStudioViewModel : ViewModelBase
             IsGenerating = true;
             StatusMessage = $"🤖 Consulting Gemini AI & TheKhanSoft Architecture Engine for '{BusinessName}'...";
 
-            var archetype = SelectedArchetype switch
-            {
-                var s when s.Contains("Clinic") || s.Contains("Service Booking") => LandingPageArchetype.LocalServiceBooking,
-                var s when s.Contains("Corporate") || s.Contains("Agency") => LandingPageArchetype.CorporateAgencyPortal,
-                var s when s.Contains("Luxury") || s.Contains("Showcase") => LandingPageArchetype.LuxuryBrandShowcase,
-                var s when s.Contains("SaaS") || s.Contains("Tech") => LandingPageArchetype.ModernSaaSTech,
-                var s when s.Contains("E-Commerce") => LandingPageArchetype.EcommerceShowcase,
-                _ => LandingPageArchetype.LeadGenerationFunnel
-            };
-
-            var style = SelectedDesignStyle switch
-            {
-                var s when s.Contains("Midnight") || s.Contains("Gold") => LandingPageDesignStyle.MidnightLuxuryGold,
-                var s when s.Contains("Emerald") || s.Contains("Healthcare") => LandingPageDesignStyle.TrustworthyEmerald,
-                var s when s.Contains("Indigo") || s.Contains("Creative") => LandingPageDesignStyle.BoldVibrantIndigo,
-                var s when s.Contains("Monochrome") => LandingPageDesignStyle.MinimalistMonochrome,
-                _ => LandingPageDesignStyle.ModernSlateCyan
-            };
-
+            var (archetype, style) = MapSelectionsToEnums();
             var activeModules = AvailableModules.Where(m => m.IsSelected).Select(m => m.Id).ToList();
 
             var req = new LandingPageGenerationRequest
@@ -378,6 +492,7 @@ public partial class LandingPageStudioViewModel : ViewModelBase
             var result = await _generatorService.GenerateLandingPageAsync(req);
             CurrentResult = result;
             UpdateSynthesizedModulesFlow();
+            UpdateModuleVisibilityProperties();
 
             StatusMessage = $"✅ Landing Page & Architecture generated in {result.ExecutionDuration.TotalSeconds:F1}s via {result.Provider} (Conversion Score: {result.ConversionScore}/100)";
             ActiveResultTab = "Preview";
@@ -515,22 +630,56 @@ public partial class LandingPageStudioViewModel : ViewModelBase
 
         var payload = CurrentResult?.ContentPayload;
 
-        // Update live preview collections for in-app visual studio
-        if (payload != null && payload.TrustBadges.Count > 0)
+        // Update live preview collections & fields for in-app visual studio
+        if (payload != null)
         {
-            PreviewTrustBadges = new ObservableCollection<string>(payload.TrustBadges);
+            if (payload.TrustBadges.Count > 0)
+                PreviewTrustBadges = new ObservableCollection<string>(payload.TrustBadges);
+            if (payload.Services.Count > 0)
+                PreviewServicesList = new ObservableCollection<string>(payload.Services.Select(s => s.Title));
+            if (payload.CaseStudies.Count > 0)
+            {
+                PreviewCaseStudyTitle = payload.CaseStudies[0].ClientName;
+                PreviewCaseStudyResult = payload.CaseStudies[0].ResultMetric;
+                PreviewCaseStudyDetail = payload.CaseStudies[0].ResultDescription;
+            }
+            if (payload.LeaderBio != null)
+            {
+                PreviewLeaderName = payload.LeaderBio.Name;
+                PreviewLeaderRole = payload.LeaderBio.Role;
+                PreviewLeaderQuote = payload.LeaderBio.Quote;
+            }
+            if (payload.Testimonials.Count > 0)
+            {
+                PreviewTestimonialQuote = payload.Testimonials[0].Quote;
+                PreviewTestimonialAuthor = payload.Testimonials[0].Author;
+                PreviewTestimonialRole = payload.Testimonials[0].Role;
+            }
+            if (payload.PricingPlans.Count > 0)
+            {
+                PreviewPricingTier1 = $"{payload.PricingPlans[0].Name} ({payload.PricingPlans[0].Price})";
+                if (payload.PricingPlans.Count > 1)
+                {
+                    PreviewPricingTier2 = $"{payload.PricingPlans[1].Name} ({payload.PricingPlans[1].Price})";
+                }
+            }
+            if (payload.Faqs.Count > 0)
+            {
+                PreviewFaqQuestion = payload.Faqs[0].Question;
+                PreviewFaqAnswer = payload.Faqs[0].Answer;
+            }
+            if (!string.IsNullOrWhiteSpace(payload.LeadFormTitle))
+            {
+                PreviewLeadFormTitle = payload.LeadFormTitle;
+            }
+            if (!string.IsNullOrWhiteSpace(payload.LeadFormSubtitle))
+            {
+                PreviewLeadFormSubtitle = payload.LeadFormSubtitle;
+            }
         }
         else
         {
             PreviewTrustBadges = new ObservableCollection<string>(["Verified Local Enterprise", "4.9/5 Client Score", "ISO 9001 Standard", "Instant Response Guarantee"]);
-        }
-
-        if (payload != null && payload.Services.Count > 0)
-        {
-            PreviewServicesList = new ObservableCollection<string>(payload.Services.Select(s => s.Title));
-        }
-        else
-        {
             PreviewServicesList = new ObservableCollection<string>(["Bespoke Architecture", "Strategic Optimization", "VIP Retainer"]);
         }
 
@@ -609,6 +758,175 @@ public partial class LandingPageStudioViewModel : ViewModelBase
         }
 
         SynthesizedModulesFlow = new ObservableCollection<SynthesizedModuleItem>(list);
+    }
+
+    private void SubscribeToModuleChanges()
+    {
+        foreach (var mod in AvailableModules)
+        {
+            mod.PropertyChanged -= OnModuleOptionPropertyChanged;
+            mod.PropertyChanged += OnModuleOptionPropertyChanged;
+        }
+    }
+
+    private void OnModuleOptionPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(LandingPageModuleOption.IsSelected))
+        {
+            OnModuleSelectionToggled();
+        }
+    }
+
+    private void OnModuleSelectionToggled()
+    {
+        UpdateSynthesizedModulesFlow();
+        UpdateModuleVisibilityProperties();
+        RebuildHtmlForActiveModules();
+    }
+
+    private void ApplyArchetypeRecommendedModules(string archetypeText)
+    {
+        HashSet<string> recommended = archetypeText switch
+        {
+            var s when s.Contains("Clinic") || s.Contains("Booking") =>
+                ["mod-hero", "mod-trust-bar", "mod-services", "mod-team", "mod-testimonials", "mod-faq", "mod-lead-form", "mod-whatsapp", "mod-seo"],
+            var s when s.Contains("Corporate") || s.Contains("Authority") =>
+                ["mod-hero", "mod-trust-bar", "mod-services", "mod-before-after", "mod-team", "mod-testimonials", "mod-faq", "mod-lead-form", "mod-seo"],
+            var s when s.Contains("SaaS") || s.Contains("Tech") =>
+                ["mod-hero", "mod-trust-bar", "mod-services", "mod-before-after", "mod-pricing", "mod-calculator", "mod-faq", "mod-lead-form", "mod-seo"],
+            var s when s.Contains("E-Commerce") || s.Contains("Retail") || s.Contains("Special Offer") =>
+                ["mod-hero", "mod-trust-bar", "mod-services", "mod-testimonials", "mod-pricing", "mod-faq", "mod-lead-form", "mod-whatsapp", "mod-seo"],
+            var s when s.Contains("Luxury") || s.Contains("Brand") =>
+                ["mod-hero", "mod-trust-bar", "mod-services", "mod-before-after", "mod-team", "mod-testimonials", "mod-lead-form", "mod-whatsapp", "mod-seo"],
+            _ => // Lead Generation Funnel
+                ["mod-hero", "mod-trust-bar", "mod-services", "mod-testimonials", "mod-calculator", "mod-faq", "mod-lead-form", "mod-whatsapp", "mod-seo"]
+        };
+
+        foreach (var mod in AvailableModules)
+        {
+            mod.IsSelected = recommended.Contains(mod.Id);
+        }
+
+        UpdateSynthesizedModulesFlow();
+        UpdateModuleVisibilityProperties();
+        RebuildHtmlForActiveModules();
+    }
+
+    private void UpdateThemeBrushes()
+    {
+        var style = SelectedDesignStyle switch
+        {
+            var s when s.Contains("Luxury") || s.Contains("Gold") => LandingPageDesignStyle.MidnightLuxuryGold,
+            var s when s.Contains("Emerald") || s.Contains("Healthcare") => LandingPageDesignStyle.TrustworthyEmerald,
+            var s when s.Contains("Indigo") || s.Contains("Vibrant") => LandingPageDesignStyle.BoldVibrantIndigo,
+            var s when s.Contains("Monochrome") || s.Contains("Minimalist") => LandingPageDesignStyle.MinimalistMonochrome,
+            _ => LandingPageDesignStyle.ModernSlateCyan
+        };
+
+        switch (style)
+        {
+            case LandingPageDesignStyle.MidnightLuxuryGold:
+                PreviewPrimaryColor = "#D97706";
+                PreviewAccentColor = "#F59E0B";
+                PreviewBgColor = "#0C0F17";
+                PreviewCardBgColor = "#141B29";
+                PreviewBadgeBg = "#2E1B05";
+                PreviewBadgeBorder = "#D97706";
+                PreviewBadgeText = "#FBBF24";
+                PreviewButtonGradient = "#D97706";
+                break;
+            case LandingPageDesignStyle.TrustworthyEmerald:
+                PreviewPrimaryColor = "#059669";
+                PreviewAccentColor = "#10B981";
+                PreviewBgColor = "#051610";
+                PreviewCardBgColor = "#0B261D";
+                PreviewBadgeBg = "#064E3B";
+                PreviewBadgeBorder = "#059669";
+                PreviewBadgeText = "#34D399";
+                PreviewButtonGradient = "#059669";
+                break;
+            case LandingPageDesignStyle.BoldVibrantIndigo:
+                PreviewPrimaryColor = "#4F46E5";
+                PreviewAccentColor = "#6366F1";
+                PreviewBgColor = "#0B091B";
+                PreviewCardBgColor = "#141133";
+                PreviewBadgeBg = "#1E1B4B";
+                PreviewBadgeBorder = "#4338CA";
+                PreviewBadgeText = "#A5B4FC";
+                PreviewButtonGradient = "#4F46E5";
+                break;
+            case LandingPageDesignStyle.MinimalistMonochrome:
+                PreviewPrimaryColor = "#E4E4E7";
+                PreviewAccentColor = "#FAFAFA";
+                PreviewBgColor = "#09090B";
+                PreviewCardBgColor = "#18181B";
+                PreviewBadgeBg = "#27272A";
+                PreviewBadgeBorder = "#3F3F46";
+                PreviewBadgeText = "#F4F4F5";
+                PreviewButtonGradient = "#27272A";
+                break;
+            default: // ModernSlateCyan
+                PreviewPrimaryColor = "#0284C7";
+                PreviewAccentColor = "#06B6D4";
+                PreviewBgColor = "#070D18";
+                PreviewCardBgColor = "#0D1626";
+                PreviewBadgeBg = "#0C2D48";
+                PreviewBadgeBorder = "#0284C7";
+                PreviewBadgeText = "#38BDF8";
+                PreviewButtonGradient = "#0284C7";
+                break;
+        }
+    }
+
+    private (LandingPageArchetype Archetype, LandingPageDesignStyle Style) MapSelectionsToEnums()
+    {
+        var archetype = SelectedArchetype switch
+        {
+            var s when s.Contains("Clinic") || s.Contains("Service Booking") => LandingPageArchetype.LocalServiceBooking,
+            var s when s.Contains("Corporate") || s.Contains("Agency") => LandingPageArchetype.CorporateAgencyPortal,
+            var s when s.Contains("Luxury") || s.Contains("Showcase") || s.Contains("Brand") => LandingPageArchetype.LuxuryBrandShowcase,
+            var s when s.Contains("SaaS") || s.Contains("Tech") => LandingPageArchetype.ModernSaaSTech,
+            var s when s.Contains("E-Commerce") || s.Contains("Retail") || s.Contains("Special Offer") => LandingPageArchetype.EcommerceShowcase,
+            _ => LandingPageArchetype.LeadGenerationFunnel
+        };
+
+        var style = SelectedDesignStyle switch
+        {
+            var s when s.Contains("Midnight") || s.Contains("Gold") || s.Contains("Luxury") => LandingPageDesignStyle.MidnightLuxuryGold,
+            var s when s.Contains("Emerald") || s.Contains("Healthcare") => LandingPageDesignStyle.TrustworthyEmerald,
+            var s when s.Contains("Indigo") || s.Contains("Creative") || s.Contains("Vibrant") => LandingPageDesignStyle.BoldVibrantIndigo,
+            var s when s.Contains("Monochrome") || s.Contains("Minimalist") => LandingPageDesignStyle.MinimalistMonochrome,
+            _ => LandingPageDesignStyle.ModernSlateCyan
+        };
+
+        return (archetype, style);
+    }
+
+    public void RebuildHtmlForActiveModules()
+    {
+        if (CurrentResult == null || CurrentResult.ContentPayload == null) return;
+        try
+        {
+            var activeModIds = AvailableModules.Where(m => m.IsSelected).Select(m => m.Id).ToList();
+            var (archetype, style) = MapSelectionsToEnums();
+            var req = new LandingPageGenerationRequest
+            {
+                BusinessName = !string.IsNullOrWhiteSpace(BusinessName) ? BusinessName.Trim() : "Enterprise Client",
+                Category = !string.IsNullOrWhiteSpace(Category) ? Category.Trim() : "Commercial Enterprise",
+                City = !string.IsNullOrWhiteSpace(City) ? City.Trim() : "Metropolitan Area",
+                Country = !string.IsNullOrWhiteSpace(Country) ? Country.Trim() : "Pakistan",
+                PhonePrimary = PhonePrimary?.Trim(),
+                EmailPrimary = EmailPrimary?.Trim(),
+                TargetAudience = TargetAudience?.Trim() ?? "Discerning clients",
+                Archetype = archetype,
+                DesignStyle = style,
+                SelectedModules = activeModIds
+            };
+            var newHtml = _generatorService.RenderHtml(CurrentResult.ContentPayload, req);
+            CurrentResult.GeneratedHtml = newHtml;
+            OnPropertyChanged(nameof(CurrentResult));
+        }
+        catch { }
     }
 
     private static async Task CopyToClipboardAsync(string text)

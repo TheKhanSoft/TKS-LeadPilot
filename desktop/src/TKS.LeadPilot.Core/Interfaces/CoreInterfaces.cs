@@ -127,6 +127,7 @@ public interface ILandingPageGeneratorService
     Task<LandingPageGenerationResult> GenerateLandingPageAsync(LandingPageGenerationRequest request, CancellationToken ct = default);
     LandingPageGenerationResult GenerateDeterministicLandingPage(LandingPageGenerationRequest request);
     IReadOnlyList<LandingPageModuleOption> GetAvailableModules();
+    string RenderHtml(BespokeContentPayload payload, LandingPageGenerationRequest request);
 }
 
 public interface IAuditComparisonService
@@ -201,4 +202,6 @@ public interface IGeoLocationService
     BoundingBox CalculateProximityBoundingBox(double centerLat, double centerLon, double radiusKm);
     Task<NearbyLocationResult> DetectNearbyLocationAsync(double radiusKm = 15.0, CancellationToken ct = default);
     IReadOnlyList<string> GetSuggestedNiches(string? country = null, string? city = null);
+    Task<DetailedAddressResult?> ReverseGeocodeAsync(double latitude, double longitude, CancellationToken ct = default);
+    Task<DetailedAddressResult?> FindAddressAsync(string businessName, string city, string? country = null, CancellationToken ct = default);
 }

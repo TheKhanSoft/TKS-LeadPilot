@@ -22,13 +22,29 @@ public enum LandingPageDesignStyle
     MinimalistMonochrome       // Studio, architect, modern portfolio (#18181B & #FAFAFA)
 }
 
-public class LandingPageModuleOption
+public class LandingPageModuleOption : System.ComponentModel.INotifyPropertyChanged
 {
+    private bool _isSelected = true;
+
     public string Id { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string Category { get; set; } = "Core";
-    public bool IsSelected { get; set; } = true;
+
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set
+        {
+            if (_isSelected != value)
+            {
+                _isSelected = value;
+                PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(IsSelected)));
+            }
+        }
+    }
+
+    public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
 }
 
 public class LandingPageGenerationRequest
@@ -157,6 +173,13 @@ public class BespokeCaseStudy
     public string Solution { get; set; } = string.Empty;
     public string ResultMetric { get; set; } = string.Empty;
     public string ResultDescription { get; set; } = string.Empty;
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string Details
+    {
+        get => ResultDescription;
+        set => ResultDescription = value;
+    }
 }
 
 public class BespokeLeaderBio

@@ -330,6 +330,157 @@ public class GeoLocationService : IGeoLocationService
         ];
     }
 
+    public async Task<DetailedAddressResult?> ReverseGeocodeAsync(double latitude, double longitude, CancellationToken ct = default)
+    {
+        var client = _httpClient ?? new HttpClient();
+        try
+        {
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            cts.CancelAfter(TimeSpan.FromSeconds(6));
+
+            var url = $"https://nominatim.openstreetmap.org/reverse?lat={latitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}&lon={longitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}&format=json&addressdetails=1";
+            using var req = new HttpRequestMessage(HttpMethod.Get, url);
+            req.Headers.Add("User-Agent", "TKS-LeadPilot/1.0 (Desktop; Contact: dev@thekhansoft.com)");
+
+            var resp = await client.SendAsync(req, cts.Token);
+            if (!resp.IsSuccessStatusCode) return null;
+
+            var json = await resp.Content.ReadAsStringAsync(ct);
+            return ParseNominatimAddressJson(json, latitude, longitude);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<DetailedAddressResult?> FindAddressAsync(string businessName, string city, string? country = null, CancellationToken ct = default)
+    {
+        var client = _httpClient ?? new HttpClient();
+        try
+        {
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            cts.CancelAfter(TimeSpan.FromSeconds(6));
+
+            var queryText = $"{businessName}, {city}, {country ?? string.Empty}".Trim().TrimEnd(',');
+            var url = $"https://nominatim.openstreetmap.org/search?q={Uri.EscapeDataString(queryText)}&format=json&addressdetails=1&limit=1";
+            using var req = new HttpRequestMessage(HttpMethod.Get, url);
+            req.Headers.Add("User-Agent", "TKS-LeadPilot/1.0 (Desktop; Contact: dev@thekhansoft.com)");
+
+            var resp = await client.SendAsync(req, cts.Token);
+            if (!resp.IsSuccessStatusCode) return null;
+
+            var json = await resp.Content.ReadAsStringAsync(ct);
+            using var doc = JsonDocument.Parse(json);
+            if (doc.RootElement.ValueKind == JsonValueKind.Array && doc.RootElement.GetArrayLength() > 0)
+            {
+                var first = doc.RootElement[0];
+                return ParseNominatimElement(first);
+            }
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static DetailedAddressResult? ParseNominatimAddressJson(string json, double? fallbackLat = null, double? fallbackLon = null)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            return ParseNominatimElement(doc.RootElement, fallbackLat, fallbackLon);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static DetailedAddressResult? ParseNominatimElement(JsonElement elem, double? fallbackLat = null, double? fallbackLon = null)
+    {
+        if (elem.ValueKind != JsonValueKind.Object) return null;
+
+        var res = new DetailedAddressResult
+        {
+            Success = true,
+            Source = "OpenStreetMap Nominatim"
+        };
+
+        if (elem.TryGetProperty("display_name", out var dn) && !string.IsNullOrWhiteSpace(dn.GetString()))
+        {
+            res.DisplayName = dn.GetString()!.Trim();
+            res.FullAddress = res.DisplayName;
+        }
+
+        if (elem.TryGetProperty("place_id", out var pid)) res.PlaceId = pid.ToString();
+
+        double? lat = fallbackLat;
+        double? lon = fallbackLon;
+        if (elem.TryGetProperty("lat", out var latP) && double.TryParse(latP.GetString(), System.Globalization.CultureInfo.InvariantCulture, out var lVal)) lat = lVal;
+        if (elem.TryGetProperty("lon", out var lonP) && double.TryParse(lonP.GetString(), System.Globalization.CultureInfo.InvariantCulture, out var loVal)) lon = loVal;
+        res.Latitude = lat;
+        res.Longitude = lon;
+
+        if (elem.TryGetProperty("address", out var addr) && addr.ValueKind == JsonValueKind.Object)
+        {
+            var houseNum = GetJsonPropValue(addr, "house_number", "house_name", "building");
+            var road = GetJsonPropValue(addr, "road", "street", "pedestrian", "footway");
+            var block = GetJsonPropValue(addr, "block", "sector");
+            var suburb = GetJsonPropValue(addr, "suburb", "neighbourhood", "residential", "quarter");
+            var district = GetJsonPropValue(addr, "city_district", "district", "county");
+            var city = GetJsonPropValue(addr, "city", "town", "village", "municipality");
+            var state = GetJsonPropValue(addr, "state", "province", "region");
+            var postcode = GetJsonPropValue(addr, "postcode", "postal_code");
+            var country = GetJsonPropValue(addr, "country");
+
+            var streetParts = new List<string>();
+            if (!string.IsNullOrWhiteSpace(houseNum) && !string.IsNullOrWhiteSpace(road))
+                streetParts.Add($"{houseNum} {road}");
+            else if (!string.IsNullOrWhiteSpace(road))
+                streetParts.Add(road);
+            else if (!string.IsNullOrWhiteSpace(houseNum))
+                streetParts.Add(houseNum);
+
+            if (!string.IsNullOrWhiteSpace(block)) streetParts.Add(block);
+
+            res.AddressLine1 = streetParts.Count > 0 ? string.Join(", ", streetParts) : null;
+
+            var locParts = new List<string>();
+            if (!string.IsNullOrWhiteSpace(suburb)) locParts.Add(suburb);
+            if (!string.IsNullOrWhiteSpace(district) && !locParts.Any(p => p.Contains(district, StringComparison.OrdinalIgnoreCase)))
+                locParts.Add(district);
+            res.Locality = locParts.Count > 0 ? string.Join(", ", locParts) : null;
+
+            res.City = city;
+            res.StateProvince = state;
+            res.PostalCode = postcode;
+            res.Country = country;
+
+            if (string.IsNullOrWhiteSpace(res.AddressLine1) && !string.IsNullOrWhiteSpace(res.DisplayName))
+            {
+                var segs = res.DisplayName.Split(',', StringSplitOptions.TrimEntries);
+                if (segs.Length > 0) res.AddressLine1 = segs[0];
+            }
+        }
+
+        return res;
+    }
+
+    private static string? GetJsonPropValue(JsonElement obj, params string[] propertyNames)
+    {
+        foreach (var p in propertyNames)
+        {
+            if (obj.TryGetProperty(p, out var val))
+            {
+                var s = val.GetString();
+                if (!string.IsNullOrWhiteSpace(s)) return s.Trim();
+            }
+        }
+        return null;
+    }
+
     private static List<CountryInfo> BuildCatalog()
     {
         return

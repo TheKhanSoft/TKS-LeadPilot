@@ -129,6 +129,35 @@ Novelty Bookshop,Retail,Islamabad,https://noveltybooks.pk
         content.Should().Contain("\"The \"\"Elite\"\" Diagnostic Center, Karachi\"");
         content.Should().Contain("elitediagnostic.pk");
         content.Should().Contain("\"OpenStreetMap, Photon (Komoot OpenPOI)\"");
+        content.Should().Contain("FullAddress");
+    }
+
+    [Fact]
+    public async Task ExportToCsvAsync_IncludesFullAddressAndAddressColumns()
+    {
+        var businesses = new List<Business>
+        {
+            new()
+            {
+                Id = "b2",
+                Name = "Apex Dental Clinic",
+                Category = "Healthcare",
+                AddressLine1 = "Suite 4, Plaza 23",
+                Locality = "Blue Area",
+                City = "Islamabad",
+                StateProvince = "ICT",
+                PostalCode = "44000",
+                Country = "Pakistan"
+            }
+        };
+
+        var bytes = await _sut.ExportToCsvAsync(businesses);
+        var content = Encoding.UTF8.GetString(bytes[3..]);
+
+        content.Should().Contain("FullAddress");
+        content.Should().Contain("AddressLine1");
+        content.Should().Contain("Locality");
+        content.Should().Contain("Suite 4, Plaza 23, Blue Area, Islamabad, ICT, 44000, Pakistan");
     }
 
     private class FakeBusinessRepository : IBusinessRepository

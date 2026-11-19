@@ -23,6 +23,12 @@ public class AiLandingPageGeneratorService(
     private static readonly SemaphoreSlim ConfigLock = new(1, 1);
     private static int _dailyRequestsUsed = 0;
 
+    public string RenderHtml(BespokeContentPayload payload, LandingPageGenerationRequest request)
+    {
+        var (primaryHex, accentHex, bgHex, cardBgHex, textHex, buttonClass) = GetThemeTokens(request.DesignStyle);
+        return BuildBespokeProductionHtml(payload, request, primaryHex, accentHex, bgHex, cardBgHex, textHex, buttonClass);
+    }
+
     public IReadOnlyList<LandingPageModuleOption> GetAvailableModules()
     {
         return
@@ -282,7 +288,8 @@ public class AiLandingPageGeneratorService(
         sb.AppendLine("4. FAQs must resolve 4 to 5 genuine customer objections regarding turnaround, pricing, scope, and process for this exact trade.");
         sb.AppendLine("5. Pricing must be 3 realistic commercial tiers with pricing amounts, period, and feature lists appropriate for this trade.");
         sb.AppendLine("6. Case Studies must feature 2-3 measurable before-and-after client transformations.");
-        sb.AppendLine("7. Output MUST be strictly valid JSON conforming to the following structure:");
+        sb.AppendLine("7. Output MUST be strictly valid JSON conforming directly to the top-level schema below.");
+        sb.AppendLine("8. CRITICAL: Place 'headline', 'subheadline', 'hero_badge', 'call_to_action', 'metrics', 'trust_badges', 'services', 'testimonials', 'pricing_plans', 'faqs', 'lead_form' directly at the root level of the JSON object. Do NOT nest them inside 'modules' or 'landing_page'.");
         sb.AppendLine();
         sb.AppendLine("{");
         sb.AppendLine("  \"headline\": \"Punchy, benefit-driven hero headline tailored to this business in this city\",");
@@ -474,24 +481,29 @@ public class AiLandingPageGeneratorService(
 
             var payload = new BespokeContentPayload
             {
-                Headline = obj.TryGetProperty("headline", out var hl) && !string.IsNullOrWhiteSpace(hl.GetString()) ? hl.GetString()! : defaults.Headline,
-                Subheadline = obj.TryGetProperty("subheadline", out var shl) && !string.IsNullOrWhiteSpace(shl.GetString()) ? shl.GetString()! : defaults.Subheadline,
-                HeroBadge = obj.TryGetProperty("hero_badge", out var hb) && !string.IsNullOrWhiteSpace(hb.GetString()) ? hb.GetString()! : defaults.HeroBadge,
-                CallToAction = obj.TryGetProperty("call_to_action", out var cta) && !string.IsNullOrWhiteSpace(cta.GetString()) ? cta.GetString()! : defaults.CallToAction,
-                SecondaryCta = obj.TryGetProperty("secondary_cta", out var scta) && !string.IsNullOrWhiteSpace(scta.GetString()) ? scta.GetString()! : defaults.SecondaryCta,
-                ConversionScore = obj.TryGetProperty("conversion_score", out var cs) && cs.TryGetInt32(out var csVal) ? csVal : 95,
-                ArchitectureBlueprintMarkdown = obj.TryGetProperty("architecture_blueprint_markdown", out var ab) ? ab.GetString() ?? string.Empty : string.Empty,
-                DeveloperPrompts = obj.TryGetProperty("developer_prompts", out var dp) ? dp.GetString() ?? string.Empty : string.Empty,
-                AdCopyPrompts = obj.TryGetProperty("ad_copy_prompts", out var ac) ? ac.GetString() ?? string.Empty : string.Empty
+                Headline = FindJsonString(obj, defaults.Headline, "headline", "hero_headline", "title"),
+                Subheadline = FindJsonString(obj, defaults.Subheadline, "subheadline", "hero_subheadline", "subtitle", "tagline"),
+                HeroBadge = FindJsonString(obj, defaults.HeroBadge, "hero_badge", "badge", "accreditation", "hero_tag"),
+                CallToAction = FindJsonString(obj, defaults.CallToAction, "call_to_action", "primary_cta", "cta", "button_text"),
+                SecondaryCta = FindJsonString(obj, defaults.SecondaryCta, "secondary_cta", "secondary_button", "whatsapp_cta"),
+                ConversionScore = 95,
+                ArchitectureBlueprintMarkdown = FindJsonString(obj, string.Empty, "architecture_blueprint_markdown", "blueprint", "architecture"),
+                DeveloperPrompts = FindJsonString(obj, string.Empty, "developer_prompts", "dev_prompts", "implementation"),
+                AdCopyPrompts = FindJsonString(obj, string.Empty, "ad_copy_prompts", "ad_copy", "ads")
             };
 
+            if (TryFindJsonElement(obj, ["conversion_score", "score"], out var csEl) && csEl.TryGetInt32(out var csVal))
+            {
+                payload.ConversionScore = csVal;
+            }
+
             // Metrics
-            if (obj.TryGetProperty("metrics", out var metricsEl) && metricsEl.ValueKind == JsonValueKind.Array)
+            if (TryFindJsonArray(obj, ["metrics", "trust_metrics", "key_metrics", "stats"], out var metricsEl))
             {
                 foreach (var item in metricsEl.EnumerateArray())
                 {
-                    var val = item.TryGetProperty("value", out var v) ? v.GetString() ?? string.Empty : string.Empty;
-                    var lbl = item.TryGetProperty("label", out var l) ? l.GetString() ?? string.Empty : string.Empty;
+                    var val = FindJsonString(item, string.Empty, "value", "stat", "metric", "number");
+                    var lbl = FindJsonString(item, string.Empty, "label", "text", "description", "title");
                     if (!string.IsNullOrWhiteSpace(val) && !string.IsNullOrWhiteSpace(lbl))
                     {
                         payload.Metrics.Add(new BespokeMetricItem { Value = val, Label = lbl });
@@ -501,25 +513,33 @@ public class AiLandingPageGeneratorService(
             if (payload.Metrics.Count == 0) payload.Metrics = defaults.Metrics;
 
             // Trust Badges
-            if (obj.TryGetProperty("trust_badges", out var badgesEl) && badgesEl.ValueKind == JsonValueKind.Array)
+            if (TryFindJsonArray(obj, ["trust_badges", "badges", "certifications", "trust_bar"], out var badgesEl))
             {
                 foreach (var item in badgesEl.EnumerateArray())
                 {
-                    var s = item.GetString();
-                    if (!string.IsNullOrWhiteSpace(s)) payload.TrustBadges.Add(s);
+                    if (item.ValueKind == JsonValueKind.String)
+                    {
+                        var s = item.GetString();
+                        if (!string.IsNullOrWhiteSpace(s)) payload.TrustBadges.Add(s);
+                    }
+                    else if (item.ValueKind == JsonValueKind.Object)
+                    {
+                        var s = FindJsonString(item, string.Empty, "badge", "name", "title", "text");
+                        if (!string.IsNullOrWhiteSpace(s)) payload.TrustBadges.Add(s);
+                    }
                 }
             }
             if (payload.TrustBadges.Count == 0) payload.TrustBadges = defaults.TrustBadges;
 
             // Services
-            if (obj.TryGetProperty("services", out var servicesEl) && servicesEl.ValueKind == JsonValueKind.Array)
+            if (TryFindJsonArray(obj, ["services", "services_grid", "solutions", "offerings", "features"], out var servicesEl))
             {
                 foreach (var item in servicesEl.EnumerateArray())
                 {
-                    var title = item.TryGetProperty("title", out var t) ? t.GetString() ?? string.Empty : string.Empty;
-                    var desc = item.TryGetProperty("description", out var d) ? d.GetString() ?? string.Empty : string.Empty;
-                    var icon = item.TryGetProperty("icon", out var ic) ? ic.GetString() ?? "fa-solid fa-briefcase" : "fa-solid fa-briefcase";
-                    var servCta = item.TryGetProperty("cta", out var sc) ? sc.GetString() ?? "Learn More" : "Learn More";
+                    var title = FindJsonString(item, string.Empty, "title", "name", "service_name");
+                    var desc = FindJsonString(item, string.Empty, "description", "desc", "details", "deliverable");
+                    var icon = FindJsonString(item, "fa-solid fa-briefcase", "icon", "fa_icon");
+                    var servCta = FindJsonString(item, "Learn More", "cta", "action", "link_text");
 
                     if (!string.IsNullOrWhiteSpace(title))
                     {
@@ -530,13 +550,13 @@ public class AiLandingPageGeneratorService(
             if (payload.Services.Count == 0) payload.Services = defaults.Services;
 
             // Differentiators
-            if (obj.TryGetProperty("differentiators", out var diffEl) && diffEl.ValueKind == JsonValueKind.Array)
+            if (TryFindJsonArray(obj, ["differentiators", "unique_advantages", "why_us"], out var diffEl))
             {
                 foreach (var item in diffEl.EnumerateArray())
                 {
-                    var title = item.TryGetProperty("title", out var t) ? t.GetString() ?? string.Empty : string.Empty;
-                    var desc = item.TryGetProperty("description", out var d) ? d.GetString() ?? string.Empty : string.Empty;
-                    var icon = item.TryGetProperty("icon", out var ic) ? ic.GetString() ?? "fa-solid fa-check" : "fa-solid fa-check";
+                    var title = FindJsonString(item, string.Empty, "title", "name");
+                    var desc = FindJsonString(item, string.Empty, "description", "desc");
+                    var icon = FindJsonString(item, "fa-solid fa-check", "icon");
 
                     if (!string.IsNullOrWhiteSpace(title))
                     {
@@ -547,15 +567,15 @@ public class AiLandingPageGeneratorService(
             if (payload.Differentiators.Count == 0) payload.Differentiators = defaults.Differentiators;
 
             // Case Studies / Before & After
-            if (obj.TryGetProperty("case_studies", out var csArr) && csArr.ValueKind == JsonValueKind.Array)
+            if (TryFindJsonArray(obj, ["case_studies", "transformations", "before_after", "success_stories"], out var csArr))
             {
                 foreach (var item in csArr.EnumerateArray())
                 {
-                    var cName = item.TryGetProperty("client_name", out var cn) ? cn.GetString() ?? string.Empty : string.Empty;
-                    var ch = item.TryGetProperty("challenge", out var chg) ? chg.GetString() ?? string.Empty : string.Empty;
-                    var sol = item.TryGetProperty("solution", out var sln) ? sln.GetString() ?? string.Empty : string.Empty;
-                    var rm = item.TryGetProperty("result_metric", out var rme) ? rme.GetString() ?? string.Empty : string.Empty;
-                    var rd = item.TryGetProperty("result_description", out var rde) ? rde.GetString() ?? string.Empty : string.Empty;
+                    var cName = FindJsonString(item, string.Empty, "client_name", "client", "title", "project");
+                    var ch = FindJsonString(item, string.Empty, "challenge", "problem", "before");
+                    var sol = FindJsonString(item, string.Empty, "solution", "approach", "implementation");
+                    var rm = FindJsonString(item, string.Empty, "result_metric", "result", "metric", "outcome");
+                    var rd = FindJsonString(item, string.Empty, "result_description", "after", "details");
 
                     if (!string.IsNullOrWhiteSpace(cName))
                     {
@@ -573,20 +593,20 @@ public class AiLandingPageGeneratorService(
             if (payload.CaseStudies.Count == 0) payload.CaseStudies = defaults.CaseStudies;
 
             // Pricing Plans
-            if (obj.TryGetProperty("pricing_plans", out var plansArr) && plansArr.ValueKind == JsonValueKind.Array)
+            if (TryFindJsonArray(obj, ["pricing_plans", "pricing_matrix", "pricing", "plans", "packages"], out var plansArr))
             {
                 foreach (var item in plansArr.EnumerateArray())
                 {
-                    var pName = item.TryGetProperty("name", out var pn) ? pn.GetString() ?? string.Empty : string.Empty;
-                    var pPrice = item.TryGetProperty("price", out var pp) ? pp.GetString() ?? "$99" : "$99";
-                    var pPeriod = item.TryGetProperty("period", out var pr) ? pr.GetString() ?? "/month" : "/month";
-                    var pBadge = item.TryGetProperty("badge", out var pb) ? pb.GetString() ?? string.Empty : string.Empty;
-                    var pDesc = item.TryGetProperty("description", out var pd) ? pd.GetString() ?? string.Empty : string.Empty;
-                    var pCta = item.TryGetProperty("cta", out var pc) ? pc.GetString() ?? "Get Started" : "Get Started";
-                    var pPop = item.TryGetProperty("is_popular", out var pop) && pop.GetBoolean();
+                    var pName = FindJsonString(item, string.Empty, "name", "plan_name", "tier", "title");
+                    var pPrice = FindJsonString(item, "$99", "price", "amount", "cost");
+                    var pPeriod = FindJsonString(item, "/month", "period", "frequency", "interval");
+                    var pBadge = FindJsonString(item, string.Empty, "badge", "tag", "highlight");
+                    var pDesc = FindJsonString(item, string.Empty, "description", "desc", "summary");
+                    var pCta = FindJsonString(item, "Get Started", "cta", "button_text");
+                    var pPop = (item.TryGetProperty("is_popular", out var pop) && pop.GetBoolean()) || !string.IsNullOrWhiteSpace(pBadge);
 
                     var feats = new List<string>();
-                    if (item.TryGetProperty("features", out var fArr) && fArr.ValueKind == JsonValueKind.Array)
+                    if (TryFindJsonArray(item, ["features", "feature_list", "inclusions"], out var fArr))
                     {
                         foreach (var f in fArr.EnumerateArray())
                         {
@@ -614,16 +634,16 @@ public class AiLandingPageGeneratorService(
             if (payload.PricingPlans.Count == 0) payload.PricingPlans = defaults.PricingPlans;
 
             // Leader Bio
-            if (obj.TryGetProperty("leader_bio", out var lbEl) && lbEl.ValueKind == JsonValueKind.Object)
+            if (TryFindJsonObject(obj, ["leader_bio", "leadership_bio", "founder_bio", "team", "authority"], out var lbEl))
             {
                 payload.LeaderBio = new BespokeLeaderBio
                 {
-                    Name = lbEl.TryGetProperty("name", out var lbn) ? lbn.GetString() ?? defaults.LeaderBio?.Name ?? string.Empty : defaults.LeaderBio?.Name ?? string.Empty,
-                    Role = lbEl.TryGetProperty("role", out var lbr) ? lbr.GetString() ?? defaults.LeaderBio?.Role ?? string.Empty : defaults.LeaderBio?.Role ?? string.Empty,
-                    Credentials = lbEl.TryGetProperty("credentials", out var lbc) ? lbc.GetString() ?? defaults.LeaderBio?.Credentials ?? string.Empty : defaults.LeaderBio?.Credentials ?? string.Empty,
-                    Bio = lbEl.TryGetProperty("bio", out var lbb) ? lbb.GetString() ?? defaults.LeaderBio?.Bio ?? string.Empty : defaults.LeaderBio?.Bio ?? string.Empty,
-                    Quote = lbEl.TryGetProperty("quote", out var lbq) ? lbq.GetString() ?? defaults.LeaderBio?.Quote ?? string.Empty : defaults.LeaderBio?.Quote ?? string.Empty,
-                    AvatarInitials = lbEl.TryGetProperty("avatar_initials", out var lbi) ? lbi.GetString() ?? defaults.LeaderBio?.AvatarInitials ?? "MD" : defaults.LeaderBio?.AvatarInitials ?? "MD"
+                    Name = FindJsonString(lbEl, defaults.LeaderBio?.Name ?? string.Empty, "name", "founder", "executive"),
+                    Role = FindJsonString(lbEl, defaults.LeaderBio?.Role ?? string.Empty, "role", "title", "position"),
+                    Credentials = FindJsonString(lbEl, defaults.LeaderBio?.Credentials ?? string.Empty, "credentials", "degrees", "certifications"),
+                    Bio = FindJsonString(lbEl, defaults.LeaderBio?.Bio ?? string.Empty, "bio", "story", "summary"),
+                    Quote = FindJsonString(lbEl, defaults.LeaderBio?.Quote ?? string.Empty, "quote", "philosophy"),
+                    AvatarInitials = FindJsonString(lbEl, defaults.LeaderBio?.AvatarInitials ?? "MD", "avatar_initials", "initials")
                 };
             }
             else
@@ -632,20 +652,20 @@ public class AiLandingPageGeneratorService(
             }
 
             // Calculator
-            if (obj.TryGetProperty("calculator", out var calcEl) && calcEl.ValueKind == JsonValueKind.Object)
+            if (TryFindJsonObject(obj, ["calculator", "roi_estimator", "cost_estimator"], out var calcEl))
             {
                 payload.Calculator = new BespokeCalculatorConfig
                 {
-                    Title = calcEl.TryGetProperty("title", out var ct) ? ct.GetString() ?? defaults.Calculator?.Title ?? "ROI Estimator" : defaults.Calculator?.Title ?? "ROI Estimator",
-                    Subtitle = calcEl.TryGetProperty("subtitle", out var csb) ? csb.GetString() ?? defaults.Calculator?.Subtitle ?? string.Empty : defaults.Calculator?.Subtitle ?? string.Empty,
-                    SliderLabel = calcEl.TryGetProperty("slider_label", out var csl) ? csl.GetString() ?? defaults.Calculator?.SliderLabel ?? "Volume" : defaults.Calculator?.SliderLabel ?? "Volume",
-                    Unit = calcEl.TryGetProperty("unit", out var cu) ? cu.GetString() ?? "$" : "$",
+                    Title = FindJsonString(calcEl, defaults.Calculator?.Title ?? "ROI Estimator", "title"),
+                    Subtitle = FindJsonString(calcEl, defaults.Calculator?.Subtitle ?? string.Empty, "subtitle"),
+                    SliderLabel = FindJsonString(calcEl, defaults.Calculator?.SliderLabel ?? "Scope", "slider_label", "label"),
+                    Unit = FindJsonString(calcEl, defaults.Calculator?.Unit ?? "$", "unit"),
                     Min = calcEl.TryGetProperty("min", out var cmin) && cmin.TryGetInt32(out var minVal) ? minVal : defaults.Calculator?.Min ?? 1000,
                     Max = calcEl.TryGetProperty("max", out var cmax) && cmax.TryGetInt32(out var maxVal) ? maxVal : defaults.Calculator?.Max ?? 50000,
                     DefaultValue = calcEl.TryGetProperty("default_value", out var cdv) && cdv.TryGetInt32(out var defVal) ? defVal : defaults.Calculator?.DefaultValue ?? 10000,
                     Multiplier = calcEl.TryGetProperty("multiplier", out var cmul) && cmul.TryGetDouble(out var mulVal) ? mulVal : defaults.Calculator?.Multiplier ?? 2.8,
-                    ResultLabel = calcEl.TryGetProperty("result_label", out var crl) ? crl.GetString() ?? defaults.Calculator?.ResultLabel ?? "Projected Annual Return" : defaults.Calculator?.ResultLabel ?? "Projected Annual Return",
-                    ResultSuffix = calcEl.TryGetProperty("result_suffix", out var crs) ? crs.GetString() ?? defaults.Calculator?.ResultSuffix ?? " / year" : defaults.Calculator?.ResultSuffix ?? " / year"
+                    ResultLabel = FindJsonString(calcEl, defaults.Calculator?.ResultLabel ?? "Projected Annual Return", "result_label"),
+                    ResultSuffix = FindJsonString(calcEl, defaults.Calculator?.ResultSuffix ?? " / year", "result_suffix")
                 };
             }
             else
@@ -654,31 +674,31 @@ public class AiLandingPageGeneratorService(
             }
 
             // Testimonials
-            if (obj.TryGetProperty("testimonials", out var testEl) && testEl.ValueKind == JsonValueKind.Array)
+            if (TryFindJsonArray(obj, ["testimonials", "reviews", "social_proof", "customer_feedback"], out var testEl))
             {
                 foreach (var item in testEl.EnumerateArray())
                 {
-                    var quote = item.TryGetProperty("quote", out var q) ? q.GetString() ?? string.Empty : string.Empty;
-                    var author = item.TryGetProperty("author", out var a) ? a.GetString() ?? string.Empty : string.Empty;
-                    var role = item.TryGetProperty("role", out var r) ? r.GetString() ?? string.Empty : string.Empty;
-                    var initials = item.TryGetProperty("initials", out var ini) ? ini.GetString() ?? "CL" : "CL";
+                    var quote = FindJsonString(item, string.Empty, "quote", "review", "text", "feedback");
+                    var author = FindJsonString(item, string.Empty, "author", "name", "client");
+                    var role = FindJsonString(item, string.Empty, "role", "title", "location", "neighborhood");
+                    var initials = FindJsonString(item, author.Length >= 2 ? author[..2].ToUpperInvariant() : "CL", "initials");
                     var rating = item.TryGetProperty("rating", out var rt) && rt.TryGetInt32(out var rVal) ? rVal : 5;
 
-                    if (!string.IsNullOrWhiteSpace(quote) && !string.IsNullOrWhiteSpace(author))
+                    if (!string.IsNullOrWhiteSpace(quote))
                     {
-                        payload.Testimonials.Add(new BespokeTestimonialItem { Quote = quote, Author = author, Role = role, Initials = initials, Rating = rating });
+                        payload.Testimonials.Add(new BespokeTestimonialItem { Quote = quote, Author = !string.IsNullOrWhiteSpace(author) ? author : "Verified Client", Role = role, Initials = initials, Rating = rating });
                     }
                 }
             }
             if (payload.Testimonials.Count == 0) payload.Testimonials = defaults.Testimonials;
 
             // FAQs
-            if (obj.TryGetProperty("faqs", out var faqsEl) && faqsEl.ValueKind == JsonValueKind.Array)
+            if (TryFindJsonArray(obj, ["faqs", "faq_accordion", "questions", "frequently_asked_questions"], out var faqsEl))
             {
                 foreach (var item in faqsEl.EnumerateArray())
                 {
-                    var question = item.TryGetProperty("question", out var q) ? q.GetString() ?? string.Empty : string.Empty;
-                    var answer = item.TryGetProperty("answer", out var a) ? a.GetString() ?? string.Empty : string.Empty;
+                    var question = FindJsonString(item, string.Empty, "question", "q", "title");
+                    var answer = FindJsonString(item, string.Empty, "answer", "a", "response");
 
                     if (!string.IsNullOrWhiteSpace(question))
                     {
@@ -689,10 +709,10 @@ public class AiLandingPageGeneratorService(
             if (payload.Faqs.Count == 0) payload.Faqs = defaults.Faqs;
 
             // Lead Form
-            if (obj.TryGetProperty("lead_form", out var lfEl))
+            if (TryFindJsonObject(obj, ["lead_form", "lead_capture_form", "form", "contact_section"], out var lfEl))
             {
-                payload.LeadFormTitle = lfEl.TryGetProperty("title", out var lft) ? lft.GetString() ?? defaults.LeadFormTitle : defaults.LeadFormTitle;
-                payload.LeadFormSubtitle = lfEl.TryGetProperty("subtitle", out var lfs) ? lfs.GetString() ?? defaults.LeadFormSubtitle : defaults.LeadFormSubtitle;
+                payload.LeadFormTitle = FindJsonString(lfEl, defaults.LeadFormTitle, "title", "heading");
+                payload.LeadFormSubtitle = FindJsonString(lfEl, defaults.LeadFormSubtitle, "subtitle", "subheading");
             }
             else
             {
@@ -701,7 +721,7 @@ public class AiLandingPageGeneratorService(
             }
 
             // Midjourney Prompts
-            if (obj.TryGetProperty("midjourney_prompts", out var mjp) && mjp.ValueKind == JsonValueKind.Array)
+            if (TryFindJsonArray(obj, ["midjourney_prompts", "image_prompts", "visual_prompts"], out var mjp))
             {
                 foreach (var item in mjp.EnumerateArray())
                 {
@@ -718,6 +738,110 @@ public class AiLandingPageGeneratorService(
             return defaults;
         }
     }
+
+    private static string FindJsonString(JsonElement root, string defaultValue, params string[] keys)
+    {
+        if (TryFindJsonElement(root, keys, out var el))
+        {
+            if (el.ValueKind == JsonValueKind.String)
+            {
+                var s = el.GetString();
+                if (!string.IsNullOrWhiteSpace(s)) return s;
+            }
+        }
+        return defaultValue;
+    }
+
+    private static bool TryFindJsonArray(JsonElement root, string[] keys, out JsonElement arrayEl)
+    {
+        if (TryFindJsonElement(root, keys, out var el) && el.ValueKind == JsonValueKind.Array)
+        {
+            arrayEl = el;
+            return true;
+        }
+        arrayEl = default;
+        return false;
+    }
+
+    private static bool TryFindJsonObject(JsonElement root, string[] keys, out JsonElement objEl)
+    {
+        if (TryFindJsonElement(root, keys, out var el) && el.ValueKind == JsonValueKind.Object)
+        {
+            objEl = el;
+            return true;
+        }
+        objEl = default;
+        return false;
+    }
+
+    private static bool TryFindJsonElement(JsonElement root, string[] keys, out JsonElement found)
+    {
+        if (root.ValueKind != JsonValueKind.Object)
+        {
+            found = default;
+            return false;
+        }
+
+        // 1. Direct match on root
+        foreach (var key in keys)
+        {
+            if (root.TryGetProperty(key, out var el))
+            {
+                found = el;
+                return true;
+            }
+            foreach (var prop in root.EnumerateObject())
+            {
+                if (NormalizeKey(prop.Name) == NormalizeKey(key))
+                {
+                    found = prop.Value;
+                    return true;
+                }
+            }
+        }
+
+        // 2. Check common parent containers: "modules", "content", "landing_page", "hero_banner", "data"
+        string[] containerKeys = ["modules", "content", "landing_page", "hero_banner", "hero", "data"];
+        foreach (var containerKey in containerKeys)
+        {
+            if (root.TryGetProperty(containerKey, out var container) && container.ValueKind == JsonValueKind.Object)
+            {
+                if (TryFindJsonElement(container, keys, out found))
+                {
+                    return true;
+                }
+            }
+        }
+
+        // 3. Search one level deeper in any root object property
+        foreach (var prop in root.EnumerateObject())
+        {
+            if (prop.Value.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var key in keys)
+                {
+                    if (prop.Value.TryGetProperty(key, out var subEl))
+                    {
+                        found = subEl;
+                        return true;
+                    }
+                    foreach (var subProp in prop.Value.EnumerateObject())
+                    {
+                        if (NormalizeKey(subProp.Name) == NormalizeKey(key))
+                        {
+                            found = subProp.Value;
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        found = default;
+        return false;
+    }
+
+    private static string NormalizeKey(string k) => k.ToLowerInvariant().Replace("_", "").Replace("-", "");
 
     public LandingPageGenerationResult GenerateDeterministicLandingPage(LandingPageGenerationRequest request)
     {
@@ -2419,7 +2543,71 @@ public class AiLandingPageGeneratorService(
             };
         }
 
-        // 11. Default Commercial Enterprise
+        // 11. Department Store, Supermarket & Retail Mart
+        if (catLower.Contains("department") || catLower.Contains("retail") || catLower.Contains("store") || catLower.Contains("supermarket") || catLower.Contains("mart") || catLower.Contains("boutique") || catLower.Contains("mall") || catLower.Contains("shop") || catLower.Contains("grocery") || catLower.Contains("apparel"))
+        {
+            return new BespokeContentPayload
+            {
+                Headline = $"Your Premier Shopping & Lifestyle Destination in {city} — Premium Quality at Guaranteed Value",
+                Subheadline = $"Experience unmatched shopping at {bizName}. From premium groceries and fresh produce to designer apparel, electronics, and home essentials, discover everything under one modern roof in {city}.",
+                HeroBadge = $"#1 Rated Department Store & Retailer in {city}",
+                CallToAction = "Explore Latest Collections & Deals",
+                SecondaryCta = "Order via WhatsApp Hotline",
+                ConversionScore = 95,
+                Metrics =
+                [
+                    new() { Value = "15,000+", Label = "Curated Products" },
+                    new() { Value = "100%", Label = "Genuine & Fresh Guarantee" },
+                    new() { Value = "4.9 ★", Label = "Customer Rating (2,400+ Reviews)" },
+                    new() { Value = "Same-Day", Label = $"Express Home Delivery in {city}" }
+                ],
+                TrustBadges = ["100% Genuine Brands", "Air-Conditioned Multi-Floor Store", "Instant WhatsApp Ordering", "Best Price Guarantee"],
+                Services =
+                [
+                    new() { Icon = "fa-solid fa-basket-shopping", Title = "Fresh Grocery & Daily Essentials", Description = "Farm-fresh organic fruits, vegetables, imported pantry goods, and premium dairy sourced daily.", Cta = "Browse Grocery" },
+                    new() { Icon = "fa-solid fa-shirt", Title = "Designer Apparel & Footwear", Description = "Trendy menswear, womenswear, and kids' seasonal collections from top national and international brands.", Cta = "View Fashion" },
+                    new() { Icon = "fa-solid fa-kitchen-set", Title = "Home Living & Kitchenware", Description = "Modern dinnerware, cookware, luxury bedding, and smart household organizers built to last.", Cta = "Explore Home" },
+                    new() { Icon = "fa-solid fa-spray-can-sparkles", Title = "Imported Cosmetics & Fragrances", Description = "Original luxury perfumes, dermatological skincare, and authentic cosmetics with barcode verification.", Cta = "Shop Beauty" },
+                    new() { Icon = "fa-solid fa-truck-fast", Title = "Express Doorstep Delivery", Description = $"Skip the checkout line. Order via phone or WhatsApp and receive doorstep delivery anywhere in {city} within 2 hours.", Cta = "Order Delivery" }
+                ],
+                Differentiators =
+                [
+                    new() { Icon = "fa-solid fa-shield-halved", Title = "Zero Counterfeit Policy", Description = "Every item on our shelves is sourced directly from verified manufacturers and certified distributors." },
+                    new() { Icon = "fa-solid fa-hand-holding-dollar", Title = "Guaranteed Fair Pricing", Description = "Competitive supermarket pricing matched with weekly member discounts, bundle deals, and loyalty rewards." },
+                    new() { Icon = "fa-solid fa-clock-rotate-left", Title = "Hassle-Free 7-Day Returns", Description = "Shop with absolute confidence. Unopened non-perishable goods can be exchanged or returned with your receipt." }
+                ],
+                CaseStudies =
+                [
+                    new() { ClientName = $"Family Monthly Grocery Saver ({city})", ResultMetric = "22% Saved", Solution = "Smart Bulk Bundle", ResultDescription = "Household switched monthly provisions to Loyalty Club, saving Rs. 14,500 monthly while getting premium imported brands." },
+                    new() { ClientName = "Seasonal Wardrobe Transformation", ResultMetric = "4.9/5 Rating", Solution = "Curated Fashion Boutique", ResultDescription = "Complete family formal and casual wardrobe outfitting for festive season with on-site alteration services." }
+                ],
+                LeaderBio = new()
+                {
+                    Name = $"Store Leadership Team at {bizName}",
+                    Role = "General Operations & Customer Experience Directorate",
+                    Credentials = $"Serving {city} Families with Pride • 5-Star Customer Service Standard",
+                    Bio = $"Committed to providing {city} with a world-class shopping environment. Our team inspects every aisle daily to ensure peak freshness, genuine products, and warm hospitality.",
+                    Quote = "A great department store is the heartbeat of a community. We measure our success by the smiles of our shoppers and the uncompromising quality of everything we carry.",
+                    AvatarInitials = "DM"
+                },
+                Testimonials =
+                [
+                    new() { Quote = $"Shopping at {bizName} in {city} is an absolute delight. Everything is spotless, well-organized, and the staff is genuinely helpful. Their imported food section is the best in town!", Author = "Mrs. Saima Farooq", Role = $"Resident, {city}", Initials = "SF", Rating = 5 },
+                    new() { Quote = "Their WhatsApp delivery service is a lifesaver. I send my grocery list in the morning and have everything neatly packed at my doorstep before noon. 10/10 recommend!", Author = "Tariq Mehmood", Role = $"Business Executive, {city}", Initials = "TM", Rating = 5 }
+                ],
+                Faqs =
+                [
+                    new() { Question = $"What are the store operating hours for {bizName} in {city}?", Answer = "We are open 7 days a week from 9:00 AM to 11:30 PM. Weekend hours may be extended during holiday seasons." },
+                    new() { Question = "Do you deliver groceries and shopping to home?", Answer = $"Yes! We provide same-day doorstep delivery across all sectors of {city}. Simply call or message our WhatsApp delivery desk." },
+                    new() { Question = "Are the cosmetics, fragrances, and electronics 100% genuine?", Answer = "Absolutely. We are authorized retail partners for all featured brands. All electronics include official manufacturer warranties." },
+                    new() { Question = "What payment methods are accepted at checkout?", Answer = "We accept Cash, all major Debit/Credit Cards (Visa, MasterCard, UnionPay), Raast QR, and direct mobile wallet transfers." }
+                ],
+                LeadFormTitle = "Join the VIP Shopping Club & Get Exclusive Weekly Deals",
+                LeadFormSubtitle = $"Register your details to receive discount vouchers, member privilege alerts, and free delivery on your first order from {bizName}."
+            };
+        }
+
+        // 12. Default Commercial Enterprise
         return new BespokeContentPayload
         {
             Headline = $"Unlock Rapid Growth & Unrivaled {category} Excellence in {city}",

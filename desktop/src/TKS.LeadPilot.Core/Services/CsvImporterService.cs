@@ -244,7 +244,7 @@ public class CsvImporterService : ICsvImporterService
         var preamble = Encoding.UTF8.GetPreamble();
 
         // Header
-        sb.AppendLine("Id,Name,Category,Subcategory,City,StateProvince,Country,PhonePrimary,EmailPrimary,WebsiteUrl,WebsiteStatus,LeadScore,PipelineStage,SourceEngine,Tags,CreatedAtUtc");
+        sb.AppendLine("Id,Name,Category,Subcategory,FullAddress,AddressLine1,AddressLine2,Locality,City,StateProvince,PostalCode,Country,Latitude,Longitude,PhonePrimary,EmailPrimary,WebsiteUrl,WebsiteStatus,GoogleRating,GoogleReviewCount,GooglePlaceId,BusinessHours,LeadScore,PipelineStage,SourceEngine,Tags,CreatedAtUtc");
 
         foreach (var b in businesses)
         {
@@ -254,13 +254,24 @@ public class CsvImporterService : ICsvImporterService
                 EscapeCsv(b.Name),
                 EscapeCsv(b.Category),
                 EscapeCsv(b.Subcategory),
+                EscapeCsv(b.FullAddress),
+                EscapeCsv(b.AddressLine1),
+                EscapeCsv(b.AddressLine2),
+                EscapeCsv(b.Locality),
                 EscapeCsv(b.City),
                 EscapeCsv(b.StateProvince),
+                EscapeCsv(b.PostalCode),
                 EscapeCsv(b.Country),
+                b.Latitude?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty,
+                b.Longitude?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty,
                 EscapeCsv(b.PhonePrimary),
                 EscapeCsv(b.EmailPrimary),
                 EscapeCsv(b.WebsiteUrl),
                 EscapeCsv(b.WebsiteStatus.ToString()),
+                b.GoogleRating?.ToString("F1", System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty,
+                b.GoogleReviewCount?.ToString() ?? string.Empty,
+                EscapeCsv(b.GooglePlaceId),
+                EscapeCsv(b.BusinessHours),
                 b.LeadScore.ToString(),
                 EscapeCsv(b.PipelineStage?.Name ?? b.PipelineStageId),
                 EscapeCsv(b.SourceProvider),

@@ -3,6 +3,7 @@
              xmlns:vm="using:TKS.LeadPilot.UI.ViewModels"
              xmlns:m="using:TKS.LeadPilot.Core.Models"
              x:Class="TKS.LeadPilot.UI.Views.BusinessesView"
+             x:Name="RootView"
              x:DataType="vm:BusinessesViewModel">
 
     <Grid>
@@ -331,6 +332,9 @@
                                     <MenuItem Header="📋 Copy All Details (Profile Summary)"
                                               Command="{Binding CopyAllContactInfoCommand}"
                                               CommandParameter="{Binding SelectedBusiness}"/>
+                                    <MenuItem Header="📍 Copy Full Address"
+                                              Command="{Binding CopyFullAddressCommand}"
+                                              CommandParameter="{Binding SelectedBusiness}"/>
                                     <MenuItem Header="📞 Copy Phone Number"
                                               Command="{Binding CopyPhoneCommand}"
                                               CommandParameter="{Binding SelectedBusiness}"
@@ -376,12 +380,15 @@
                         </DataGrid.ContextMenu>
 
                         <DataGrid.Styles>
+                            <Style Selector="DataGridColumnHeader">
+                                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                            </Style>
                             <Style Selector="DataGridCell:nth-child(1)">
-                                <Setter Property="Padding" Value="4,0"/>
+                                <Setter Property="Padding" Value="0"/>
                                 <Setter Property="HorizontalContentAlignment" Value="Center"/>
                             </Style>
                             <Style Selector="DataGridCell:nth-child(2)">
-                                <Setter Property="Padding" Value="2,0"/>
+                                <Setter Property="Padding" Value="0"/>
                                 <Setter Property="HorizontalContentAlignment" Value="Center"/>
                             </Style>
                         </DataGrid.Styles>
@@ -391,7 +398,9 @@
                             <DataGridTemplateColumn Width="56">
                                 <DataGridTemplateColumn.Header>
                                     <Border HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0" Padding="0">
-                                        <CheckBox IsChecked="{Binding ((vm:BusinessesViewModel)DataContext).IsAllSelected, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        <CheckBox x:Name="SelectAllHeaderCheckBox"
+                                                  IsChecked="{Binding #RootView.((vm:BusinessesViewModel)DataContext).IsAllSelected, Mode=TwoWay}"
+                                                  Click="OnSelectAllHeaderClick"
                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
                                                   MinWidth="0" MinHeight="0" Margin="0" Padding="0"
                                                   ToolTip.Tip="Select / Deselect all visible leads"/>
@@ -409,22 +418,22 @@
                             </DataGridTemplateColumn>
 
                             <!-- 2. Star / Favorite Toggle (Clickable, generous width) -->
-                            <DataGridTemplateColumn Header="★" Width="38">
+                            <DataGridTemplateColumn Header="★" Width="44">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate x:DataType="m:Business">
-                                        <Button Command="{Binding ((vm:BusinessesViewModel)DataContext).ToggleStarCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                CommandParameter="{Binding}"
+                                        <Button Click="OnStarButtonClick"
                                                 Background="Transparent"
                                                 BorderThickness="0"
                                                 Padding="0"
-                                                Width="28" Height="28"
+                                                Width="32" Height="32"
                                                 HorizontalAlignment="Center"
                                                 VerticalAlignment="Center"
                                                 Cursor="Hand"
                                                 ToolTip.Tip="Click to star / favorite lead">
                                             <TextBlock Text="{Binding StarDisplay}"
-                                                       Foreground="#FBBF24"
-                                                       FontSize="13"
+                                                       Foreground="{Binding StarColor}"
+                                                       FontSize="14"
+                                                       FontWeight="Bold"
                                                        HorizontalAlignment="Center"
                                                        VerticalAlignment="Center"/>
                                         </Button>
@@ -457,7 +466,8 @@
                             <DataGridTemplateColumn Header="Location" Width="135">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate x:DataType="m:Business">
-                                        <StackPanel VerticalAlignment="Center" Spacing="2" Margin="4,0">
+                                        <StackPanel VerticalAlignment="Center" Spacing="2" Margin="4,0"
+                                                    ToolTip.Tip="{Binding FullAddress, StringFormat='📍 Full Address:&#x0a;{0}'}">
                                             <StackPanel Orientation="Horizontal" Spacing="4">
                                                 <TextBlock Text="📍" FontSize="9.5" VerticalAlignment="Center"/>
                                                 <TextBlock Text="{Binding City}"
@@ -601,14 +611,61 @@
                             <Separator Background="#223147"/>
 
                             <!-- Location Card -->
-                            <StackPanel Spacing="6">
-                                <TextBlock Text="GEOGRAPHIC LOCATION" FontSize="11" FontWeight="Bold" Foreground="#64748B"/>
+                            <StackPanel Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Text="GEOGRAPHIC LOCATION &amp; ADDRESS" FontSize="11" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                        <Button Content="📋 Copy" 
+                                                Classes="btn-secondary" 
+                                                Padding="6,2" 
+                                                FontSize="10.5"
+                                                ToolTip.Tip="Copy complete formatted address to clipboard"
+                                                Command="{Binding ((vm:BusinessesViewModel)DataContext).CopyFullAddressCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"/>
+                                        <Button Content="🗺️ Maps" 
+                                                Classes="btn-secondary" 
+                                                Padding="6,2" 
+                                                FontSize="10.5"
+                                                ToolTip.Tip="Open business in Google Maps"
+                                                Command="{Binding ((vm:BusinessesViewModel)DataContext).ViewOnGoogleMapsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"/>
+                                    </StackPanel>
+                                </Grid>
+
                                 <Grid ColumnDefinitions="*,*" Margin="0,2">
                                     <TextBlock Grid.Column="0" Text="{Binding City, StringFormat='City: {0}'}" FontSize="12" Foreground="#F8FAFC"/>
                                     <TextBlock Grid.Column="1" Text="{Binding StateProvince, StringFormat='State: {0}'}" FontSize="12" Foreground="#94A3B8"/>
                                 </Grid>
-                                <TextBlock Text="{Binding Country, StringFormat='Country: {0}'}" FontSize="12" Foreground="#F8FAFC"/>
-                                <TextBlock Text="{Binding AddressLine1, StringFormat='Address: {0}'}" FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                                <Grid ColumnDefinitions="*,*">
+                                    <TextBlock Grid.Column="0" Text="{Binding Country, StringFormat='Country: {0}'}" FontSize="12" Foreground="#F8FAFC"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding PostalCode, StringFormat='Postal: {0}', TargetNullValue='Postal: —'}" FontSize="12" Foreground="#94A3B8"/>
+                                </Grid>
+
+                                <!-- Full Address Highlight Box -->
+                                <Border Background="#0C1424" BorderBrush="#1E2E48" BorderThickness="1" CornerRadius="6" Padding="8,8" Margin="0,2">
+                                    <StackPanel Spacing="4">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <TextBlock Text="📍" FontSize="11" VerticalAlignment="Center"/>
+                                            <TextBlock Text="FULL FORMATTED ADDRESS" FontSize="9.5" FontWeight="Bold" Foreground="#38BDF8"/>
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding FullAddress}" 
+                                                   FontSize="12" 
+                                                   Foreground="#E2E8F0" 
+                                                   FontWeight="Medium" 
+                                                   TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Reverse Geocoding / Full Address Lookup Button -->
+                                <Button Content="🔍 Find / Verify Full Address" 
+                                        Classes="btn-secondary" 
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Center"
+                                        FontSize="11"
+                                        Padding="6,4"
+                                        ToolTip.Tip="Verify and resolve complete street address via global geospatial &amp; satellite databases"
+                                        Command="{Binding ((vm:BusinessesViewModel)DataContext).FindFullAddressCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"/>
                             </StackPanel>
 
                             <Separator Background="#223147"/>
@@ -810,6 +867,12 @@
                                         <MenuFlyout Placement="Bottom">
                                             <MenuItem Header="📋 Copy All Details (Profile Summary)"
                                                       Command="{Binding ((vm:BusinessesViewModel)DataContext).CopyAllContactInfoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                      CommandParameter="{Binding}"/>
+                                            <MenuItem Header="📍 Copy Full Address"
+                                                      Command="{Binding ((vm:BusinessesViewModel)DataContext).CopyFullAddressCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                      CommandParameter="{Binding}"/>
+                                            <MenuItem Header="🔍 Resolve Full Address"
+                                                      Command="{Binding ((vm:BusinessesViewModel)DataContext).FindFullAddressCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                       CommandParameter="{Binding}"/>
                                             <MenuItem Header="📞 Copy Phone Number"
                                                       Command="{Binding ((vm:BusinessesViewModel)DataContext).CopyPhoneCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"

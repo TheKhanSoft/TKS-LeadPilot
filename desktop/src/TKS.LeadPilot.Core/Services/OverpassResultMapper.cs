@@ -64,29 +64,8 @@ public static class OverpassResultMapper
                 var phone = GetTagValue(tags, "phone", "contact:phone", "contact:mobile", "mobile");
                 var email = GetTagValue(tags, "email", "contact:email");
 
-                // Address
-                var house = GetTagValue(tags, "addr:housenumber", "addr:unit");
-                var street = GetTagValue(tags, "addr:street");
-                var locality = GetTagValue(tags, "addr:suburb", "addr:neighbourhood", "addr:district");
-                var city = GetTagValue(tags, "addr:city");
-                var state = GetTagValue(tags, "addr:state", "addr:province");
-                var country = GetTagValue(tags, "addr:country");
-                var postcode = GetTagValue(tags, "addr:postcode");
-
-                if (string.IsNullOrWhiteSpace(city))
-                {
-                    city = defaultCity;
-                }
-                if (string.IsNullOrWhiteSpace(state))
-                {
-                    state = defaultState;
-                }
-                if (string.IsNullOrWhiteSpace(country))
-                {
-                    country = defaultCountry;
-                }
-
-                var address = CombineAddress(house, street);
+                // Address (Exhaustive OSM tag extraction)
+                var (address, locality, city, state, postcode, country) = ExtractOsmAddress(tags, defaultCity, defaultState, defaultCountry);
 
                 var elemType = elem.TryGetProperty("type", out var tProp) ? tProp.GetString() ?? "node" : "node";
                 var elemId = elem.TryGetProperty("id", out var idProp) ? idProp.ToString() : Guid.NewGuid().ToString("N");
@@ -104,12 +83,12 @@ public static class OverpassResultMapper
                     Id = Guid.NewGuid().ToString(),
                     Name = name.Trim(),
                     Category = category,
-                    City = city.Trim(),
-                    StateProvince = string.IsNullOrWhiteSpace(state) ? null : state.Trim(),
-                    Country = country.Trim(),
-                    AddressLine1 = string.IsNullOrWhiteSpace(address) ? null : address.Trim(),
-                    Locality = string.IsNullOrWhiteSpace(locality) ? null : locality.Trim(),
-                    PostalCode = string.IsNullOrWhiteSpace(postcode) ? null : postcode.Trim(),
+                    City = city,
+                    StateProvince = state,
+                    Country = country,
+                    AddressLine1 = address,
+                    Locality = locality,
+                    PostalCode = postcode,
                     PhonePrimary = string.IsNullOrWhiteSpace(phone) ? null : phone.Trim(),
                     EmailPrimary = string.IsNullOrWhiteSpace(email) ? null : email.Trim(),
                     WebsiteUrl = string.IsNullOrWhiteSpace(website) ? null : website.Trim(),
@@ -202,6 +181,55 @@ public static class OverpassResultMapper
         };
     }
 
+    public static (string? AddressLine1, string? Locality, string City, string? State, string? Postcode, string Country) ExtractOsmAddress(
+        JsonElement tags, string defaultCity, string? defaultState, string defaultCountry)
+    {
+        var fullAddr = GetTagValue(tags, "addr:full", "contact:full_address", "address");
+        var houseName = GetTagValue(tags, "addr:housename", "building:name");
+        var houseNumber = GetTagValue(tags, "addr:housenumber", "addr:unit", "addr:flats", "addr:floor", "addr:door");
+        var street = GetTagValue(tags, "addr:street", "addr:place");
+        var block = GetTagValue(tags, "addr:block", "addr:sector", "addr:subdistrict");
+        var suburb = GetTagValue(tags, "addr:suburb", "addr:neighbourhood", "addr:mohalla", "addr:quarter");
+        var district = GetTagValue(tags, "addr:district", "addr:county");
+        var postcode = GetTagValue(tags, "addr:postcode", "postal_code");
+        var city = GetTagValue(tags, "addr:city", "addr:town", "addr:village");
+        var state = GetTagValue(tags, "addr:state", "addr:province", "addr:region");
+        var country = GetTagValue(tags, "addr:country");
+
+        if (string.IsNullOrWhiteSpace(city)) city = defaultCity;
+        if (string.IsNullOrWhiteSpace(state)) state = defaultState;
+        if (string.IsNullOrWhiteSpace(country)) country = defaultCountry;
+
+        string? addressLine1;
+        if (!string.IsNullOrWhiteSpace(fullAddr))
+        {
+            addressLine1 = fullAddr.Trim();
+        }
+        else
+        {
+            var streetParts = new List<string>();
+            if (!string.IsNullOrWhiteSpace(houseName)) streetParts.Add(houseName.Trim());
+            if (!string.IsNullOrWhiteSpace(houseNumber) && !string.IsNullOrWhiteSpace(street))
+                streetParts.Add($"{houseNumber.Trim()} {street.Trim()}");
+            else if (!string.IsNullOrWhiteSpace(houseNumber))
+                streetParts.Add(houseNumber.Trim());
+            else if (!string.IsNullOrWhiteSpace(street))
+                streetParts.Add(street.Trim());
+
+            if (!string.IsNullOrWhiteSpace(block)) streetParts.Add(block.Trim());
+
+            addressLine1 = streetParts.Count > 0 ? string.Join(", ", streetParts) : null;
+        }
+
+        var localityParts = new List<string>();
+        if (!string.IsNullOrWhiteSpace(suburb)) localityParts.Add(suburb.Trim());
+        if (!string.IsNullOrWhiteSpace(district) && !localityParts.Any(p => p.Contains(district.Trim(), StringComparison.OrdinalIgnoreCase)))
+            localityParts.Add(district.Trim());
+        var locality = localityParts.Count > 0 ? string.Join(", ", localityParts) : null;
+
+        return (addressLine1, locality, city.Trim(), state?.Trim(), postcode?.Trim(), country.Trim());
+    }
+
     private static string? CombineAddress(string? house, string? street)
     {
         if (!string.IsNullOrWhiteSpace(house) && !string.IsNullOrWhiteSpace(street))
@@ -259,17 +287,36 @@ public static class OverpassResultMapper
                 }
 
                 var address = string.Empty;
+                string? locality = null;
+                string? postcode = null;
                 var city = defaultCity;
                 var state = defaultState;
                 var country = defaultCountry;
 
                 if (elem.TryGetProperty("address", out var addr) && addr.ValueKind == JsonValueKind.Object)
                 {
-                    var road = GetTagValue(addr, "road", "street");
+                    var house = GetTagValue(addr, "house_number", "building");
+                    var road = GetTagValue(addr, "road", "street", "pedestrian");
+                    var block = GetTagValue(addr, "block", "sector");
                     var suburb = GetTagValue(addr, "suburb", "neighbourhood", "residential");
-                    address = CombineAddress(road, suburb) ?? string.Empty;
+                    var district = GetTagValue(addr, "city_district", "district", "county");
+                    postcode = GetTagValue(addr, "postcode", "postal_code");
 
-                    var addrCity = GetTagValue(addr, "city", "town", "county");
+                    var streetParts = new List<string>();
+                    if (!string.IsNullOrWhiteSpace(house) && !string.IsNullOrWhiteSpace(road)) streetParts.Add($"{house} {road}");
+                    else if (!string.IsNullOrWhiteSpace(road)) streetParts.Add(road);
+                    else if (!string.IsNullOrWhiteSpace(house)) streetParts.Add(house);
+
+                    if (!string.IsNullOrWhiteSpace(block)) streetParts.Add(block);
+
+                    address = streetParts.Count > 0 ? string.Join(", ", streetParts) : string.Empty;
+
+                    var locParts = new List<string>();
+                    if (!string.IsNullOrWhiteSpace(suburb)) locParts.Add(suburb);
+                    if (!string.IsNullOrWhiteSpace(district) && !locParts.Any(p => p.Contains(district, StringComparison.OrdinalIgnoreCase))) locParts.Add(district);
+                    locality = locParts.Count > 0 ? string.Join(", ", locParts) : null;
+
+                    var addrCity = GetTagValue(addr, "city", "town", "village", "municipality");
                     if (!string.IsNullOrWhiteSpace(addrCity)) city = addrCity;
 
                     var addrState = GetTagValue(addr, "state", "province");
@@ -295,6 +342,8 @@ public static class OverpassResultMapper
                     StateProvince = state,
                     Country = country.Trim(),
                     AddressLine1 = string.IsNullOrWhiteSpace(address) ? null : address.Trim(),
+                    Locality = locality,
+                    PostalCode = postcode,
                     PhonePrimary = phone,
                     WebsiteUrl = website,
                     EmailPrimary = email,
@@ -380,6 +429,8 @@ public static class OverpassResultMapper
                 var osmType = GetJsonPropertyString(props, "osm_type") ?? "N";
                 var gmb = InferCommercialGmbData(name, category, null, null, null, null, null);
 
+                var locality = GetJsonPropertyString(props, "locality");
+
                 results.Add(new Business
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -389,6 +440,7 @@ public static class OverpassResultMapper
                     StateProvince = state,
                     Country = country.Trim(),
                     AddressLine1 = string.IsNullOrWhiteSpace(address) ? null : address.Trim(),
+                    Locality = !string.IsNullOrWhiteSpace(locality) ? locality.Trim() : (!string.IsNullOrWhiteSpace(district) && (address == null || !address.Contains(district)) ? district.Trim() : null),
                     PostalCode = postcode,
                     Latitude = lat,
                     Longitude = lon,
@@ -474,7 +526,8 @@ public static class OverpassResultMapper
                     City = defaultCity,
                     StateProvince = defaultState,
                     Country = defaultCountry,
-                    AddressLine1 = snippet.Length > 120 ? snippet[..120] + "..." : snippet,
+                    AddressLine1 = null,
+                    Description = snippet.Length > 250 ? snippet[..250] + "..." : snippet,
                     PhonePrimary = phone,
                     WebsiteUrl = targetUrl,
                     WebsiteStatus = WebsiteStatus.ActiveWebsite,
@@ -765,7 +818,8 @@ public static class OverpassResultMapper
                         City = defaultCity,
                         StateProvince = defaultState,
                         Country = defaultCountry,
-                        AddressLine1 = $"{defaultCity}, {defaultCountry}",
+                        AddressLine1 = null,
+                        Description = !string.IsNullOrWhiteSpace(desc) ? desc.Trim() : null,
                         PhonePrimary = phone?.Trim(),
                         WebsiteUrl = website?.Trim(),
                         WebsiteStatus = !string.IsNullOrWhiteSpace(website) ? WebsiteStatus.ActiveWebsite : WebsiteStatus.NoWebsite,
@@ -863,7 +917,8 @@ public static class OverpassResultMapper
                     City = defaultCity,
                     StateProvince = defaultState,
                     Country = defaultCountry,
-                    AddressLine1 = $"{defaultCity}, {defaultCountry}",
+                    AddressLine1 = null,
+                    Description = !string.IsNullOrWhiteSpace(desc) ? desc.Trim() : null,
                     PhonePrimary = phone?.Trim(),
                     WebsiteUrl = website?.Trim(),
                     WebsiteStatus = !string.IsNullOrWhiteSpace(website) ? WebsiteStatus.ActiveWebsite : WebsiteStatus.NoWebsite,
@@ -935,7 +990,7 @@ public static class OverpassResultMapper
                     City = defaultCity,
                     StateProvince = defaultState,
                     Country = defaultCountry,
-                    AddressLine1 = $"{defaultCity}, {defaultCountry}",
+                    AddressLine1 = null,
                     PhonePrimary = phone,
                     WebsiteUrl = url.Trim(),
                     WebsiteStatus = WebsiteStatus.ActiveWebsite,

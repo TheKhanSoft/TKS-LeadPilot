@@ -1351,7 +1351,16 @@ public partial class BusinessesViewModel : ViewModelBase
 
         try
         {
-            var query = Uri.EscapeDataString($"{b.Name} {b.City} {b.Country}".Trim());
+            string query;
+            if (b.Latitude.HasValue && b.Longitude.HasValue)
+            {
+                query = $"{b.Latitude.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)},{b.Longitude.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)}";
+            }
+            else
+            {
+                var addrPart = !string.IsNullOrWhiteSpace(b.FullAddress) && b.FullAddress != "—" ? b.FullAddress : $"{b.City} {b.Country}";
+                query = Uri.EscapeDataString($"{b.Name} {addrPart}".Trim());
+            }
             var url = $"https://www.google.com/maps/search/?api=1&query={query}";
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
             {
@@ -1367,6 +1376,70 @@ public partial class BusinessesViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    public async Task CopyFullAddress(Business? business = null)
+    {
+        var b = business ?? SelectedBusiness;
+        if (b == null) return;
+
+        var addr = b.FullAddress;
+        if (string.IsNullOrWhiteSpace(addr) || addr == "—")
+        {
+            StatusMessage = $"⚠️ No street address registered for '{b.Name}'.";
+            return;
+        }
+
+        await CopyToClipboardAsync(addr);
+        StatusMessage = $"📍 Full address for \"{b.Name}\" copied to clipboard!";
+    }
+
+    [RelayCommand]
+    public async Task FindFullAddress(Business? business = null)
+    {
+        var b = business ?? SelectedBusiness;
+        if (b == null) return;
+
+        try
+        {
+            StatusMessage = $"🔍 Finding complete verified address for '{b.Name}'...";
+
+            DetailedAddressResult? res = null;
+            if (b.Latitude.HasValue && b.Longitude.HasValue)
+            {
+                res = await _geoLocationService.ReverseGeocodeAsync(b.Latitude.Value, b.Longitude.Value);
+            }
+
+            if (res == null || string.IsNullOrWhiteSpace(res.AddressLine1))
+            {
+                res = await _geoLocationService.FindAddressAsync(b.Name, b.City, b.Country);
+            }
+
+            if (res != null && (!string.IsNullOrWhiteSpace(res.AddressLine1) || !string.IsNullOrWhiteSpace(res.FullAddress)))
+            {
+                if (!string.IsNullOrWhiteSpace(res.AddressLine1)) b.AddressLine1 = res.AddressLine1;
+                else if (!string.IsNullOrWhiteSpace(res.FullAddress)) b.AddressLine1 = res.FullAddress;
+
+                if (!string.IsNullOrWhiteSpace(res.Locality) && string.IsNullOrWhiteSpace(b.Locality)) b.Locality = res.Locality;
+                if (!string.IsNullOrWhiteSpace(res.PostalCode) && string.IsNullOrWhiteSpace(b.PostalCode)) b.PostalCode = res.PostalCode;
+                if (res.Latitude.HasValue && !b.Latitude.HasValue) b.Latitude = res.Latitude;
+                if (res.Longitude.HasValue && !b.Longitude.HasValue) b.Longitude = res.Longitude;
+
+                b.NotifyAddressChanged();
+                await _businessRepository.UpdateAsync(b);
+
+                StatusMessage = $"📍 Found full address for '{b.Name}': {b.FullAddress}";
+            }
+            else
+            {
+                StatusMessage = $"ℹ️ Verified location for '{b.Name}' is {b.FullAddress}. No further street-level detail available.";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Address lookup error: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
     public async Task CopyAllContactInfo(Business? business = null)
     {
         var b = business ?? SelectedBusiness;
@@ -1377,7 +1450,8 @@ public partial class BusinessesViewModel : ViewModelBase
         sb.AppendLine($"🏢 Business: {b.Name}");
         sb.AppendLine($"📂 Category: {b.Category}");
         sb.AppendLine($"📍 Location: {b.City}, {b.StateProvince}, {b.Country}");
-        if (!string.IsNullOrWhiteSpace(b.AddressLine1)) sb.AppendLine($"🏠 Address: {b.AddressLine1}");
+        if (!string.IsNullOrWhiteSpace(b.FullAddress) && b.FullAddress != "—") sb.AppendLine($"🏠 Full Address: {b.FullAddress}");
+        else if (!string.IsNullOrWhiteSpace(b.AddressLine1)) sb.AppendLine($"🏠 Address: {b.AddressLine1}");
         if (!string.IsNullOrWhiteSpace(b.PhonePrimary)) sb.AppendLine($"📞 Phone: {b.PhonePrimary}");
         if (!string.IsNullOrWhiteSpace(digits)) sb.AppendLine($"💬 WhatsApp: https://wa.me/{digits}");
         if (!string.IsNullOrWhiteSpace(b.EmailPrimary)) sb.AppendLine($"✉️ Email: {b.EmailPrimary}");
