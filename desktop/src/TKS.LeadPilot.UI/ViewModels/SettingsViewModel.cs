@@ -30,7 +30,7 @@ public partial class SettingsViewModel : ViewModelBase
     private int _dailyAiUsedToday = 0;
 
     [ObservableProperty]
-    private string _selectedGeminiModel = "gemini-3.8-flash";
+    private string _selectedGeminiModel = "gemini-3.5-flash-lite";
 
     // Google Places Settings (Stage 7 - Google Places API New)
     [ObservableProperty]
@@ -143,10 +143,10 @@ public partial class SettingsViewModel : ViewModelBase
         IsAiDisabled = !aiConfig.IsEnabled;
         DailyAiLimit = aiConfig.DailyRequestCeiling;
         DailyAiUsedToday = aiConfig.DailyRequestsUsed;
-        if (string.IsNullOrWhiteSpace(aiConfig.ModelName) || aiConfig.ModelName.Contains("1.5-flash") || aiConfig.ModelName.Contains("2.5-flash"))
+        if (string.IsNullOrWhiteSpace(aiConfig.ModelName) || aiConfig.ModelName.Contains("1.5-flash") || aiConfig.ModelName.Contains("2.5-flash") || aiConfig.ModelName.Contains("3.8-flash"))
         {
-            SelectedGeminiModel = "gemini-3.8-flash";
-            aiConfig.ModelName = "gemini-3.8-flash";
+            SelectedGeminiModel = "gemini-3.5-flash-lite";
+            aiConfig.ModelName = "gemini-3.5-flash-lite";
             await _aiSynthesizer.SaveConfigAsync(aiConfig);
         }
         else

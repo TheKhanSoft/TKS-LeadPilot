@@ -299,9 +299,11 @@ public class DatabaseInitializer : IDatabaseInitializer
             "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.2, \"GoogleReviewCount\" = 29, \"BusinessHours\" = '9:00 AM - 6:00 PM' WHERE \"Name\" LIKE '%Indus Valley%';",
             "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.9, \"GoogleReviewCount\" = 48, \"BusinessHours\" = '9:00 AM - 6:00 PM' WHERE \"Name\" = 'THeKhanSoft';",
             "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.8, \"GoogleReviewCount\" = 35, \"BusinessHours\" = '8:00 AM - 5:00 PM' WHERE \"Name\" = 'TKS Nexa';",
-            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.3, \"GoogleReviewCount\" = 120, \"BusinessHours\" = '10:00 AM - 7:00 PM' WHERE (\"Category\" LIKE '%Real Estate%' OR \"Name\" LIKE '%Real Estate%') AND \"IsGoogleVerified\" = 0;",
-            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.1, \"GoogleReviewCount\" = 210, \"BusinessHours\" = '9:00 AM - 10:00 PM' WHERE (\"Category\" LIKE '%Department store%' OR \"Category\" LIKE '%Retail%') AND \"IsGoogleVerified\" = 0;",
-            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 1, \"GoogleRating\" = 4.2, \"GoogleReviewCount\" = 85, \"BusinessHours\" = '9:00 AM - 7:00 PM' WHERE (\"PhonePrimary\" IS NOT NULL AND LENGTH(\"PhonePrimary\") > 5) AND (\"Category\" LIKE '%Hospital%' OR \"Category\" LIKE '%Clinic%' OR \"Category\" LIKE '%Healthcare%' OR \"Category\" LIKE '%Dent%' OR \"Category\" LIKE '%Pharm%' OR \"Category\" LIKE '%Bank%' OR \"Category\" LIKE '%Hotel%' OR \"Category\" LIKE '%Restaurant%' OR \"Category\" LIKE '%Law%' OR \"Category\" LIKE '%Software%') AND \"IsGoogleVerified\" = 0;"
+            // Self-heal fabricated GMB verifications: Reset synthetic gmb_ IDs and blanket verified leads back to authentic unverified status
+            "UPDATE \"Businesses\" SET \"IsGoogleVerified\" = 0, \"GoogleRating\" = NULL, \"GoogleReviewCount\" = NULL, \"GooglePlaceId\" = NULL WHERE \"GooglePlaceId\" LIKE 'gmb_%' OR (\"GooglePlaceId\" IS NULL AND \"IsGoogleVerified\" = 1) OR \"GooglePlaceId\" = '';",
+            // Self-heal corrupted categories corrupted by search keywords, company names or noise
+            "UPDATE \"Businesses\" SET \"Category\" = 'Software & IT Agencies' WHERE \"Category\" IN ('The Khan Soft', 'THeKhanSoft', 'TheKhanSoft', 'thekhansoft', 'software company', 'Software Company') OR \"Category\" LIKE '%scientific article%' OR \"Category\" LIKE '%patent%';",
+            "UPDATE \"Businesses\" SET \"Category\" = 'Healthcare & Dental' WHERE \"Category\" = 'Yes' AND (\"Name\" LIKE '%Health%' OR \"Name\" LIKE '%Clinic%' OR \"Name\" LIKE '%Dental%' OR \"Name\" LIKE '%Hospital%');"
         ];
 
         foreach (var sql in gmbMigrations)

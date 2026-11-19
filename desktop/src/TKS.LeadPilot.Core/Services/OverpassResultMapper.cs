@@ -1011,57 +1011,21 @@ public static class OverpassResultMapper
     public static (bool HasGmb, double? Rating, int? Reviews, string? PlaceId, string? Hours) InferCommercialGmbData(
         string name, string category, string? phone, string? website, double? existingStars = null, string? existingHours = null, string? existingPlaceId = null)
     {
-        if (!string.IsNullOrWhiteSpace(existingPlaceId) || (existingStars.HasValue && existingStars.Value > 0))
+        // Authenticity rule: Only return HasGmb = true if an authentic Google Place ID exists (e.g. ChIJ... from Google Places API or Serper)
+        // Never synthesize fake 'gmb_...' place IDs or fabricated star ratings for unverified leads.
+        if (!string.IsNullOrWhiteSpace(existingPlaceId) && !existingPlaceId.StartsWith("gmb_", StringComparison.OrdinalIgnoreCase))
         {
-            var h0 = Math.Abs(name.GetHashCode());
             return (
                 true,
-                existingStars ?? Math.Round(3.9 + (h0 % 9) * 0.1, 1),
-                45 + (h0 % 350),
-                existingPlaceId ?? $"gmb_{h0:x8}",
+                existingStars ?? 4.0,
+                null,
+                existingPlaceId,
                 !string.IsNullOrWhiteSpace(existingHours) ? existingHours : GetDefaultHoursForCategory(category)
             );
         }
 
-        if (ShouldHaveGoogleBusinessProfile(name, category, phone, website))
-        {
-            var h = Math.Abs(name.GetHashCode());
-            var text = $"{name} {category}".ToLowerInvariant();
-            double rating = Math.Round(3.9 + (h % 9) * 0.1, 1);
-            int reviews;
-            string hours;
-
-            if (text.Contains("hospital") || text.Contains("hotel") || text.Contains("lodging"))
-            {
-                reviews = 350 + (h % 2500);
-                hours = "Open 24 hours";
-            }
-            else if (text.Contains("bank") || text.Contains("finance"))
-            {
-                reviews = 40 + (h % 150);
-                hours = "8:30 AM - 5:30 PM";
-            }
-            else if (text.Contains("restaurant") || text.Contains("cafe") || text.Contains("dining") || text.Contains("food"))
-            {
-                reviews = 150 + (h % 1800);
-                hours = "12:00 PM - 12:00 AM";
-            }
-            else
-            {
-                reviews = 35 + (h % 300);
-                hours = "9:00 AM - 7:00 PM";
-            }
-
-            return (
-                true,
-                rating,
-                reviews,
-                $"gmb_{h:x8}",
-                !string.IsNullOrWhiteSpace(existingHours) ? existingHours : hours
-            );
-        }
-
-        return (false, null, null, null, existingHours);
+        // Unverified leads discovered from free engines have no authentic GMB profile attached yet
+        return (false, null, null, null, !string.IsNullOrWhiteSpace(existingHours) ? existingHours : GetDefaultHoursForCategory(category));
     }
 
     private static string GetDefaultHoursForCategory(string category)

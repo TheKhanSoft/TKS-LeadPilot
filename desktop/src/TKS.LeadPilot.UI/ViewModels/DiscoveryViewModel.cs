@@ -675,17 +675,15 @@ public partial class DiscoveryViewModel : ViewModelBase
         SelectedLead = null;
         ClearNearby();
 
-        if (ResetLocationOnClear)
-        {
-            SelectedCountry = "All Countries";
-            SelectedState = "All States/Provinces";
-            SelectedCity = "All Cities";
-            SelectedCategory = Categories.FirstOrDefault() ?? "⭐ All Commercial Businesses & Enterprises";
-        }
+        SelectedCountry = "All Countries";
+        SelectedState = "All States/Provinces";
+        SelectedCity = "All Cities";
+        SelectedCategory = Categories.FirstOrDefault() ?? "⭐ All Commercial Businesses & Enterprises";
 
-        // 2. Remove leads that are now in the database
+        // 2. Remove leads that were selected/imported or already in the database
         var remaining = DiscoveredLeads
-            .Where(l => !_recentlyImportedIds.Contains(l.Business.Id) &&
+            .Where(l => !l.IsSelectedForImport &&
+                        !_recentlyImportedIds.Contains(l.Business.Id) &&
                         (string.IsNullOrEmpty(l.Business.GooglePlaceId) || !_recentlyImportedPlaceIds.Contains(l.Business.GooglePlaceId)) &&
                         !l.IsDuplicate &&
                         l.DuplicateMatch == null)
@@ -694,9 +692,13 @@ public partial class DiscoveryViewModel : ViewModelBase
         var removedCount = DiscoveredLeads.Count - remaining.Count;
 
         DiscoveredLeads.Clear();
-        foreach (var lead in remaining)
+        // If user wants completely clean workspace (or if all were imported), grid remains empty
+        if (!ResetLocationOnClear && remaining.Count > 0)
         {
-            DiscoveredLeads.Add(lead);
+            foreach (var lead in remaining)
+            {
+                DiscoveredLeads.Add(lead);
+            }
         }
 
         TotalFoundCount = DiscoveredLeads.Count;
@@ -708,15 +710,9 @@ public partial class DiscoveryViewModel : ViewModelBase
         OnPropertyChanged(nameof(HasNoDiscoveredLeads));
 
         IsImportSuccessAlertOpen = false;
-
-        if (DiscoveredLeads.Count == 0)
-        {
-            StatusMessage = $"🧹 Workspace cleared. All {removedCount} imported lead(s) removed from grid and search fields reset.";
-        }
-        else
-        {
-            StatusMessage = $"🧹 Workspace cleared. Removed {removedCount} imported lead(s); {remaining.Count} unimported lead(s) remain in grid. Search fields reset.";
-        }
+        StatusMessage = DiscoveredLeads.Count == 0
+            ? $"🧹 Workspace cleared. All {removedCount} imported lead(s) removed from grid and search fields reset."
+            : $"🧹 {removedCount} imported lead(s) cleared from grid. {DiscoveredLeads.Count} remaining lead(s).";
     }
 
     [RelayCommand]

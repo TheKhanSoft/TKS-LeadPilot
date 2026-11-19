@@ -13,7 +13,7 @@ public enum AiTone
 public class GeminiConfig
 {
     public bool IsEnabled { get; set; } = true;
-    public string ModelName { get; set; } = "gemini-3.8-flash";
+    public string ModelName { get; set; } = "gemini-3.5-flash-lite";
     public int DailyRequestCeiling { get; set; } = 1200; // Free tier ceiling
     public int DailyRequestsUsed { get; set; } = 0;
     public DateTime LastResetDateUtc { get; set; } = DateTime.UtcNow.Date;

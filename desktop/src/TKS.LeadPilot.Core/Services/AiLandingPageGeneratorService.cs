@@ -148,7 +148,7 @@ public class AiLandingPageGeneratorService(
         var prompt = BuildGeminiPrompt(request);
 
         // Production multi-model fallback chain ordered by current verified latency and quota availability
-        string[] candidateModels = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-3.1-flash-lite"];
+        string[] candidateModels = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-3.1-flash-lite", "gemini-2.0-flash"];
         HttpResponseMessage? lastResponse = null;
         string lastErrorDetail = string.Empty;
 
@@ -188,7 +188,7 @@ public class AiLandingPageGeneratorService(
                     "application/json");
 
                 using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-                cts.CancelAfter(TimeSpan.FromSeconds(8));
+                cts.CancelAfter(TimeSpan.FromSeconds(12));
 
                 var response = await _httpClient.PostAsync(requestUri, jsonContent, cts.Token);
                 lastResponse = response;
@@ -784,15 +784,15 @@ public class AiLandingPageGeneratorService(
         return style switch
         {
             LandingPageDesignStyle.MidnightLuxuryGold =>
-                ("#D97706", "#F59E0B", "#0A0E17", "#131B2A", "#F8FAFC", "bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold"),
+                ("#D97706", "#F59E0B", "#0A0E17", "#131B2A", "#F8FAFC", "bg-gradient-to-r from-amber-500 to-amber-600 hover:brightness-110 text-slate-950 font-bold shadow-lg shadow-amber-500/20"),
             LandingPageDesignStyle.TrustworthyEmerald =>
-                ("#059669", "#10B981", "#022C22", "#064E3B", "#ECFDF5", "bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold"),
+                ("#059669", "#10B981", "#061A14", "#0D2E24", "#F0FDF4", "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-slate-950 font-bold shadow-lg shadow-emerald-500/25"),
             LandingPageDesignStyle.BoldVibrantIndigo =>
-                ("#4F46E5", "#6366F1", "#0F0D24", "#1E1B4B", "#F5F3FF", "bg-indigo-600 hover:bg-indigo-700 text-white font-bold"),
+                ("#4F46E5", "#6366F1", "#0C0A1D", "#161338", "#F5F3FF", "bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold shadow-lg shadow-indigo-500/25"),
             LandingPageDesignStyle.MinimalistMonochrome =>
-                ("#E4E4E7", "#FAFAFA", "#09090B", "#18181B", "#FAFAFA", "bg-white hover:bg-slate-200 text-slate-950 font-bold"),
+                ("#E4E4E7", "#FAFAFA", "#09090B", "#18181B", "#FAFAFA", "bg-white hover:bg-slate-200 text-slate-950 font-bold shadow-lg"),
             _ => // ModernSlateCyan
-                ("#0284C7", "#06B6D4", "#0B1322", "#131F33", "#F8FAFC", "bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold")
+                ("#0284C7", "#06B6D4", "#0B1322", "#131F33", "#F8FAFC", "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-slate-950 font-bold shadow-lg shadow-cyan-500/25")
         };
     }
 
@@ -950,7 +950,7 @@ public class AiLandingPageGeneratorService(
                 case LandingPageArchetype.LocalServiceBooking:
                     // 2-COLUMN LOCAL CLINIC / URGENT SERVICE HERO
                     sb.AppendLine("        <!-- Local Service Booking 2-Column Hero -->");
-                    sb.AppendLine("        <section class=\"relative pt-16 pb-20 md:pt-24 md:pb-28 overflow-hidden\">");
+                    sb.AppendLine("        <section class=\"relative pt-10 pb-16 md:pt-14 md:pb-20 overflow-hidden\">");
                     sb.AppendLine($"            <div class=\"absolute -top-40 left-1/2 transform -translate-x-1/2 w-[900px] h-[550px] rounded-full blur-3xl opacity-20 pointer-events-none\" style=\"background: radial-gradient(circle, {accentHex}, transparent 70%);\"></div>");
                     sb.AppendLine("            <div class=\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10\">");
                     sb.AppendLine("                <div class=\"grid grid-cols-1 lg:grid-cols-12 gap-12 items-center\">");
@@ -1016,7 +1016,7 @@ public class AiLandingPageGeneratorService(
                 case LandingPageArchetype.ModernSaaSTech:
                     // MODERN SAAS TECH PRODUCT HERO WITH CODE / DASHBOARD UI PREVIEW
                     sb.AppendLine("        <!-- Modern SaaS & Tech Product Hero -->");
-                    sb.AppendLine("        <section class=\"relative pt-20 pb-28 md:pt-32 md:pb-36 overflow-hidden\">");
+                    sb.AppendLine("        <section class=\"relative pt-12 pb-20 md:pt-16 md:pb-24 overflow-hidden\">");
                     sb.AppendLine($"            <div class=\"absolute -top-40 left-1/2 transform -translate-x-1/2 w-[1000px] h-[550px] rounded-full blur-3xl opacity-25 pointer-events-none\" style=\"background: radial-gradient(circle, {accentHex}, transparent 70%);\"></div>");
                     sb.AppendLine("            <div class=\"max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10\">");
                     sb.AppendLine($"                <div class=\"inline-flex items-center space-x-2 px-4 py-1.5 rounded-full border border-cyan-500/40 bg-cyan-950/40 text-xs font-semibold uppercase tracking-wider mb-8 text-cyan-400\">");
@@ -1099,7 +1099,7 @@ public class AiLandingPageGeneratorService(
                 default:
                     // HIGH-CONVERTING 2-COLUMN SPLIT HERO (LeadGenerationFunnel & Ecommerce)
                     sb.AppendLine("        <!-- High-Converting 2-Column Split Hero -->");
-                    sb.AppendLine("        <section class=\"relative pt-16 pb-20 md:pt-24 md:pb-28 overflow-hidden\">");
+                    sb.AppendLine("        <section class=\"relative pt-10 pb-16 md:pt-14 md:pb-20 overflow-hidden\">");
                     sb.AppendLine($"            <div class=\"absolute -top-40 left-1/2 transform -translate-x-1/2 w-[900px] h-[550px] rounded-full blur-3xl opacity-20 pointer-events-none\" style=\"background: radial-gradient(circle, {accentHex}, transparent 70%);\"></div>");
                     sb.AppendLine("            <div class=\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10\">");
                     sb.AppendLine("                <div class=\"grid grid-cols-1 lg:grid-cols-12 gap-12 items-center\">");

@@ -521,7 +521,7 @@
               IsVisible="{Binding IsImportSuccessAlertOpen}"
               HorizontalAlignment="Stretch"
               VerticalAlignment="Stretch">
-            <Border Width="520"
+            <Border Width="560"
                     Background="#0F172A"
                     BorderBrush="#10B981"
                     BorderThickness="1.5"
@@ -586,8 +586,8 @@
                                 Classes="btn-accent"
                                 HorizontalAlignment="Stretch"
                                 HorizontalContentAlignment="Center"
-                                Padding="14,10"
-                                FontSize="12.5"
+                                Padding="12,9"
+                                FontSize="12"
                                 FontWeight="Bold"
                                 Margin="0,0,6,0"
                                 ToolTip.Tip="Removes imported leads from the results grid and resets search fields for a clean workspace"/>
@@ -598,8 +598,8 @@
                                 Classes="btn-secondary"
                                 HorizontalAlignment="Stretch"
                                 HorizontalContentAlignment="Center"
-                                Padding="14,10"
-                                FontSize="12.5"
+                                Padding="12,9"
+                                FontSize="12"
                                 Margin="6,0,0,0"
                                 ToolTip.Tip="Keeps all leads in the discovery table flagged with database badges"/>
                     </Grid>

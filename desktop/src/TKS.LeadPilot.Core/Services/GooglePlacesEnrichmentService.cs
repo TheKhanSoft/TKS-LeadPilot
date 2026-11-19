@@ -645,7 +645,7 @@ public class GooglePlacesEnrichmentService : IGooglePlacesEnrichmentService
         {
             Id = Guid.NewGuid().ToString(),
             Name = parsed.BusinessName?.Trim() ?? "Commercial Business",
-            Category = query,
+            Category = CategoryResolver.ResolveEffectiveCategory(new DiscoveryQuery { CustomSearchTerm = query, City = city, Country = country }, parsed.BusinessName, null),
             City = city,
             Country = country,
             AddressLine1 = parsed.FormattedAddress ?? $"{city}, {country}",

@@ -20,7 +20,7 @@ public partial class AiProposalSynthesizer : IAiProposalSynthesizer
     private readonly HttpClient _httpClient;
     private readonly ISecretVault _secretVault;
 
-    private static GeminiConfig _config = new() { ModelName = "gemini-3.8-flash" };
+    private static GeminiConfig _config = new() { ModelName = "gemini-3.5-flash-lite" };
     private static readonly SemaphoreSlim ConfigLock = new(1, 1);
     private static readonly Queue<DateTime> RequestWindow = new();
 
@@ -65,10 +65,10 @@ public partial class AiProposalSynthesizer : IAiProposalSynthesizer
         try
         {
             _config.IsEnabled = config.IsEnabled;
-            var chosen = !string.IsNullOrWhiteSpace(config.ModelName) ? config.ModelName.Trim() : "gemini-3.8-flash";
-            if (chosen.Contains("1.5-flash") || chosen.Contains("2.5-flash"))
+            var chosen = !string.IsNullOrWhiteSpace(config.ModelName) ? config.ModelName.Trim() : "gemini-3.5-flash-lite";
+            if (chosen.Contains("1.5-flash") || chosen.Contains("2.5-flash") || chosen.Contains("3.8-flash"))
             {
-                chosen = "gemini-3.8-flash";
+                chosen = "gemini-3.5-flash-lite";
             }
             _config.ModelName = chosen;
             _config.DailyRequestCeiling = Math.Max(10, Math.Min(1500, config.DailyRequestCeiling));
@@ -723,7 +723,7 @@ public partial class AiProposalSynthesizer : IAiProposalSynthesizer
             };
 
             var jsonPayload = JsonSerializer.Serialize(requestBody);
-            string[] candidateModels = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-flash", "gemini-3.5-flash-lite"];
+            string[] candidateModels = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-3.1-flash-lite", "gemini-2.0-flash", "gemini-1.5-flash"];
             string? respJson = null;
 
             foreach (var modelName in candidateModels)
@@ -818,7 +818,6 @@ public partial class AiProposalSynthesizer : IAiProposalSynthesizer
 
         if (!canUseAi)
         {
-            // Deterministic high-accuracy commercial heuristic fallback
             foreach (var b in bizList)
             {
                 var inf = OverpassResultMapper.InferCommercialGmbData(b.Name, b.Category, b.PhonePrimary, b.WebsiteUrl, b.GoogleRating, b.BusinessHours, b.GooglePlaceId);
@@ -881,7 +880,7 @@ public partial class AiProposalSynthesizer : IAiProposalSynthesizer
             };
 
             var jsonPayload = JsonSerializer.Serialize(requestBody);
-            string[] candidateModels = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-flash", "gemini-3.5-flash-lite"];
+            string[] candidateModels = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-3.1-flash-lite", "gemini-2.0-flash", "gemini-1.5-flash"];
             string? respJson = null;
 
             foreach (var modelName in candidateModels)
