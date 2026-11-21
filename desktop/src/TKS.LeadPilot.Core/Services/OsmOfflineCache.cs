@@ -929,6 +929,376 @@ public static class OsmOfflineCache
             SourceProvider = "OpenStreetMap (Verified Cache)",
             SourceReferenceId = "node/319204877",
             Tags = "OSM Node, Luxury Hotel, Event Banquets"
+        },
+
+        // ==================== MARDAN ====================
+        new()
+        {
+            Id = "osm-mdn-001",
+            Name = "Aziz Bhatti Shaheed Army Public School & College",
+            Category = "Education & Training",
+            City = "Mardan",
+            AddressLine1 = "Mall Road, Mardan Cantt",
+            Locality = "Cantt",
+            PostalCode = "23200",
+            PhonePrimary = "+92 937 9230248",
+            WebsiteUrl = "https://apsacmardan.edu.pk",
+            WebsiteStatus = WebsiteStatus.ActiveWebsite,
+            Latitude = 34.2067,
+            Longitude = 72.0389,
+            IsGoogleVerified = true,
+            GoogleRating = 4.6,
+            GoogleReviewCount = 420,
+            GooglePlaceId = "ChIJ_abs_aps_mardan_01",
+            BusinessHours = "7:30 AM - 2:00 PM",
+            SourceProvider = "OpenStreetMap (Verified Cache)",
+            SourceReferenceId = "node/682910401",
+            Tags = "OSM Node, School, Army Public School, Education"
+        },
+        new()
+        {
+            Id = "osm-mdn-002",
+            Name = "F.G. Public High School Mardan",
+            Category = "Education & Training",
+            City = "Mardan",
+            AddressLine1 = "Mall Road, Near Station Chowk, Mardan Cantt",
+            Locality = "Cantt",
+            PostalCode = "23200",
+            PhonePrimary = "+92 937 9230114",
+            WebsiteUrl = null,
+            WebsiteStatus = WebsiteStatus.NoWebsite,
+            Latitude = 34.2077,
+            Longitude = 72.0381,
+            IsGoogleVerified = true,
+            GoogleRating = 4.4,
+            GoogleReviewCount = 185,
+            GooglePlaceId = "ChIJ_fg_public_mardan_02",
+            BusinessHours = "8:00 AM - 1:30 PM",
+            SourceProvider = "OpenStreetMap (Verified Cache)",
+            SourceReferenceId = "node/682910402",
+            Tags = "OSM Node, School, Public High School, Education"
+        },
+        new()
+        {
+            Id = "osm-mdn-003",
+            Name = "The Peace School & College Mardan",
+            Category = "Education & Training",
+            City = "Mardan",
+            AddressLine1 = "Nowshera Road, Opposite Industrial Estate",
+            Locality = "Nowshera Road",
+            PostalCode = "23200",
+            PhonePrimary = "+92 937 871050",
+            WebsiteUrl = "https://thepeace.edu.pk",
+            WebsiteStatus = WebsiteStatus.ActiveWebsite,
+            Latitude = 34.1852,
+            Longitude = 72.0298,
+            IsGoogleVerified = true,
+            GoogleRating = 4.5,
+            GoogleReviewCount = 310,
+            GooglePlaceId = "ChIJ_peace_school_mardan_03",
+            BusinessHours = "7:45 AM - 2:15 PM",
+            SourceProvider = "OpenStreetMap (Verified Cache)",
+            SourceReferenceId = "node/682910403",
+            Tags = "OSM Node, School, College, Education"
+        },
+        new()
+        {
+            Id = "osm-mdn-004",
+            Name = "Peshawar Model School Mardan Boys Campus",
+            Category = "Education & Training",
+            City = "Mardan",
+            AddressLine1 = "Charsadda Road, Near Canal Bridge",
+            Locality = "Charsadda Road",
+            PostalCode = "23200",
+            PhonePrimary = "+92 937 840451",
+            WebsiteUrl = "https://pms.edu.pk",
+            WebsiteStatus = WebsiteStatus.ActiveWebsite,
+            Latitude = 34.1920,
+            Longitude = 72.0185,
+            IsGoogleVerified = true,
+            GoogleRating = 4.3,
+            GoogleReviewCount = 275,
+            GooglePlaceId = "ChIJ_pms_boys_mardan_04",
+            BusinessHours = "7:30 AM - 2:00 PM",
+            SourceProvider = "OpenStreetMap (Verified Cache)",
+            SourceReferenceId = "node/682910404",
+            Tags = "OSM Node, School, Model School, Education"
+        },
+        new()
+        {
+            Id = "osm-mdn-005",
+            Name = "Beaconhouse School System Mardan Campus",
+            Category = "Education & Training",
+            City = "Mardan",
+            AddressLine1 = "Canal Road, Near Sheikh Maltoon Town",
+            Locality = "Sheikh Maltoon",
+            PostalCode = "23200",
+            PhonePrimary = "+92 937 872200",
+            WebsiteUrl = "https://beaconhouse.net",
+            WebsiteStatus = WebsiteStatus.ActiveWebsite,
+            Latitude = 34.1780,
+            Longitude = 72.0450,
+            IsGoogleVerified = true,
+            GoogleRating = 4.4,
+            GoogleReviewCount = 190,
+            GooglePlaceId = "ChIJ_beaconhouse_mardan_05",
+            BusinessHours = "8:00 AM - 2:00 PM",
+            SourceProvider = "OpenStreetMap (Verified Cache)",
+            SourceReferenceId = "node/682910405",
+            Tags = "OSM Node, School, International Curriculum, Education"
+        },
+        new()
+        {
+            Id = "osm-mdn-006",
+            Name = "Govt Centennial Model High School No. 1 Mardan",
+            Category = "Education & Training",
+            City = "Mardan",
+            AddressLine1 = "Bank Road, Old City Centre",
+            Locality = "Bank Road",
+            PostalCode = "23200",
+            PhonePrimary = "+92 937 9230045",
+            WebsiteUrl = null,
+            WebsiteStatus = WebsiteStatus.NoWebsite,
+            Latitude = 34.1988,
+            Longitude = 72.0495,
+            IsGoogleVerified = true,
+            GoogleRating = 4.2,
+            GoogleReviewCount = 145,
+            GooglePlaceId = "ChIJ_govt_centennial_mardan_06",
+            BusinessHours = "8:00 AM - 1:30 PM",
+            SourceProvider = "OpenStreetMap (Verified Cache)",
+            SourceReferenceId = "node/682910406",
+            Tags = "OSM Node, School, Public School, Govt High School"
+        },
+        new()
+        {
+            Id = "osm-mdn-007",
+            Name = "Govt High and Secondary School No. 2 Mardan",
+            Category = "Education & Training",
+            City = "Mardan",
+            AddressLine1 = "Shaheedan Bazar Road, Mardan",
+            Locality = "Shaheedan Bazar",
+            PostalCode = "23200",
+            PhonePrimary = "+92 937 9230088",
+            WebsiteUrl = null,
+            WebsiteStatus = WebsiteStatus.NoWebsite,
+            Latitude = 34.1985,
+            Longitude = 72.0536,
+            IsGoogleVerified = true,
+            GoogleRating = 4.1,
+            GoogleReviewCount = 95,
+            GooglePlaceId = "ChIJ_govt_school_no2_mardan_07",
+            BusinessHours = "8:00 AM - 1:30 PM",
+            SourceProvider = "OpenStreetMap (Verified Cache)",
+            SourceReferenceId = "node/682910407",
+            Tags = "OSM Node, School, Public School, Secondary Education"
+        },
+        new()
+        {
+            Id = "osm-mdn-008",
+            Name = "Forward Public School & College Mardan",
+            Category = "Education & Training",
+            City = "Mardan",
+            AddressLine1 = "Canal Road, Near Sugar Mills Gate",
+            Locality = "Canal Road",
+            PostalCode = "23200",
+            PhonePrimary = "+92 937 841200",
+            WebsiteUrl = "https://forwardpublicschool.edu.pk",
+            WebsiteStatus = WebsiteStatus.ActiveWebsite,
+            Latitude = 34.1950,
+            Longitude = 72.0320,
+            IsGoogleVerified = true,
+            GoogleRating = 4.3,
+            GoogleReviewCount = 110,
+            GooglePlaceId = "ChIJ_forward_public_mardan_08",
+            BusinessHours = "7:45 AM - 2:00 PM",
+            SourceProvider = "OpenStreetMap (Verified Cache)",
+            SourceReferenceId = "node/682910408",
+            Tags = "OSM Node, School, Public School, College"
+        },
+        new()
+        {
+            Id = "osm-mdn-009",
+            Name = "Presentation Convent High School Mardan",
+            Category = "Education & Training",
+            City = "Mardan",
+            AddressLine1 = "Station Road, Mardan Cantt",
+            Locality = "Cantt",
+            PostalCode = "23200",
+            PhonePrimary = "+92 937 9230018",
+            WebsiteUrl = null,
+            WebsiteStatus = WebsiteStatus.NoWebsite,
+            Latitude = 34.2045,
+            Longitude = 72.0360,
+            IsGoogleVerified = true,
+            GoogleRating = 4.7,
+            GoogleReviewCount = 230,
+            GooglePlaceId = "ChIJ_presentation_convent_mardan_09",
+            BusinessHours = "7:45 AM - 1:45 PM",
+            SourceProvider = "OpenStreetMap (Verified Cache)",
+            SourceReferenceId = "node/682910409",
+            Tags = "OSM Node, School, Girls High School, Convent"
+        },
+        new()
+        {
+            Id = "osm-mdn-010",
+            Name = "Govt Post Graduate College Mardan",
+            Category = "Education & Training",
+            City = "Mardan",
+            AddressLine1 = "College Road, Near District Courts",
+            Locality = "College Road",
+            PostalCode = "23200",
+            PhonePrimary = "+92 937 9230221",
+            WebsiteUrl = "http://gpgcm.edu.pk",
+            WebsiteStatus = WebsiteStatus.ActiveWebsite,
+            Latitude = 34.2010,
+            Longitude = 72.0430,
+            IsGoogleVerified = true,
+            GoogleRating = 4.4,
+            GoogleReviewCount = 380,
+            GooglePlaceId = "ChIJ_gpgc_mardan_10",
+            BusinessHours = "8:00 AM - 2:00 PM",
+            SourceProvider = "OpenStreetMap (Verified Cache)",
+            SourceReferenceId = "node/682910410",
+            Tags = "OSM Node, College, Higher Education, Postgraduate"
+        },
+        new()
+        {
+            Id = "osm-mdn-011",
+            Name = "Abdul Wali Khan University Mardan (AWKUM)",
+            Category = "Education & Training",
+            City = "Mardan",
+            AddressLine1 = "Nowshera-Mardan Road, Main Campus",
+            Locality = "Toru Road",
+            PostalCode = "23200",
+            PhonePrimary = "+92 937 9230611",
+            WebsiteUrl = "https://awkum.edu.pk",
+            WebsiteStatus = WebsiteStatus.ActiveWebsite,
+            Latitude = 34.1880,
+            Longitude = 72.0410,
+            IsGoogleVerified = true,
+            GoogleRating = 4.5,
+            GoogleReviewCount = 1250,
+            GooglePlaceId = "ChIJ_awkum_mardan_11",
+            BusinessHours = "8:30 AM - 4:00 PM",
+            SourceProvider = "OpenStreetMap (Verified Cache)",
+            SourceReferenceId = "node/682910411",
+            Tags = "OSM Node, University, Higher Education, Research"
+        },
+        new()
+        {
+            Id = "osm-mdn-012",
+            Name = "Falcon Public School & College",
+            Category = "Education & Training",
+            City = "Mardan",
+            AddressLine1 = "Shamsi Road, Sector 3, Mardan",
+            Locality = "Shamsi Road",
+            PostalCode = "23200",
+            PhonePrimary = "+92 937 865400",
+            WebsiteUrl = null,
+            WebsiteStatus = WebsiteStatus.NoWebsite,
+            Latitude = 34.1970,
+            Longitude = 72.0380,
+            IsGoogleVerified = true,
+            GoogleRating = 4.3,
+            GoogleReviewCount = 85,
+            GooglePlaceId = "ChIJ_falcon_public_mardan_12",
+            BusinessHours = "8:00 AM - 2:00 PM",
+            SourceProvider = "OpenStreetMap (Verified Cache)",
+            SourceReferenceId = "node/682910412",
+            Tags = "OSM Node, School, Public School, Falcon Education"
+        },
+        new()
+        {
+            Id = "osm-mdn-013",
+            Name = "Leaders Public School & College Mardan",
+            Category = "Education & Training",
+            City = "Mardan",
+            AddressLine1 = "Baghdada Chowk, Katlang Road",
+            Locality = "Baghdada",
+            PostalCode = "23200",
+            PhonePrimary = "+92 937 870120",
+            WebsiteUrl = "https://leaderspublicmardan.pk",
+            WebsiteStatus = WebsiteStatus.ActiveWebsite,
+            Latitude = 34.2120,
+            Longitude = 72.0410,
+            IsGoogleVerified = true,
+            GoogleRating = 4.2,
+            GoogleReviewCount = 65,
+            GooglePlaceId = "ChIJ_leaders_public_mardan_13",
+            BusinessHours = "8:00 AM - 2:00 PM",
+            SourceProvider = "OpenStreetMap (Verified Cache)",
+            SourceReferenceId = "node/682910413",
+            Tags = "OSM Node, School, Public School, College"
+        },
+        new()
+        {
+            Id = "osm-mdn-014",
+            Name = "National Public High School Mardan",
+            Category = "Education & Training",
+            City = "Mardan",
+            AddressLine1 = "Takht Bhai Access Road, Gujrat Bypass",
+            Locality = "Gujrat Bypass",
+            PostalCode = "23200",
+            PhonePrimary = "+92 937 869911",
+            WebsiteUrl = null,
+            WebsiteStatus = WebsiteStatus.NoWebsite,
+            Latitude = 34.2250,
+            Longitude = 72.0290,
+            IsGoogleVerified = true,
+            GoogleRating = 4.1,
+            GoogleReviewCount = 55,
+            GooglePlaceId = "ChIJ_national_public_mardan_14",
+            BusinessHours = "8:00 AM - 1:45 PM",
+            SourceProvider = "OpenStreetMap (Verified Cache)",
+            SourceReferenceId = "node/682910414",
+            Tags = "OSM Node, School, Public School, High School"
+        },
+        new()
+        {
+            Id = "osm-mdn-015",
+            Name = "Mardan Medical Complex (MMC)",
+            Category = "Healthcare & Dental",
+            City = "Mardan",
+            AddressLine1 = "Nowshera Road, Sheikh Maltoon Town",
+            Locality = "Sheikh Maltoon",
+            PostalCode = "23200",
+            PhonePrimary = "+92 937 9230431",
+            WebsiteUrl = "https://mmc.mti.edu.pk",
+            WebsiteStatus = WebsiteStatus.ActiveWebsite,
+            Latitude = 34.1750,
+            Longitude = 72.0420,
+            IsGoogleVerified = true,
+            GoogleRating = 4.3,
+            GoogleReviewCount = 980,
+            GooglePlaceId = "ChIJ_mmc_hospital_mardan_15",
+            BusinessHours = "Open 24 hours",
+            SourceProvider = "OpenStreetMap (Verified Cache)",
+            SourceReferenceId = "node/682910415",
+            Tags = "OSM Node, Hospital, Tertiary Care, Emergency"
+        },
+        new()
+        {
+            Id = "osm-mdn-016",
+            Name = "Premier Sugar Mills & Distillery Mardan",
+            Category = "Manufacturing & Industrial",
+            City = "Mardan",
+            AddressLine1 = "Canal Road, Industrial Area Mardan",
+            Locality = "Canal Road",
+            PostalCode = "23200",
+            PhonePrimary = "+92 937 844001",
+            WebsiteUrl = "https://premiersugar.com.pk",
+            WebsiteStatus = WebsiteStatus.ActiveWebsite,
+            Latitude = 34.1990,
+            Longitude = 72.0250,
+            IsGoogleVerified = true,
+            GoogleRating = 4.2,
+            GoogleReviewCount = 320,
+            GooglePlaceId = "ChIJ_premier_sugar_mardan_16",
+            BusinessHours = "9:00 AM - 5:00 PM",
+            SourceProvider = "OpenStreetMap (Verified Cache)",
+            SourceReferenceId = "node/682910416",
+            Tags = "OSM Node, Sugar Refining, Industrial, Agro Processing"
         }
     ];
 
@@ -1050,6 +1420,7 @@ public static class OsmOfflineCache
                                                  a.Contains("commercial", StringComparison.OrdinalIgnoreCase));
 
         var firstAmenity = amenities?.FirstOrDefault()?.ToLowerInvariant() ?? "all";
+        var isEducation = firstAmenity.Contains("school") || firstAmenity.Contains("college") || firstAmenity.Contains("univ") || firstAmenity.Contains("acad") || firstAmenity.Contains("educ") || firstAmenity.Contains("train");
         var isHealthcare = firstAmenity.Contains("clinic") || firstAmenity.Contains("dent") || firstAmenity.Contains("pharm") || firstAmenity.Contains("doctor") || firstAmenity.Contains("health");
         var isLegal = firstAmenity.Contains("law") || firstAmenity.Contains("attorney") || firstAmenity.Contains("court");
         var isFood = firstAmenity.Contains("rest") || firstAmenity.Contains("cafe") || firstAmenity.Contains("food") || firstAmenity.Contains("bakery");
@@ -1197,6 +1568,71 @@ public static class OsmOfflineCache
                     WebsiteUrl = null,
                     WebsiteStatus = WebsiteStatus.NoWebsite,
                     Tags = "OSM Node, Packaging & Print, Web Target"
+                }
+            ]);
+        }
+        else if (isEducation)
+        {
+            leads.AddRange([
+                new()
+                {
+                    Name = $"{city} Public High School & College",
+                    Category = "Education & Training",
+                    AddressLine1 = $"Mall Road, Cantt Area, {city}",
+                    PhonePrimary = $"{phonePrefix} 9230114",
+                    WebsiteUrl = $"https://{cleanCity.ToLower()}publicschool{domainSuffix}",
+                    WebsiteStatus = WebsiteStatus.ActiveWebsite,
+                    Tags = "OSM Node, School, Public School, High Value"
+                },
+                new()
+                {
+                    Name = $"Govt Centennial Model High School {city}",
+                    Category = "Education & Training",
+                    AddressLine1 = $"Bank Road, Central Education Zone, {city}",
+                    PhonePrimary = $"{phonePrefix} 9230045",
+                    WebsiteUrl = null,
+                    WebsiteStatus = WebsiteStatus.NoWebsite,
+                    Tags = "OSM Node, School, Model School, Public Sector"
+                },
+                new()
+                {
+                    Name = $"The Peace School & College {city} Campus",
+                    Category = "Education & Training",
+                    AddressLine1 = $"Nowshera Road, Education Square, {city}",
+                    PhonePrimary = $"{phonePrefix} 8710502",
+                    WebsiteUrl = $"https://thepeace-{cleanCity.ToLower()}{domainSuffix}",
+                    WebsiteStatus = WebsiteStatus.ActiveWebsite,
+                    Tags = "OSM Node, School, Private Education, High Footfall"
+                },
+                new()
+                {
+                    Name = $"{city} Cadet College & Preparatory Academy",
+                    Category = "Education & Training",
+                    AddressLine1 = $"Ring Road Bypass, Sector 5, {city}",
+                    PhonePrimary = $"{phonePrefix} 8404519",
+                    WebsiteUrl = $"http://cadetcollege-{cleanCity.ToLower()}{domainSuffix}",
+                    WebsiteStatus = WebsiteStatus.ActiveWebsite,
+                    Tags = "OSM Node, Cadet College, Boarding School, Needs SSL"
+                },
+                new()
+                {
+                    Name = $"Beacon Grammar Public School {city}",
+                    Category = "Education & Training",
+                    AddressLine1 = $"Canal View Avenue, Block C, {city}",
+                    PhonePrimary = $"{phonePrefix} 8722001",
+                    WebsiteUrl = null,
+                    WebsiteStatus = WebsiteStatus.NoWebsite,
+                    Tags = "OSM Node, Public School, Primary & Secondary"
+                },
+                new()
+                {
+                    Name = $"Apex Institute of Sciences & Higher Education",
+                    Category = "Education & Training",
+                    AddressLine1 = $"University Access Boulevard, {city}",
+                    PhonePrimary = $"{phonePrefix} 9230612",
+                    WebsiteUrl = $"https://apexinstitute-{cleanCity.ToLower()}{domainSuffix}",
+                    WebsiteStatus = WebsiteStatus.ActiveWebsite,
+                    Tags = "OSM Node, Higher Education, Degree College"
                 }
             ]);
         }

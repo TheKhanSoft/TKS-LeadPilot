@@ -697,19 +697,7 @@ public static class OverpassQueryBuilder
             {
                 foreach (var amenity in amenities)
                 {
-                    var clean = amenity.Trim().ToLowerInvariant();
-                    sb.AppendLine($"  node[\"amenity\"=\"{clean}\"]({bboxStr});");
-                    sb.AppendLine($"  way[\"amenity\"=\"{clean}\"]({bboxStr});");
-                    sb.AppendLine($"  node[\"shop\"=\"{clean}\"]({bboxStr});");
-                    sb.AppendLine($"  way[\"shop\"=\"{clean}\"]({bboxStr});");
-                    sb.AppendLine($"  node[\"office\"=\"{clean}\"]({bboxStr});");
-                    sb.AppendLine($"  way[\"office\"=\"{clean}\"]({bboxStr});");
-                    sb.AppendLine($"  node[\"craft\"=\"{clean}\"]({bboxStr});");
-                    sb.AppendLine($"  way[\"craft\"=\"{clean}\"]({bboxStr});");
-                    sb.AppendLine($"  node[\"healthcare\"=\"{clean}\"]({bboxStr});");
-                    sb.AppendLine($"  way[\"healthcare\"=\"{clean}\"]({bboxStr});");
-                    sb.AppendLine($"  node[\"tourism\"=\"{clean}\"]({bboxStr});");
-                    sb.AppendLine($"  way[\"tourism\"=\"{clean}\"]({bboxStr});");
+                    AppendAmenityClauses(sb, amenity, bboxStr);
                 }
             }
             sb.AppendLine(");");
@@ -755,19 +743,7 @@ public static class OverpassQueryBuilder
             {
                 foreach (var amenity in amenities)
                 {
-                    var clean = amenity.Trim().ToLowerInvariant();
-                    sb.AppendLine($"  node[\"amenity\"=\"{clean}\"](area.searchArea);");
-                    sb.AppendLine($"  way[\"amenity\"=\"{clean}\"](area.searchArea);");
-                    sb.AppendLine($"  node[\"shop\"=\"{clean}\"](area.searchArea);");
-                    sb.AppendLine($"  way[\"shop\"=\"{clean}\"](area.searchArea);");
-                    sb.AppendLine($"  node[\"office\"=\"{clean}\"](area.searchArea);");
-                    sb.AppendLine($"  way[\"office\"=\"{clean}\"](area.searchArea);");
-                    sb.AppendLine($"  node[\"craft\"=\"{clean}\"](area.searchArea);");
-                    sb.AppendLine($"  way[\"craft\"=\"{clean}\"](area.searchArea);");
-                    sb.AppendLine($"  node[\"healthcare\"=\"{clean}\"](area.searchArea);");
-                    sb.AppendLine($"  way[\"healthcare\"=\"{clean}\"](area.searchArea);");
-                    sb.AppendLine($"  node[\"tourism\"=\"{clean}\"](area.searchArea);");
-                    sb.AppendLine($"  way[\"tourism\"=\"{clean}\"](area.searchArea);");
+                    AppendAmenityClauses(sb, amenity, "area.searchArea");
                 }
             }
             sb.AppendLine(");");
@@ -775,5 +751,59 @@ public static class OverpassQueryBuilder
 
         sb.AppendLine($"out center {limit};");
         return sb.ToString();
+    }
+
+    private static void AppendAmenityClauses(StringBuilder sb, string rawAmenity, string locationFilter)
+    {
+        var clean = rawAmenity.Trim().ToLowerInvariant();
+
+        if (clean is "school" or "college" or "university" or "kindergarten" or "prep_school" or "language_school")
+        {
+            sb.AppendLine($"  node[\"amenity\"=\"{clean}\"]({locationFilter});");
+            sb.AppendLine($"  way[\"amenity\"=\"{clean}\"]({locationFilter});");
+        }
+        else if (clean is "clinic" or "hospital" or "dentist" or "pharmacy" or "doctors")
+        {
+            sb.AppendLine($"  node[\"amenity\"=\"{clean}\"]({locationFilter});");
+            sb.AppendLine($"  way[\"amenity\"=\"{clean}\"]({locationFilter});");
+            sb.AppendLine($"  node[\"healthcare\"=\"{clean}\"]({locationFilter});");
+            sb.AppendLine($"  way[\"healthcare\"=\"{clean}\"]({locationFilter});");
+        }
+        else if (clean is "restaurant" or "fast_food" or "cafe" or "bank" or "fuel" or "car_repair")
+        {
+            sb.AppendLine($"  node[\"amenity\"=\"{clean}\"]({locationFilter});");
+            sb.AppendLine($"  way[\"amenity\"=\"{clean}\"]({locationFilter});");
+        }
+        else if (clean is "hotel" or "guest_house" or "motel")
+        {
+            sb.AppendLine($"  node[\"tourism\"=\"{clean}\"]({locationFilter});");
+            sb.AppendLine($"  way[\"tourism\"=\"{clean}\"]({locationFilter});");
+        }
+        else if (clean is "supermarket" or "clothes" or "electronics" or "department_store" or "shop" or "convenience")
+        {
+            sb.AppendLine($"  node[\"shop\"=\"{clean}\"]({locationFilter});");
+            sb.AppendLine($"  way[\"shop\"=\"{clean}\"]({locationFilter});");
+        }
+        else if (clean is "office" or "lawyer" or "notary" or "accountant" or "estate_agent" or "software" or "it")
+        {
+            sb.AppendLine($"  node[\"office\"=\"{clean}\"]({locationFilter});");
+            sb.AppendLine($"  way[\"office\"=\"{clean}\"]({locationFilter});");
+            sb.AppendLine($"  node[\"amenity\"=\"{clean}\"]({locationFilter});");
+            sb.AppendLine($"  way[\"amenity\"=\"{clean}\"]({locationFilter});");
+        }
+        else if (clean is "industrial" or "factory" or "warehouse")
+        {
+            sb.AppendLine($"  node[\"industrial\"=\"{clean}\"]({locationFilter});");
+            sb.AppendLine($"  way[\"industrial\"=\"{clean}\"]({locationFilter});");
+        }
+        else
+        {
+            sb.AppendLine($"  node[\"amenity\"=\"{clean}\"]({locationFilter});");
+            sb.AppendLine($"  way[\"amenity\"=\"{clean}\"]({locationFilter});");
+            sb.AppendLine($"  node[\"shop\"=\"{clean}\"]({locationFilter});");
+            sb.AppendLine($"  way[\"shop\"=\"{clean}\"]({locationFilter});");
+            sb.AppendLine($"  node[\"office\"=\"{clean}\"]({locationFilter});");
+            sb.AppendLine($"  way[\"office\"=\"{clean}\"]({locationFilter});");
+        }
     }
 }

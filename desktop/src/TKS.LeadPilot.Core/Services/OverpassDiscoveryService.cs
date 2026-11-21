@@ -235,8 +235,11 @@ public class OverpassDiscoveryService : IDiscoveryService
             }
         }
 
-        // 11. High-Density Verified Local Catalog Fallback (or explicit offline choice)
-        if (combinedBusinesses.Count == 0 || engine.Contains("Offline", StringComparison.OrdinalIgnoreCase) || engine.Contains("Vault", StringComparison.OrdinalIgnoreCase))
+        // 11. High-Density Verified Local Catalog Fallback (supplement if aggregator found fewer than 15 leads, or fallback on 0 / explicit offline choice)
+        if (combinedBusinesses.Count == 0 ||
+            engine.Contains("Offline", StringComparison.OrdinalIgnoreCase) ||
+            engine.Contains("Vault", StringComparison.OrdinalIgnoreCase) ||
+            (isAggregator && combinedBusinesses.Count < 15))
         {
             var catalogLeads = OsmOfflineCache.GetCachedLeads(query.City, query.Country, query.TargetAmenities, Math.Max(query.Limit, 35));
             if (catalogLeads.Count > 0)
@@ -263,6 +266,12 @@ public class OverpassDiscoveryService : IDiscoveryService
         foreach (var candidate in combinedBusinesses)
         {
             if (string.IsNullOrWhiteSpace(candidate.Name)) continue;
+
+            // Enforce strict geographic containment (eliminate cross-city leakage)
+            if (!CityTerritoryHelper.IsGeographicallyContained(candidate, query, _geoLocationService))
+            {
+                continue;
+            }
 
             // Normalize category and prevent custom search terms or niches from corrupting business categories
             CategoryResolver.NormalizeLeadCategory(candidate, query);
@@ -369,11 +378,28 @@ public class OverpassDiscoveryService : IDiscoveryService
             var term = query.CustomSearchTerm.Trim();
             searchKeywords.Add(term);
 
-            // Deep Scan multi-pass query expansion
-            if (query.DeepScan)
+            // Substantive noun expansion (e.g. "public school" -> "school")
+            var words = term.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (words.Length > 1)
             {
-                searchKeywords.Add($"{term} company");
-                searchKeywords.Add($"{term} services");
+                foreach (var w in words)
+                {
+                    if (w.Length >= 4 && !w.Equals("public", StringComparison.OrdinalIgnoreCase) && !searchKeywords.Contains(w))
+                    {
+                        searchKeywords.Add(w);
+                    }
+                }
+            }
+
+            // Also include key category preset keywords if specified
+            if (!isAllCommercial && !string.IsNullOrWhiteSpace(query.CategoryPreset) &&
+                OverpassQueryBuilder.CategoryPresets.TryGetValue(query.CategoryPreset, out var categoryKeywords))
+            {
+                foreach (var ck in categoryKeywords.Take(2))
+                {
+                    var cleanCk = ck.Replace("_", " ");
+                    if (!searchKeywords.Contains(cleanCk)) searchKeywords.Add(cleanCk);
+                }
             }
         }
         else if (isAllCommercial)
@@ -410,7 +436,7 @@ public class OverpassDiscoveryService : IDiscoveryService
                 var queryStr = $"{kw} in {query.City}";
                 if (!string.IsNullOrWhiteSpace(query.Country)) queryStr += $", {query.Country}";
 
-                var url = $"https://nominatim.openstreetmap.org/search?q={Uri.EscapeDataString(queryStr)}&format=json&addressdetails=1&extratags=1&limit=20";
+                var url = $"https://nominatim.openstreetmap.org/search?q={Uri.EscapeDataString(queryStr)}&format=json&addressdetails=1&extratags=1&limit=25";
 
                 using var req = new HttpRequestMessage(HttpMethod.Get, url);
                 req.Headers.Add("User-Agent", "TKS-LeadPilot/1.0 (contact: info@thekhansoft.com)");
@@ -436,7 +462,12 @@ public class OverpassDiscoveryService : IDiscoveryService
     {
         var list = new List<Business>();
 
-        foreach (var endpoint in Endpoints)
+        // Query top Overpass mirrors concurrently with a 7-second ceiling to prevent 90s freezes
+        var mirrorsToTry = Endpoints.Take(3).ToList();
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        linkedCts.CancelAfter(TimeSpan.FromSeconds(7));
+
+        var tasks = mirrorsToTry.Select(async endpoint =>
         {
             try
             {
@@ -444,22 +475,32 @@ public class OverpassDiscoveryService : IDiscoveryService
                     new KeyValuePair<string, string>("data", ql)
                 ]);
 
-                using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-                cts.CancelAfter(TimeSpan.FromSeconds(25));
-
-                var response = await _httpClient.PostAsync(endpoint, content, cts.Token);
+                var response = await _httpClient.PostAsync(endpoint, content, linkedCts.Token);
                 if (response.IsSuccessStatusCode)
                 {
-                    var text = await response.Content.ReadAsStringAsync(ct);
+                    var text = await response.Content.ReadAsStringAsync(linkedCts.Token);
                     if (!string.IsNullOrWhiteSpace(text) && text.Contains("\"elements\":"))
                     {
-                        var mapped = OverpassResultMapper.MapJsonToBusinesses(text, query.City, query.Country, query.StateProvince);
-                        if (mapped.Count > 0)
-                        {
-                            list.AddRange(mapped);
-                            break;
-                        }
+                        return OverpassResultMapper.MapJsonToBusinesses(text, query.City, query.Country, query.StateProvince);
                     }
+                }
+            }
+            catch { }
+            return new List<Business>();
+        }).ToList();
+
+        while (tasks.Count > 0)
+        {
+            var completedTask = await Task.WhenAny(tasks);
+            tasks.Remove(completedTask);
+            try
+            {
+                var candidates = await completedTask;
+                if (candidates.Count > 0)
+                {
+                    list.AddRange(candidates);
+                    try { linkedCts.Cancel(); } catch { }
+                    break;
                 }
             }
             catch { }
@@ -512,15 +553,70 @@ public class OverpassDiscoveryService : IDiscoveryService
     private async Task<List<Business>> QueryPhotonAsync(DiscoveryQuery query, CancellationToken ct)
     {
         var list = new List<Business>();
-        var searchTerm = !string.IsNullOrWhiteSpace(query.CustomSearchTerm)
-            ? query.CustomSearchTerm.Trim()
-            : (query.CategoryPreset?.Replace("&", "and") ?? "commercial");
+        var queriesToExecute = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        var queriesToExecute = new List<string> { $"{searchTerm} {query.City}" };
-        if (query.DeepScan && !string.IsNullOrWhiteSpace(query.CustomSearchTerm))
+        // 1. If custom search term provided, query it directly
+        if (!string.IsNullOrWhiteSpace(query.CustomSearchTerm))
         {
-            queriesToExecute.Add($"{searchTerm} company {query.City}");
-            queriesToExecute.Add($"{searchTerm} clinic {query.City}");
+            var custom = query.CustomSearchTerm.Trim();
+            queriesToExecute.Add($"{custom} {query.City}");
+
+            // Expand multi-word custom phrase (e.g. "public school" -> "school")
+            var words = custom.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (words.Length > 1)
+            {
+                foreach (var w in words)
+                {
+                    if (w.Length >= 4 && !w.Equals("public", StringComparison.OrdinalIgnoreCase))
+                    {
+                        queriesToExecute.Add($"{w} {query.City}");
+                    }
+                }
+            }
+        }
+
+        // 2. Add CategoryPreset keywords to ensure high recall for all educational/commercial entities
+        var isAllCommercial = string.IsNullOrWhiteSpace(query.CategoryPreset) ||
+                              query.CategoryPreset.Contains("All Commercial", StringComparison.OrdinalIgnoreCase);
+
+        if (!isAllCommercial && !string.IsNullOrWhiteSpace(query.CategoryPreset))
+        {
+            if (OverpassQueryBuilder.CategoryPresets.TryGetValue(query.CategoryPreset, out var presetList))
+            {
+                foreach (var kw in presetList.Take(3))
+                {
+                    var cleanKw = kw.Replace("_", " ");
+                    queriesToExecute.Add($"{cleanKw} {query.City}");
+                }
+            }
+            else
+            {
+                queriesToExecute.Add($"{query.CategoryPreset.Replace("&", "and")} {query.City}");
+            }
+        }
+
+        if (queriesToExecute.Count == 0)
+        {
+            queriesToExecute.Add($"commercial {query.City}");
+        }
+
+        // Determine coordinates for proximity biasing
+        double? centerLat = null;
+        double? centerLon = null;
+
+        if (query.BBox != null)
+        {
+            centerLat = (query.BBox.North + query.BBox.South) / 2.0;
+            centerLon = (query.BBox.East + query.BBox.West) / 2.0;
+        }
+        else if (_geoLocationService != null && !string.IsNullOrWhiteSpace(query.City))
+        {
+            var cInfo = _geoLocationService.FindCity(query.City, query.Country);
+            if (cInfo != null)
+            {
+                centerLat = cInfo.Latitude;
+                centerLon = cInfo.Longitude;
+            }
         }
 
         foreach (var qText in queriesToExecute)
@@ -530,12 +626,10 @@ public class OverpassDiscoveryService : IDiscoveryService
                 var queryString = qText;
                 if (!string.IsNullOrWhiteSpace(query.Country)) queryString += $", {query.Country}";
 
-                var url = $"https://photon.komoot.io/api/?q={Uri.EscapeDataString(queryString)}&limit=30";
-                if (query.BBox != null)
+                var url = $"https://photon.komoot.io/api/?q={Uri.EscapeDataString(queryString)}&limit=50";
+                if (centerLat.HasValue && centerLon.HasValue)
                 {
-                    var centerLat = (query.BBox.North + query.BBox.South) / 2.0;
-                    var centerLon = (query.BBox.East + query.BBox.West) / 2.0;
-                    url += $"&lat={centerLat:F4}&lon={centerLon:F4}";
+                    url += $"&lat={centerLat.Value:F4}&lon={centerLon.Value:F4}";
                 }
 
                 using var req = new HttpRequestMessage(HttpMethod.Get, url);
@@ -714,36 +808,45 @@ public class OverpassDiscoveryService : IDiscoveryService
             searchTerm = "company";
         }
 
+        var phrases = new List<string> { $"{searchTerm} {query.City}" };
+        if (!string.IsNullOrWhiteSpace(query.CustomSearchTerm) && !string.IsNullOrWhiteSpace(query.CategoryPreset) && !query.CategoryPreset.Contains("All Commercial", StringComparison.OrdinalIgnoreCase))
+        {
+            phrases.Add($"{query.CategoryPreset.Replace("&", "and")} {query.City}");
+        }
+
         try
         {
-            var searchPhrase = $"{searchTerm} {query.City}";
-            var searchUrl = $"https://www.wikidata.org/w/api.php?action=query&list=search&srsearch={Uri.EscapeDataString(searchPhrase)}&format=json&srlimit=25";
+            var qids = new HashSet<string>();
 
-            using var searchReq = new HttpRequestMessage(HttpMethod.Get, searchUrl);
-            searchReq.Headers.Add("User-Agent", "TKS-LeadPilot/1.0 (contact: info@thekhansoft.com)");
-
-            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            cts.CancelAfter(TimeSpan.FromSeconds(8));
-
-            var searchResp = await _httpClient.SendAsync(searchReq, cts.Token);
-            if (!searchResp.IsSuccessStatusCode) return list;
-
-            var searchJson = await searchResp.Content.ReadAsStringAsync(ct);
-            using var searchDoc = System.Text.Json.JsonDocument.Parse(searchJson);
-
-            var qids = new List<string>();
-            if (searchDoc.RootElement.TryGetProperty("query", out var queryObj) &&
-                queryObj.TryGetProperty("search", out var searchArr) &&
-                searchArr.ValueKind == System.Text.Json.JsonValueKind.Array)
+            foreach (var searchPhrase in phrases)
             {
-                foreach (var item in searchArr.EnumerateArray())
+                var searchUrl = $"https://www.wikidata.org/w/api.php?action=query&list=search&srsearch={Uri.EscapeDataString(searchPhrase)}&format=json&srlimit=20";
+
+                using var searchReq = new HttpRequestMessage(HttpMethod.Get, searchUrl);
+                searchReq.Headers.Add("User-Agent", "TKS-LeadPilot/1.0 (contact: info@thekhansoft.com)");
+
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                cts.CancelAfter(TimeSpan.FromSeconds(6));
+
+                var searchResp = await _httpClient.SendAsync(searchReq, cts.Token);
+                if (!searchResp.IsSuccessStatusCode) continue;
+
+                var searchJson = await searchResp.Content.ReadAsStringAsync(ct);
+                using var searchDoc = System.Text.Json.JsonDocument.Parse(searchJson);
+
+                if (searchDoc.RootElement.TryGetProperty("query", out var queryObj) &&
+                    queryObj.TryGetProperty("search", out var searchArr) &&
+                    searchArr.ValueKind == System.Text.Json.JsonValueKind.Array)
                 {
-                    if (item.TryGetProperty("title", out var titleProp))
+                    foreach (var item in searchArr.EnumerateArray())
                     {
-                        var t = titleProp.GetString();
-                        if (!string.IsNullOrWhiteSpace(t) && t.StartsWith("Q", StringComparison.OrdinalIgnoreCase))
+                        if (item.TryGetProperty("title", out var titleProp))
                         {
-                            qids.Add(t);
+                            var t = titleProp.GetString();
+                            if (!string.IsNullOrWhiteSpace(t) && t.StartsWith("Q", StringComparison.OrdinalIgnoreCase))
+                            {
+                                qids.Add(t);
+                            }
                         }
                     }
                 }

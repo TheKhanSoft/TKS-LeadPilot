@@ -377,6 +377,136 @@ public class OverpassDiscoveryServiceTests
         b.SourceProvider.Should().Be("Brave Search Local Discovery");
     }
 
+    [Fact]
+    public void CityTerritoryHelper_EliminatesCrossCityLeakage_ForMardanSearch()
+    {
+        var query = new DiscoveryQuery
+        {
+            City = "Mardan",
+            Country = "Pakistan",
+            BBox = new BoundingBox(34.14, 71.97, 34.26, 72.11)
+        };
+
+        var nowsheraLead = new Business
+        {
+            Name = "Army Public School and College",
+            City = "نوشہرہ",
+            Latitude = 34.0604,
+            Longitude = 71.9980
+        };
+
+        var dargaiLead = new Business
+        {
+            Name = "Army Public School Dargai Fort",
+            City = "درگئ",
+            Latitude = 34.5154,
+            Longitude = 71.8961
+        };
+
+        var swabiLead = new Business
+        {
+            Name = "Frontier Public School Bamkhel (Swabi)",
+            City = "بام خیل",
+            Latitude = 34.0971,
+            Longitude = 72.5323
+        };
+
+        var karachiLead = new Business
+        {
+            Name = "Hyderi Public School",
+            City = "Karachi",
+            Latitude = 24.93,
+            Longitude = 67.04
+        };
+
+        var mardanLead1 = new Business
+        {
+            Name = "Aziz Bhatti Shaheed Army Public School & College",
+            City = "مردان",
+            Latitude = 34.2067,
+            Longitude = 72.0389
+        };
+
+        var mardanLead2 = new Business
+        {
+            Name = "F.G. Public High School Mardan",
+            City = "Mardan",
+            Latitude = 34.2077,
+            Longitude = 72.0381
+        };
+
+        var garhiKapuraLead = new Business
+        {
+            Name = "Government School Garhi Kapura",
+            City = "گڑھی کپورہ",
+            Latitude = 34.1983,
+            Longitude = 72.1611
+        };
+
+        CityTerritoryHelper.IsGeographicallyContained(nowsheraLead, query, null).Should().BeFalse("Nowshera must never leak into Mardan");
+        CityTerritoryHelper.IsGeographicallyContained(dargaiLead, query, null).Should().BeFalse("Dargai must never leak into Mardan");
+        CityTerritoryHelper.IsGeographicallyContained(swabiLead, query, null).Should().BeFalse("Swabi must never leak into Mardan");
+        CityTerritoryHelper.IsGeographicallyContained(karachiLead, query, null).Should().BeFalse("Karachi must never leak into Mardan");
+
+        CityTerritoryHelper.IsGeographicallyContained(mardanLead1, query, null).Should().BeTrue("Mardan Urdu lead should be accepted");
+        mardanLead1.City.Should().Be("Mardan", "Urdu city name should be normalized to canonical English Mardan");
+
+        CityTerritoryHelper.IsGeographicallyContained(mardanLead2, query, null).Should().BeTrue("Mardan English lead should be accepted");
+        mardanLead2.City.Should().Be("Mardan");
+
+        CityTerritoryHelper.IsGeographicallyContained(garhiKapuraLead, query, null).Should().BeTrue("Garhi Kapura tehsil in Mardan should be accepted");
+        garhiKapuraLead.City.Should().Be("Mardan");
+        garhiKapuraLead.Locality.Should().Be("گڑھی کپورہ");
+    }
+
+    [Fact]
+    public void OsmOfflineCache_ReturnsVerifiedSchools_ForMardan()
+    {
+        var leads = OsmOfflineCache.GetCachedLeads("Mardan", "Pakistan", ["school", "college", "university"], limit: 30);
+
+        leads.Should().NotBeEmpty();
+        leads.Should().Contain(b => b.Name.Contains("Army Public School"));
+        leads.Should().Contain(b => b.Name.Contains("F.G. Public High School"));
+        leads.All(b => b.City == "Mardan").Should().BeTrue("All returned offline leads must strictly have City == Mardan");
+    }
+
+    [Fact]
+    public void CalculateRelevanceScore_GivesExactMatch100_ToPublicSchoolKeywords()
+    {
+        var query = new DiscoveryQuery
+        {
+            City = "Mardan",
+            CategoryPreset = "Education & Training",
+            CustomSearchTerm = "public school"
+        };
+
+        var apsLead = new Business
+        {
+            Name = "Aziz Bhatti Shaheed Army Public School & College",
+            Category = "Education & Training"
+        };
+
+        var modelSchoolLead = new Business
+        {
+            Name = "Peshawar Model School Mardan Boys Campus",
+            Category = "Education & Training"
+        };
+
+        var sugarMillLead = new Business
+        {
+            Name = "Premier Sugar Mills & Distillery",
+            Category = "Manufacturing & Industrial"
+        };
+
+        var apsScore = OverpassDiscoveryService.CalculateRelevanceScore(apsLead, query);
+        var pmsScore = OverpassDiscoveryService.CalculateRelevanceScore(modelSchoolLead, query);
+        var millScore = OverpassDiscoveryService.CalculateRelevanceScore(sugarMillLead, query);
+
+        apsScore.Should().Be(100, "Exact public school phrase in educational category should be 100%");
+        pmsScore.Should().BeGreaterThanOrEqualTo(70, "Related educational schools should have high relevance");
+        millScore.Should().BeLessThan(15, "Unrelated industrial sugar mill should have negligible relevance");
+    }
+
     private class MockHttpMessageHandler(string responseContent) : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
