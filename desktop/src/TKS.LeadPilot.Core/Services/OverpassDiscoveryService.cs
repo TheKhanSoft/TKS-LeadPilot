@@ -19,6 +19,7 @@ public class OverpassDiscoveryService : IDiscoveryService
     private readonly ISecretVault? _secretVault;
     private readonly IGooglePlacesEnrichmentService? _googlePlacesService;
     private readonly IAiProposalSynthesizer? _aiSynthesizer;
+    private readonly IContactEnrichmentService? _contactEnrichmentService;
 
     // Rate limiter state: minimum 1000ms between requests
     private static readonly SemaphoreSlim RateLimitLock = new(1, 1);
@@ -41,7 +42,8 @@ public class OverpassDiscoveryService : IDiscoveryService
         IGeoLocationService? geoLocationService = null,
         ISecretVault? secretVault = null,
         IGooglePlacesEnrichmentService? googlePlacesService = null,
-        IAiProposalSynthesizer? aiSynthesizer = null)
+        IAiProposalSynthesizer? aiSynthesizer = null,
+        IContactEnrichmentService? contactEnrichmentService = null)
     {
         _httpClient = httpClient;
         _repository = repository;
@@ -50,6 +52,7 @@ public class OverpassDiscoveryService : IDiscoveryService
         _secretVault = secretVault;
         _googlePlacesService = googlePlacesService;
         _aiSynthesizer = aiSynthesizer;
+        _contactEnrichmentService = contactEnrichmentService;
 
         if (!_httpClient.DefaultRequestHeaders.Contains("User-Agent"))
         {
@@ -324,6 +327,25 @@ public class OverpassDiscoveryService : IDiscoveryService
                 IsSelectedForImport = !isDup,
                 RelevanceScore = score
             });
+        }
+
+        // Deep Scan Contact & Digital Enrichment (Extract Emails, WhatsApp & Contacts from websites)
+        if (query.DeepScan && _contactEnrichmentService != null && result.Leads.Count > 0)
+        {
+            var candidatesToEnrich = result.Leads
+                .Select(l => l.Business)
+                .Where(b => !string.IsNullOrWhiteSpace(b.WebsiteUrl) || !string.IsNullOrWhiteSpace(b.PhonePrimary))
+                .Take(20)
+                .ToList();
+
+            if (candidatesToEnrich.Count > 0)
+            {
+                try
+                {
+                    await _contactEnrichmentService.BatchEnrichContactsAsync(candidatesToEnrich, ct: ct);
+                }
+                catch { }
+            }
         }
 
         result.NewCount = newCount;

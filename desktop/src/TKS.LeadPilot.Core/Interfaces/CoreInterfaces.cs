@@ -135,6 +135,14 @@ public interface IAuditComparisonService
     AuditComparisonResult CompareAudits(WebsiteAudit baseline, WebsiteAudit target);
 }
 
+public interface IContactEnrichmentService
+{
+    Task<ContactEnrichmentResult> EnrichBusinessContactsAsync(Business business, CancellationToken ct = default);
+    Task<int> BatchEnrichContactsAsync(IEnumerable<Business> businesses, Action<int, int>? progressCallback = null, CancellationToken ct = default);
+    string? FormatWhatsAppUrl(string? phone, string? country = null);
+    string? CleanPhoneNumber(string? phone, string? country = null);
+}
+
 public interface ILeadScoringEngine
 {
     Task<LeadScore> CalculateScoreAsync(Business business, WebsiteAudit? latestAudit = null, CancellationToken ct = default);

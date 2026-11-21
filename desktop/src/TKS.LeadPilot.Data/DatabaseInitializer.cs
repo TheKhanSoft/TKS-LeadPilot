@@ -211,6 +211,7 @@ public class DatabaseInitializer : IDatabaseInitializer
         ", ct);
 
         // Self-heal and synchronize columns for existing tables created in earlier versions
+        await EnsureColumnAsync("Businesses", "WhatsAppNumber", "TEXT NULL", ct);
         await EnsureColumnAsync("Businesses", "GooglePlaceId", "TEXT NULL", ct);
         await EnsureColumnAsync("Businesses", "GoogleRating", "REAL NULL", ct);
         await EnsureColumnAsync("Businesses", "GoogleReviewCount", "INTEGER NULL", ct);

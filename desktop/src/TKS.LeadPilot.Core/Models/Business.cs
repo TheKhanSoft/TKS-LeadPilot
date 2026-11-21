@@ -182,6 +182,7 @@ public class Business : INotifyPropertyChanged
     // Contact
     public string? PhonePrimary { get; set; }
     public string? EmailPrimary { get; set; }
+    public string? WhatsAppNumber { get; set; }
     public string? WebsiteUrl
     {
         get => _websiteUrl;
@@ -299,6 +300,65 @@ public class Business : INotifyPropertyChanged
     [NotMapped]
     [JsonIgnore]
     public string EmailDisplay => !string.IsNullOrWhiteSpace(EmailPrimary) ? EmailPrimary : "—";
+
+    [NotMapped]
+    [JsonIgnore]
+    public string WhatsAppDisplay => !string.IsNullOrWhiteSpace(WhatsAppNumber) 
+        ? WhatsAppNumber 
+        : (!string.IsNullOrWhiteSpace(PhonePrimary) ? PhonePrimary : "—");
+
+    [NotMapped]
+    [JsonIgnore]
+    public bool HasWhatsApp => !string.IsNullOrWhiteSpace(WhatsAppDirectUrl);
+
+    [NotMapped]
+    [JsonIgnore]
+    public string? WhatsAppDirectUrl
+    {
+        get
+        {
+            var raw = !string.IsNullOrWhiteSpace(WhatsAppNumber) ? WhatsAppNumber : PhonePrimary;
+            if (string.IsNullOrWhiteSpace(raw)) return null;
+
+            var digits = new string(raw.Where(char.IsDigit).ToArray());
+            if (string.IsNullOrEmpty(digits)) return null;
+
+            // Normalize Pakistani numbers
+            if (digits.StartsWith("03") && digits.Length == 11)
+            {
+                digits = "92" + digits[1..];
+            }
+            else if (digits.StartsWith("3") && digits.Length == 10 && (Country?.Contains("Pakistan", StringComparison.OrdinalIgnoreCase) ?? true))
+            {
+                digits = "92" + digits;
+            }
+            // Normalize North American numbers
+            else if (digits.Length == 10 && (Country?.Contains("United States", StringComparison.OrdinalIgnoreCase) ?? false))
+            {
+                digits = "1" + digits;
+            }
+
+            return digits.Length >= 7 ? $"https://wa.me/{digits}" : null;
+        }
+    }
+
+    public void NotifyContactChanged()
+    {
+        OnPropertyChanged(nameof(PhonePrimary));
+        OnPropertyChanged(nameof(EmailPrimary));
+        OnPropertyChanged(nameof(WhatsAppNumber));
+        OnPropertyChanged(nameof(WebsiteUrl));
+        OnPropertyChanged(nameof(HasPhone));
+        OnPropertyChanged(nameof(HasEmail));
+        OnPropertyChanged(nameof(HasWebsite));
+        OnPropertyChanged(nameof(HasWhatsApp));
+        OnPropertyChanged(nameof(PhoneDisplay));
+        OnPropertyChanged(nameof(EmailDisplay));
+        OnPropertyChanged(nameof(WhatsAppDisplay));
+        OnPropertyChanged(nameof(WhatsAppDirectUrl));
+        OnPropertyChanged(nameof(LastEnrichedAtUtc));
+        OnPropertyChanged(nameof(LastEnrichedAtPktDisplay));
+    }
 
     [NotMapped]
     [JsonIgnore]

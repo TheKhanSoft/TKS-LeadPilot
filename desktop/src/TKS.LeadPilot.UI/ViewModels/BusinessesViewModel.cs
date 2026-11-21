@@ -254,6 +254,17 @@ public partial class BusinessesViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isEnrichingWithGoogle = false;
 
+    [ObservableProperty]
+    private bool _isGmbConfirmationOpen = false;
+
+    [ObservableProperty]
+    private string _gmbConfirmationMessage = string.Empty;
+
+    [ObservableProperty]
+    private int _gmbTargetCount = 0;
+
+    private List<Business>? _pendingGmbTargets;
+
     // Discovery Modal Cascading Hierarchies
     [ObservableProperty]
     private ObservableCollection<string> _discoveryCountries = ["Pakistan", "United States", "United Kingdom", "United Arab Emirates", "Canada", "Saudi Arabia", "Australia", "Germany"];
@@ -933,7 +944,7 @@ public partial class BusinessesViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    public async Task VerifyAllMissingGmbWithAi()
+    public void VerifyAllMissingGmbWithAi()
     {
         if (IsLoading) return;
 
@@ -944,7 +955,7 @@ public partial class BusinessesViewModel : ViewModelBase
         if (selectedList.Count > 0)
         {
             targets = selectedList.Where(b => !b.HasGmb).ToList();
-            if (targets.Count == 0) targets = selectedList; // Re-verify selected if already verified
+            if (targets.Count == 0) targets = selectedList;
         }
         else
         {
@@ -957,7 +968,34 @@ public partial class BusinessesViewModel : ViewModelBase
             return;
         }
 
-        StatusMessage = $"🤖 AI verifying Google Business Profiles (ratings & reviews) for {targets.Count} leads...";
+        _pendingGmbTargets = targets;
+        GmbTargetCount = targets.Count;
+        GmbConfirmationMessage = $"Are you sure you want to verify Google Business Profiles for {targets.Count} leads?\n\n" +
+            "💡 Strategic Lead Generation Advice:\n" +
+            "Businesses WITHOUT Google Business Profiles ('Missing GMB') are your highest-converting outreach prospects for pitching Local SEO and Google Profile setup services.\n\n" +
+            "If you proceed, LeadPilot will verify authentic Google listings. Any unverified business will strictly remain marked as 'Missing GMB' without fabricating artificial ratings.";
+
+        IsGmbConfirmationOpen = true;
+    }
+
+    [RelayCommand]
+    public void CancelGmbVerification()
+    {
+        IsGmbConfirmationOpen = false;
+        _pendingGmbTargets = null;
+        StatusMessage = "GMB verification canceled. Leads retained in their current profile state.";
+    }
+
+    [RelayCommand]
+    public async Task ConfirmGmbVerification()
+    {
+        IsGmbConfirmationOpen = false;
+        var targets = _pendingGmbTargets;
+        _pendingGmbTargets = null;
+
+        if (targets == null || targets.Count == 0) return;
+
+        StatusMessage = $"🤖 Verifying authentic Google Business Profiles for {targets.Count} leads...";
         IsLoading = true;
 
         try
@@ -984,20 +1022,23 @@ public partial class BusinessesViewModel : ViewModelBase
             {
                 if (results.TryGetValue(b.Id, out var gmb) && gmb.HasGmb)
                 {
-                    b.IsGoogleVerified = true;
-                    b.GoogleRating = gmb.Rating ?? (b.GoogleRating ?? 4.2);
-                    b.GoogleReviewCount = gmb.ReviewCount ?? (b.GoogleReviewCount ?? 65);
-                    if (!string.IsNullOrWhiteSpace(gmb.Hours)) b.BusinessHours = gmb.Hours;
-                    if (string.IsNullOrWhiteSpace(b.GooglePlaceId)) b.GooglePlaceId = $"gmb_{Guid.NewGuid():N}"[..18];
-                    b.UpdatedAtUtc = DateTime.UtcNow;
+                    // Authenticity constraint: Never fabricate fake 4.2 rating or fake gmb_ IDs
+                    if (gmb.Rating.HasValue || gmb.ReviewCount.HasValue)
+                    {
+                        b.IsGoogleVerified = true;
+                        b.GoogleRating = gmb.Rating;
+                        b.GoogleReviewCount = gmb.ReviewCount;
+                        if (!string.IsNullOrWhiteSpace(gmb.Hours)) b.BusinessHours = gmb.Hours;
+                        b.UpdatedAtUtc = DateTime.UtcNow;
 
-                    await _businessRepository.UpdateAsync(b);
-                    b.NotifyGmbChanged();
-                    verifiedCount++;
+                        await _businessRepository.UpdateAsync(b);
+                        b.NotifyGmbChanged();
+                        verifiedCount++;
+                    }
                 }
             }
 
-            StatusMessage = $"🎉 AI successfully verified & enriched Google Business Profiles for {verifiedCount} of {targets.Count} leads!";
+            StatusMessage = $"🎉 GMB verification finished: {verifiedCount} verified profiles confirmed, {targets.Count - verifiedCount} confirmed as Missing GMB (outreach targets)!";
 
             if (SelectedQuickFilter == QuickFilterType.GoogleVerified || SelectedQuickFilter == QuickFilterType.MissingGmb)
             {
@@ -1007,6 +1048,98 @@ public partial class BusinessesViewModel : ViewModelBase
         catch (Exception ex)
         {
             StatusMessage = $"GMB Verification Notice: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task DeepEnrichSelectedContact(Business? business)
+    {
+        var target = business ?? SelectedBusiness;
+        if (target == null)
+        {
+            StatusMessage = "⚠️ Please select a business to enrich contacts.";
+            return;
+        }
+
+        StatusMessage = $"⚡ Deep crawling website & channels to extract contacts for '{target.Name}'...";
+        IsLoading = true;
+
+        try
+        {
+            var enricher = _serviceProvider?.GetService<IContactEnrichmentService>();
+            if (enricher != null)
+            {
+                var res = await enricher.EnrichBusinessContactsAsync(target);
+                target.NotifyContactChanged();
+
+                var eStr = !string.IsNullOrWhiteSpace(res.Email) ? $"Email: {res.Email}" : "No email detected";
+                var wStr = !string.IsNullOrWhiteSpace(res.WhatsAppNumber) ? $"WhatsApp: {res.WhatsAppNumber}" : "No WhatsApp";
+                StatusMessage = $"✅ Contact Scan Complete for {target.Name} ({eStr} | {wStr}) via {res.MethodUsed}";
+            }
+            else
+            {
+                target.NotifyContactChanged();
+                StatusMessage = $"✓ Contact details updated for {target.Name}";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Contact Scan Notice: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task BatchEnrichAllContacts()
+    {
+        var selected = Businesses.Where(b => b.IsSelected).ToList();
+        var targets = selected.Count > 0 ? selected : Businesses.ToList();
+
+        if (targets.Count == 0)
+        {
+            StatusMessage = "⚠️ No businesses available to enrich.";
+            return;
+        }
+
+        StatusMessage = $"⚡ Deep scanning websites & digital channels for {targets.Count} leads...";
+        IsLoading = true;
+
+        try
+        {
+            var enricher = _serviceProvider?.GetService<IContactEnrichmentService>();
+            if (enricher != null)
+            {
+                int enriched = await enricher.BatchEnrichContactsAsync(targets, (done, total) =>
+                {
+                    StatusMessage = $"⚡ Deep contact scan: {done}/{total} leads processed...";
+                });
+
+                foreach (var b in targets)
+                {
+                    b.NotifyContactChanged();
+                }
+
+                StatusMessage = $"🎉 Deep Contact Scan finished: Enriched data for {enriched} of {targets.Count} leads!";
+            }
+            else
+            {
+                foreach (var b in targets)
+                {
+                    b.NotifyContactChanged();
+                }
+                StatusMessage = $"✓ Contacts normalized for {targets.Count} leads.";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Batch Contact Scan Notice: {ex.Message}";
         }
         finally
         {
@@ -1256,13 +1389,14 @@ public partial class BusinessesViewModel : ViewModelBase
         var b = business ?? SelectedBusiness;
         if (b == null) return;
 
-        if (string.IsNullOrWhiteSpace(b.PhonePrimary))
+        var phoneToUse = !string.IsNullOrWhiteSpace(b.WhatsAppNumber) ? b.WhatsAppNumber : b.PhonePrimary;
+        if (string.IsNullOrWhiteSpace(phoneToUse))
         {
-            StatusMessage = $"⚠️ No phone number on record for '{b.Name}'.";
+            StatusMessage = $"⚠️ No phone number or WhatsApp on record for '{b.Name}'.";
             return;
         }
 
-        var digits = CleanPhoneNumberForWhatsApp(b.PhonePrimary, b.Country);
+        var digits = CleanPhoneNumberForWhatsApp(phoneToUse, b.Country);
         if (string.IsNullOrWhiteSpace(digits))
         {
             StatusMessage = $"⚠️ Phone number '{b.PhonePrimary}' has no valid numeric digits for WhatsApp.";

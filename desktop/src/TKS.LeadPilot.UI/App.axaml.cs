@@ -81,6 +81,7 @@ public partial class App : Application
         services.AddScoped<ICsvImporterService, CsvImporterService>();
         services.AddScoped<IDiscoveryService, OverpassDiscoveryService>();
         services.AddScoped<ISsrfValidator, SsrfValidator>();
+        services.AddScoped<IContactEnrichmentService, ContactEnrichmentService>();
         services.AddScoped<IWebsiteAuditEngine, WebsiteAuditEngine>();
         services.AddScoped<IGooglePlacesEnrichmentService, GooglePlacesEnrichmentService>();
         services.AddScoped<IAiProposalSynthesizer, AiProposalSynthesizer>();

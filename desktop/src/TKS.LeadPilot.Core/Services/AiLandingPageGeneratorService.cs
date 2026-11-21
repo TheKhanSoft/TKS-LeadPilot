@@ -154,11 +154,12 @@ public class AiLandingPageGeneratorService(
         var prompt = BuildGeminiPrompt(request);
 
         // Production multi-model fallback chain ordered by current verified latency and quota availability
-        string[] candidateModels = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-3.1-flash-lite"];
+        string[] candidateModels = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-flash", "gemini-3.5-flash-lite"];
         HttpResponseMessage? lastResponse = null;
         string lastErrorDetail = string.Empty;
 
-        foreach (var modelName in candidateModels)
+        // Try at most 2 fast candidate models with a 12-second ceiling so user never waits 90s
+        foreach (var modelName in candidateModels.Take(2))
         {
             if (ct.IsCancellationRequested) break;
 
@@ -194,7 +195,7 @@ public class AiLandingPageGeneratorService(
                     "application/json");
 
                 using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-                cts.CancelAfter(TimeSpan.FromSeconds(25));
+                cts.CancelAfter(TimeSpan.FromSeconds(12));
 
                 var response = await _httpClient.PostAsync(requestUri, jsonContent, cts.Token);
                 lastResponse = response;
@@ -226,14 +227,14 @@ public class AiLandingPageGeneratorService(
             }
             catch (OperationCanceledException) when (!ct.IsCancellationRequested)
             {
-                lastErrorDetail = $"{modelName}: Request timed out after 25s.";
+                lastErrorDetail = $"{modelName}: Request timed out after 12s.";
                 continue;
             }
             catch (HttpRequestException ex)
             {
                 // Network unreachable or DNS resolution failure - fail fast to offline neural synthesizer
                 lastErrorDetail = $"{modelName}: Network connectivity error ({ex.Message}).";
-                continue;
+                break;
             }
             catch (Exception ex)
             {

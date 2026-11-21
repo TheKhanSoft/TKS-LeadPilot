@@ -555,7 +555,7 @@ public partial class AiProposalSynthesizer : IAiProposalSynthesizer
 
             var jsonPayload = JsonSerializer.Serialize(requestBody);
 
-            string[] candidateModels = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-3.1-flash-lite", "gemini-2.0-flash", "gemini-1.5-flash"];
+            string[] candidateModels = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-flash", "gemini-3.5-flash-lite"];
             string? respJson = null;
 
             foreach (var modelName in candidateModels)
@@ -723,7 +723,7 @@ public partial class AiProposalSynthesizer : IAiProposalSynthesizer
             };
 
             var jsonPayload = JsonSerializer.Serialize(requestBody);
-            string[] candidateModels = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-3.1-flash-lite", "gemini-2.0-flash", "gemini-1.5-flash"];
+            string[] candidateModels = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-flash", "gemini-3.5-flash-lite"];
             string? respJson = null;
 
             foreach (var modelName in candidateModels)
@@ -880,7 +880,7 @@ public partial class AiProposalSynthesizer : IAiProposalSynthesizer
             };
 
             var jsonPayload = JsonSerializer.Serialize(requestBody);
-            string[] candidateModels = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-3.1-flash-lite", "gemini-2.0-flash", "gemini-1.5-flash"];
+            string[] candidateModels = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-flash", "gemini-3.5-flash-lite"];
             string? respJson = null;
 
             foreach (var modelName in candidateModels)

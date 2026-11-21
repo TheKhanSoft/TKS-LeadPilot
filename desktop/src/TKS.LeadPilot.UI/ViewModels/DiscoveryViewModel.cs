@@ -1038,6 +1038,57 @@ public partial class DiscoveryViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    public async Task DeepEnrichDiscoveredContactsAsync()
+    {
+        if (DiscoveredLeads == null || DiscoveredLeads.Count == 0)
+        {
+            StatusMessage = "⚠️ No discovered leads to enrich. Run a scan first.";
+            return;
+        }
+
+        var selectedLeads = DiscoveredLeads.Where(l => l.IsSelectedForImport).Select(l => l.Business).ToList();
+        var targets = selectedLeads.Count > 0 ? selectedLeads : DiscoveredLeads.Select(l => l.Business).ToList();
+
+        StatusMessage = $"⚡ Deep scanning websites & digital channels for {targets.Count} leads...";
+        IsScanning = true;
+
+        try
+        {
+            var enricher = _serviceProvider?.GetService<IContactEnrichmentService>();
+            if (enricher != null)
+            {
+                int enriched = await enricher.BatchEnrichContactsAsync(targets, (done, total) =>
+                {
+                    StatusMessage = $"⚡ Deep contact scan: {done}/{total} leads processed...";
+                });
+
+                foreach (var b in targets)
+                {
+                    b.NotifyContactChanged();
+                }
+
+                StatusMessage = $"🎉 Deep Contact Scan complete: Enriched data for {enriched} of {targets.Count} leads!";
+            }
+            else
+            {
+                foreach (var b in targets)
+                {
+                    b.NotifyContactChanged();
+                }
+                StatusMessage = $"✓ Contact details refreshed for {targets.Count} leads.";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Contact enrichment notice: {ex.Message}";
+        }
+        finally
+        {
+            IsScanning = false;
+        }
+    }
+
+    [RelayCommand]
     public async Task CopyContactCardAsync(DiscoveredLead? lead)
     {
         var b = lead?.Business ?? SelectedLead?.Business;
